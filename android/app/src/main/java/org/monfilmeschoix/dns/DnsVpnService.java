@@ -34,7 +34,11 @@ public final class DnsVpnService extends VpnService {
     private static final byte[] DNS_IP = new byte[]{10,111,0,2};
 
     @Override public int onStartCommand(Intent command, int flags, int id) {
-        if(command != null && STOP.equals(command.getAction())) { stopSelf(); return START_NOT_STICKY; }
+        if(command != null && STOP.equals(command.getAction())) {
+            shutdownTunnel();
+            stopSelf();
+            return START_NOT_STICKY;
+        }
         if(command != null && RELOAD.equals(command.getAction())) {
             if(running) denied = ExtraBlocks.all(this, DomainRules.get(this));
             return running ? START_STICKY : START_NOT_STICKY;
@@ -45,11 +49,17 @@ public final class DnsVpnService extends VpnService {
             nm.createNotificationChannel(new NotificationChannel("dns_filter","Filtre DNS actif",NotificationManager.IMPORTANCE_LOW));
             Intent open = new Intent(this, MainActivity.class);
             PendingIntent pi = PendingIntent.getActivity(this,0,open,PendingIntent.FLAG_IMMUTABLE|PendingIntent.FLAG_UPDATE_CURRENT);
+            Intent stopIntent = new Intent(this, DnsVpnService.class).setAction(STOP);
+            PendingIntent stopAction = PendingIntent.getService(this, 1, stopIntent,
+                PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
             Notification notice = new Notification.Builder(this,"dns_filter")
                 .setSmallIcon(android.R.drawable.ic_lock_lock)
                 .setContentTitle("Mon fil, mes choix")
                 .setContentText("Filtrage DNS actif • ouvrir pour désactiver")
-                .setContentIntent(pi).setOngoing(true).build();
+                .setContentIntent(pi)
+                .addAction(new Notification.Action.Builder(android.R.drawable.ic_menu_close_clear_cancel,
+                    "Arrêter le VPN", stopAction).build())
+                .setOngoing(true).build();
             startForeground(15,notice);
             denied = ExtraBlocks.all(this, DomainRules.get(this));
             Builder builder = new Builder().setSession("Mon fil, mes choix DNS")
@@ -169,13 +179,17 @@ public final class DnsVpnService extends VpnService {
         int udpCheck=checksum(sum);put16(out,26,udpCheck==0?0xffff:udpCheck);
         return out;
     }
-    @Override public void onDestroy() {
-        running=false;
+    private void shutdownTunnel() {
+        running = false;
         ACTIVE = false;
-        if(workers!=null){workers.shutdownNow();workers=null;}
-        try{if(tun!=null)tun.close();}catch(Exception ignored){}
-        tun=null;output=null;
+        if (workers != null) { workers.shutdownNow(); workers = null; }
+        try { if (tun != null) tun.close(); } catch (Exception ignored) {}
+        tun = null;
+        output = null;
         stopForeground(STOP_FOREGROUND_REMOVE);
+    }
+    @Override public void onDestroy() {
+        shutdownTunnel();
         super.onDestroy();
     }
     @Override public void onRevoke(){stopSelf();}

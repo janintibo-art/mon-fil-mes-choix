@@ -121,9 +121,12 @@ public class MainActivity extends Activity {
         Button stop = button("Désactiver le filtre", CARD_ALT, FG, true);
         page.addView(stop, lp(-1,dp(49),0,0,0,16));
         stop.setOnClickListener(v -> {
-            startService(new Intent(this, DnsVpnService.class).setAction(DnsVpnService.STOP));
-            detail.setText("Arrêt demandé…");
-            handler.postDelayed(this::refreshStatus, 600);
+            // Stop the actual Android service, even if its DNS tunnel is blocked.
+            stopService(new Intent(this, DnsVpnService.class));
+            state.setText("○ Protection désactivée");
+            state.setTextColor(MUTED);
+            detail.setText("Arrêt demandé à Android. Si le VPN reste actif, désactivez-le dans les paramètres VPN.");
+            handler.postDelayed(this::refreshStatus, 900);
         });
 
         // Group and entry management; all 303 are selected by default.
