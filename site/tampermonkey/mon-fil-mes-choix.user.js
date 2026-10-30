@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Mon fil, mes choix — filtre Web personnel
 // @namespace    https://github.com/janintibo-art/mon-fil-mes-choix
-// @version      3.7.0
+// @version      3.8.0
 // @updateURL    https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
 // @downloadURL  https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
-// @description  V31 : filtrage Google amélioré (fiches, images, résultats) et préférences multi-appareils.
+// @description  V32 : correction des fiches, photos et resultats Google.
 // @author       Communauté Mon fil, mes choix
 // @match        *://*/*
 // @run-at       document-idle
@@ -373,32 +373,34 @@
   }
   // v31 : Google expose souvent les personnalités dans une fiche latérale,
   // hors des cartes classiques. On ne masque jamais la barre de recherche.
+  // v32 : les fiches Google sont souvent hors des conteneurs classiques.
   function scanGooglePanels(){
     if(!(host==='google.com'||host.endsWith('.google.com')||host.startsWith('google.')))return;
-    const query=new URLSearchParams(location.search).get('q')||'';
-    const compact=normalize(query).replace(/ /g,'');
+    const qs=new URLSearchParams(location.search);
+    const field=document.querySelector('input[name="q"],textarea[name="q"]');
+    const query=qs.get('q')||field?.value||'';
+    const compact=normalize(query).replace(/\s/g,'');
     let chosen=matchName(query);
     if(!chosen && compact.length>=5 && userWordsActive){
       for(const p of profiles){
-        if([p.label,...p.aliases].some(w=>normalize(w).replace(/ /g,'')===compact)){
+        if([p.label,...p.aliases].some(w=>normalize(w).replace(/\s/g,'')===compact)){
           chosen=p.label;break;
         }
       }
     }
-    // Si la requête elle-même correspond à un choix, masquer uniquement
-    // les zones de résultats (pas l'interface Google ni notre tableau de bord).
     if(chosen){
-      for(const sel of ['#search','#rso','#rhs','.kp-wholepage','#kp-wp-tab-overview','#islmp']){
+      // #rcnt contient aussi les photos, connaissances et fiches recentes.
+      // La barre de recherche et le tableau de bord restent accessibles.
+      for(const sel of ['#rcnt','#main','#center_col','#search','#rso','#rhs',
+        '.kp-wholepage','#kp-wp-tab-overview','#islmp']){
         for(const el of document.querySelectorAll(sel))hide(el,chosen);
       }
       return;
     }
-    // Recherche ordinaire : masquer uniquement les fiches latérales concernées.
     for(const sel of ['#rhs','.kp-wholepage','#kp-wp-tab-overview']){
       for(const el of document.querySelectorAll(sel)){
         if(hidden.has(el))continue;
-        const txt=(el.innerText||el.textContent||'').slice(0,10000);
-        const found=matchName(txt.slice(0,2300));
+        const found=matchName((el.innerText||el.textContent||'').slice(0,2300));
         if(found)hide(el,found);
       }
     }
