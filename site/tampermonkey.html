@@ -125,7 +125,7 @@
         </div>
       </div>
       <aside class="panel quick" aria-label="Résumé rapide des étapes">
-        <h2>Résumé en 5 étapes</h2>
+        <h2>Résumé en 5 étapes + options</h2>
         <p>Suivez toujours cet ordre. Si une étape ne marche pas, passez à la partie dépannage plus bas.</p>
         <ol>
           <li>Installer l’extension Tampermonkey dans le navigateur.</li>
@@ -255,6 +255,21 @@
       <figure class="capture"><img src="./assets/guides/tm-step5.png" alt="Capture illustrative du panneau Gérer les groupes : neuf interrupteurs et boutons Tout activer et Tout désactiver"><figcaption>Capture 5 · Le panneau réel de sélection des groupes, sur une page de démonstration.</figcaption></figure>
     </section>
 
+
+    <section class="panel" id="publicites-tampermonkey" style="padding:24px;margin:28px 0">
+      <div class="eyebrow">NOUVEAU · OPTION FACULTATIVE</div>
+      <h2 style="font-size:clamp(25px,4vw,38px);margin:14px 0">Publicités et domaines personnels</h2>
+      <p>En plus des neuf groupes, vous pouvez demander au script de <strong>masquer certains emplacements publicitaires</strong> sur les pages compatibles. Cette option est <strong>désactivée par défaut</strong>.</p>
+      <ol>
+        <li>Ouvrez une page web, puis le menu <strong>Tampermonkey</strong>.</li>
+        <li>Sélectionnez <strong>« 🚫 Publicités et autres blocages »</strong>.</li>
+        <li>Activez <strong>« Masquer les éléments publicitaires reconnus »</strong>.</li>
+        <li>Si vous le souhaitez, ajoutez des domaines publicitaires personnels, un par ligne, puis appuyez sur <strong>Enregistrer</strong>.</li>
+        <li>Rechargez la page et vérifiez qu’aucun contenu utile n’a disparu.</li>
+      </ol>
+      <p>Le script contient quelques domaines publicitaires courants et reconnaît certains emplacements « sponsorisés ». Il ne télécharge pas automatiquement AdAway ou StevenBlack : ces listes volumineuses restent proposées dans l’APK et l’EXE, où elles servent au filtrage réseau.</p>
+      <div class="warn"><strong>Limite :</strong> Tampermonkey masque des éléments déjà présents dans la page, il n’intercepte pas toutes les publicités ni les connexions réseau. Sur YouTube et d’autres plateformes, les publicités intégrées au lecteur ne seront pas nécessairement filtrées. Un domaine personnalisé ne bloque pas à lui seul tout un site.</div>
+    </section>
 
     <section class="checklist">
       <article class="panel check-card"><h3>Tout fonctionne si…</h3><ul><li>L’extension Tampermonkey est visible dans le navigateur.</li><li>Le script « Mon fil, mes choix » apparaît dans son tableau de bord.</li><li>Le menu du script s’ouvre sur une page Web.</li><li>Le rechargement de la page active le masquage local.</li></ul></article>

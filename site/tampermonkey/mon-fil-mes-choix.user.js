@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Mon fil, mes choix — filtre Web personnel
 // @namespace    https://github.com/janintibo-art/mon-fil-mes-choix
-// @version      3.0.0
+// @version      3.1.0
 // @updateURL    https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
 // @downloadURL  https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
-// @description  Filtre local personnalisable : 303 entrées réparties en 9 groupes indépendants.
+// @description  303 entrées en 9 groupes + filtre publicitaire facultatif et domaines personnels.
 // @author       Communauté Mon fil, mes choix
 // @match        *://*/*
 // @run-at       document-idle
@@ -30,6 +30,65 @@
   if(skip.some(s=>host===s||host.endsWith('.'+s)))return;
   let enabled=Boolean(GM_getValue(KEY+'enabled',true));
   let domainsEnabled=Boolean(GM_getValue(KEY+'domains',true));
+  let adsEnabled=Boolean(GM_getValue(KEY+'adsEnabled',false));
+  let customDomains=String(GM_getValue(KEY+'adCustomDomains','')).split(/\r?\n/).map(x=>x.trim().toLowerCase()).filter(x=>/^(?:[a-z0-9-]+\.)+[a-z]{2,}$/.test(x)).slice(0,500);
+  const AD_HOSTS=['doubleclick.net','googlesyndication.com','googleadservices.com','adnxs.com','taboola.com','outbrain.com','criteo.com','adsrvr.org','rubiconproject.com','pubmatic.com'];
+  const AD_SELECTORS=[
+    'ins.adsbygoogle','[data-ad-slot]','[data-ad-client]','.adsbygoogle',
+    'iframe[src*="doubleclick.net"]','iframe[src*="googlesyndication.com"]',
+    '[id^="google_ads_iframe"]','[data-testid="placementTracking"]'
+  ];
+  let adHiddenCount=0;
+  function adDomainMatch(domain){return [...AD_HOSTS,...customDomains].some(d=>domain===d||domain.endsWith('.'+d))}
+  function adCandidate(el){
+    if(!el || el.closest('#mfm-settings-overlay,#mfm-domain-screen,#mfm-ads-overlay,form,[contenteditable="true"]'))return false;
+    const tag=el.tagName.toLowerCase();
+    if(tag==='iframe'){
+      try{return adDomainMatch(new URL(el.getAttribute('src')||'',location.href).hostname.toLowerCase())}catch{return false}
+    }
+    return AD_SELECTORS.some(sel=>el.matches?.(sel));
+  }
+  function scanAds(){
+    if(!adsEnabled||!enabled||revealOnce)return;
+    let n=0;
+    for(const el of document.querySelectorAll(AD_SELECTORS.join(','))){
+      if(++n>800)break;
+      if(!adCandidate(el)||hidden.has(el))continue;
+      hide(el,'Publicité');adHiddenCount++;
+    }
+    let m=0;
+    for(const a of document.querySelectorAll('a[href]')){
+      if(++m>1200)break;
+      if(a.closest('#mfm-settings-overlay,#mfm-domain-screen,#mfm-ads-overlay,form,[contenteditable="true"]'))continue;
+      try{
+        if(adDomainMatch(new URL(a.href,location.href).hostname.toLowerCase())){
+          const card=a.closest('article,.ad,.sponsored,[data-ad-slot]');
+          if(card && !hidden.has(card)){hide(card,'Publicité');adHiddenCount++}
+        }
+      }catch{}
+    }
+  }
+  function adsPanel(){
+    if(document.getElementById('mfm-ads-overlay'))return;
+    style();
+    const overlay=document.createElement('div');overlay.id='mfm-ads-overlay';overlay.style.cssText='position:fixed;inset:0;z-index:2147483647;background:rgba(2,8,15,.82);display:flex;align-items:center;justify-content:center;padding:15px';
+    const panel=document.createElement('section');panel.className='mfm-dialog';panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.style.cssText='width:min(560px,100%);max-height:90vh;overflow:auto';
+    const heading=document.createElement('h2');heading.textContent='Publicités et autres domaines';
+    const intro=document.createElement('p');intro.textContent='Facultatif : masque des emplacements publicitaires reconnaissables sur les pages compatibles. Ne filtre pas les requêtes réseau et ne remplace pas un bloqueur publicitaire.';
+    const row=document.createElement('label');row.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:1px solid #385069;border-radius:12px';
+    const name=document.createElement('span');name.textContent='Masquer les éléments publicitaires reconnus';
+    const check=document.createElement('input');check.type='checkbox';check.checked=adsEnabled;check.addEventListener('change',()=>{adsEnabled=check.checked;GM_setValue(KEY+'adsEnabled',adsEnabled);restore();apply();});row.append(name,check);
+    const subtitle=document.createElement('p');subtitle.textContent='Domaines additionnels personnels (un par ligne, max. 500). Ils ne sont utilisés que pour identifier des publicités ou liens dans la page : ils ne bloquent pas les connexions DNS.';
+    const ta=document.createElement('textarea');ta.value=customDomains.join('\n');ta.setAttribute('aria-label','Domaines publicitaires supplémentaires');ta.style.cssText='width:100%;min-height:115px;background:#101b2a;color:white;border:1px solid #3d5067;border-radius:12px;padding:12px;font:14px monospace';
+    const actions=document.createElement('div');actions.className='mfm-actions';
+    actions.append(button('Enregistrer',()=>{
+      customDomains=ta.value.split(/\r?\n/).map(x=>x.trim().toLowerCase()).filter(x=>/^(?:[a-z0-9-]+\.)+[a-z]{2,}$/.test(x)).slice(0,500);
+      GM_setValue(KEY+'adCustomDomains',customDomains.join('\n'));overlay.remove();restore();apply();
+    },'mfm-primary'),button('Fermer',()=>overlay.remove()));
+    const note=document.createElement('p');note.className='mfm-note';note.textContent='Exemples de domaines connus inclus : doubleclick.net, googlesyndication.com, taboola.com. La liste est volontairement limitée pour éviter des faux positifs.';
+    panel.append(heading,intro,row,subtitle,ta,actions,note);overlay.append(panel);document.body.append(overlay);
+    overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove()});
+  }
   let revealOnce=false;
   let revealDomainOnce=false;
   let scheduled=false;
@@ -212,7 +271,7 @@
   }
   const selectors=cardSelectors();
   function hide(el,match){
-    if(!el||hidden.has(el)||el.closest('#mfm-settings-overlay,#mfm-domain-screen,form,[contenteditable="true"]'))return;
+    if(!el||hidden.has(el)||el.closest('#mfm-settings-overlay,#mfm-domain-screen,#mfm-ads-overlay,form,[contenteditable="true"]'))return;
     el.setAttribute('data-mfm-hidden','1');el.setAttribute('data-mfm-name',match);
     hidden.add(el);hiddenCount++;
   }
@@ -237,6 +296,7 @@
     try{
       if(domainsEnabled&&!revealDomainOnce){const d=domainRule(host);if(d){domainScreen(d);return}}
       style();
+      scanAds();
       // Search cards and social posts; never hide broad page wrappers or editable forms.
       const cards=document.querySelectorAll(selectors);
       let n=0;
@@ -268,7 +328,7 @@
       let count=0;
       for(const a of document.querySelectorAll('main a[href],#search a[href],#rso a[href],#b_results a[href],[role="main"] a[href]')){
         if(++count>900)break;
-        if(a.closest('[data-mfm-hidden="1"],#mfm-settings-overlay,#mfm-domain-screen,form'))continue;
+        if(a.closest('[data-mfm-hidden="1"],#mfm-settings-overlay,#mfm-domain-screen,#mfm-ads-overlay,form'))continue;
         if(!force&&a.hasAttribute('data-mfm-scanned'))continue;
         a.setAttribute('data-mfm-scanned','1');
         const title=(a.innerText||a.getAttribute('aria-label')||'').slice(0,200);
@@ -281,6 +341,7 @@
   function schedule(){if(!enabled||revealOnce||scheduled)return;scheduled=true;setTimeout(()=>{scheduled=false;scan()},500)}
   function menu(){
     GM_registerMenuCommand('⚙️ Gérer les groupes ('+GROUPS.length+')',openSettings);
+    GM_registerMenuCommand('🚫 Publicités et autres blocages',adsPanel);
     GM_registerMenuCommand(enabled?'⏸ Désactiver le filtre':'▶ Activer le filtre',()=>{
       enabled=!enabled;GM_setValue(KEY+'enabled',enabled);
       if(!enabled)restore();else {revealOnce=false;apply()}

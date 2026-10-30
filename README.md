@@ -1,67 +1,57 @@
-# Mon fil, mes choix — V15
+# Mon fil, mes choix — V16
 
-Projet communautaire indépendant pour **personnaliser localement sa navigation**, avec un annuaire de 303 entrées et trois modes de filtrage complémentaires. Les contenus et comptes présentés dans le répertoire constituent une **liste de préférences** : ils ne constituent pas en soi une accusation d’illégalité ou de racisme.
+Projet indépendant de personnalisation **locale et réversible** de la navigation. Les listes représentent des préférences de filtrage : la présence d’une personne ou organisation ne constitue pas une accusation.
 
-## Contenu
+## Ce que contient le projet
 
-| Chemin | Fonction |
+| Élément | Fonction |
 |---|---|
-| `site/index.html` | Site public : présentation, liste consultable, moteur de recherche, filtres, liens documentaires, tutoriel Tampermonkey |
-| `site/ia.html` | Ancien lien redirigé vers l’accueil (rubrique retirée en V15) |
-| `site/dns.html` | Tutoriel de fonctionnement des applications Android et Windows, limites et téléchargement via Actions |
-| `site/liste_v8.json` et `.csv` | 303 entrées, neuf groupes, statuts `requested`, `review`, `consider` |
-| `site/domaines_v1.json` | 9 domaines utilisables par les applications DNS ; liste ajustable |
-| `site/tampermonkey/mon-fil-mes-choix.user.js` | Userscript de filtrage de cartes et résultats visibles sur les pages web, activable et réversible |
-| `site/assets/` | Logo et icône ; ressources PNG |
-| `android/` | Prototype Java de filtrage de requêtes DNS via `VpnService` |
-| `windows/` | Prototype Python/Tkinter du filtrage `hosts` + icône Windows |
-| `.github/workflows/` | Publication GitHub Pages ; compilation GitHub Actions APK/EXE |
-| `installer-depot.sh` | Création et push du dépôt GitHub via Termux et GitHub CLI |
+| `site/index.html` | Accueil, annuaire consultable et liens de téléchargement |
+| `site/tampermonkey.html` | Tutoriel avec illustrations, copie du script et options publicitaires |
+| `site/dns.html` | Présentation des applications, publicités et domaines personnalisés |
+| `site/ia.html` | Ancien lien redirigé vers l’accueil : rubrique IA retirée |
+| `site/tampermonkey/mon-fil-mes-choix.user.js` | Filtrage local des résultats et publications, neuf groupes, option publicitaire |
+| `site/liste_v8.json` et `.csv` | 303 entrées dans 9 groupes |
+| `site/domaines_v1.json` | 9 domaines initiaux validés pour la couche réseau |
+| `android/` | APK : filtre DNS local via `VpnService`, gestion des groupes et des domaines |
+| `windows/` | EXE : application Python/Tkinter, filtrage via `hosts`, gestion des groupes |
+| `.github/workflows/` | GitHub Pages, compilations APK/EXE et GitHub Releases |
 
-## Déploiement initial (le dépôt n’existe pas encore)
+## Tampermonkey
 
-1. Télécharger **un seul** `mon_fil_mes_choix_v4.zip` dans le dossier `Téléchargements` du téléphone.
-2. Dans Termux, autoriser l'accès aux fichiers (si nécessaire), puis décompresser sous `~/mon_fil_mes_choix`.
-3. Installer `git` et `gh`, se connecter à `gh auth login` si ce n’est pas déjà fait.
-4. Exécuter `bash ~/mon_fil_mes_choix/installer-depot.sh` (création du dépôt `janintibo-art/mon-fil-mes-choix` et push).
-5. Vérifier les **Actions** : `Publier Mon fil, mes choix` et `Construire APK et EXE DNS` ; autoriser **Settings → Pages → Source : GitHub Actions** si requis.
+1. Installez Tampermonkey dans un navigateur compatible.
+2. Ouvrez le guide du site et utilisez **Copier le script** pour l’insérer dans l’éditeur Tampermonkey, puis enregistrez.
+3. Le script doit s’appeler **Mon fil, mes choix — filtre Web personnel**, et non « New Userscript ».
+4. Dans le menu de l’extension, **Gérer les groupes (9)** permet d’activer/désactiver des groupes parmi les 303 entrées.
+5. Le menu **Publicités et autres blocages** permet d’activer facultativement le masquage cosmétique d’emplacements publicitaires connus et d’ajouter jusqu’à 500 domaines personnels. L’option est désactivée au départ. Ces domaines ne créent pas de règles DNS.
 
-Site visé après publication : `https://janintibo-art.github.io/mon-fil-mes-choix/`.
+Le script ne promet ni la disparition universelle d’un nom, ni la suppression des publicités diffusées dans les lecteurs vidéo. En cas de faux positif, utilisez « Afficher tout » ou désactivez le script.
 
-## Distinction essentielle
+## Applications Android et Windows
 
-- **303 entrées** : noms de comptes et médias avec statuts différents. Leur présence dans la liste ne signifie pas un blocage automatique.
-- **9 domaines** : seules ces adresses peuvent être filtrées initialement par le système DNS/hosts (hors ajustement individuel).
-- **Tampermonkey** : masque localement certains éléments d’une page selon les règles choisies, sans supprimer de publication ni bloquer le compte sur Facebook/YouTube.
-- **L’IA** : sert à vérifier les affiliations avec sources, proposer des domaines officiels et expliquer l’installation. Ne connaît pas tous les comptes et ne peut promettre un blocage mondial ou à distance.
+- **303 entrées sélectionnées par défaut**, réparties en 9 groupes, réglables individuellement. Un nom sélectionné sans domaine associé ne crée aucune règle réseau.
+- **9 domaines initiaux** utilisés pour le filtrage DNS (Android) ou `hosts` (Windows).
+- **Publicités et autres blocages** : import manuel et facultatif des sources **AdAway** et **StevenBlack** (limite de 10 000 domaines par liste), activation/désactivation séparée et ajout de domaines personnalisés.
+- **Android** : VPN local dédié aux requêtes DNS, pas un VPN d’anonymisation ; les applications utilisant DoH, DNS privé, IPv6 ou TCP peuvent contourner le filtrage. Un autre VPN peut entrer en conflit. La résolution en amont passe par des fournisseurs DNS tiers.
+- **Windows** : règles encadrées dans le fichier `hosts` et restaurables ; droits administrateur nécessaires. Le fichier `hosts` ne bloque pas tout le trafic.
 
-## Limites et sécurité
+## Publication
 
-Les applications sont **expérimentales** : les sources et les fichiers de build sont livrés, pas des exécutables déjà testés sur appareils. Android (UDP/IPv4/53) utilise un service VPN local nécessitant autorisation ; le DNS chiffré, un autre VPN, IPv6/TCP peuvent contourner le prototype. Windows modifie la portion délimitée du fichier `hosts` après consentement UAC ; n’intercepte pas les DNS chiffrés des applications. Conservez la possibilité de désactiver. Android consulte des résolveurs tiers (confidentialité non garantie par le seul fait que le VPN est local).
+Dépôt : `https://github.com/janintibo-art/mon-fil-mes-choix`
 
-Le script Tampermonkey fait du filtrage textuel sujet à de faux positifs et peut nécessiter des adaptations lorsque les plateformes changent d’interface. **Ne transmettez jamais de mots de passe, cookies ou codes 2FA à une IA**.
+Site : `https://janintibo-art.github.io/mon-fil-mes-choix/`
 
-## Téléchargements
+Releases (APK / EXE) : `https://github.com/janintibo-art/mon-fil-mes-choix/releases`
 
-- Après la première compilation verte, utiliser les **Artifacts** de `Actions → Construire APK et EXE DNS` pour l’APK et l’EXE.
-- Une release peut être générée pour un tag Git `v4`, mais aucun binaire n’est fourni dans cette archive.
-- Tous les changements se font dans le dépôt GitHub public ; la liste reste personnelle, éditable et réversible.
+Workflow GitHub Actions : `Construire APK et EXE DNS` et `Publier Mon fil, mes choix`. Les fichiers APK/EXE sont publiés si leurs compilations et l’étape Release réussissent.
 
-## V14 — sélection par groupes dans Android et Windows
+## Confidentialité et précautions
 
-- 303 entrées / 9 groupes inclus dans `selection_v14.json` (ressource locale des deux applications).
-- Toutes les entrées sont sélectionnées par défaut ; chaque groupe et chaque fiche peuvent être désactivés.
-- La sélection est enregistrée localement.
-- Seules les **neuf correspondances entre une fiche et un domaine identifié** produisent une règle DNS/hosts initialement. Le fait de cocher un nom sans domaine ne bloque pas automatiquement ses pages sociales ni ses articles.
-- Les domaines personnels supplémentaires se gèrent séparément ; dans une ancienne installation, les neuf domaines par défaut passent sous la responsabilité de la sélection par groupes.
-- Android applique les choix au VPN DNS en cours via une commande RELOAD ; Windows nécessite de cliquer sur ACTIVER / RÉAPPLIQUER (autorisation administrateur).
-- Le guide Tampermonkey inclut une procédure mobile avec illustrations annotées, distinctes de véritables captures d'écran système.
+Le script n’exige pas d’identifiants de réseaux sociaux et n’envoie pas votre liste à un service de télémétrie. Les téléchargements explicites des listes publicitaires sollicitent leurs hébergeurs. Vérifiez les licences de leurs fournisseurs avant toute redistribution. Les règles peuvent provoquer des faux positifs et le filtrage reste réversible.
 
+## Mise à jour V16
 
-## V15 — listes publicitaires facultatives et domaines personnels
-- Android et Windows : ajout en bas des interfaces d'une rubrique « Publicités et autres blocages ».
-- Téléchargement HTTPS manuel des listes AdAway et StevenBlack, chacune limitée à 10 000 domaines pour préserver les performances. Les sources ne sont pas activées avant consentement.
-- Ajout d'un nom de domaine personnalisé : un nom de domaine DNS n'est pas un mot-clé ni un profil sur une plateforme.
-- Les règles des groupes et les règles personnelles existantes sont conservées ; la suppression des règles hosts reste réversible.
-- Rubrique IA retirée du site et anciennes URL redirigées vers l'accueil.
-- La protection reste limitée à la résolution de domaines (DNS Android, hosts Windows).
+- Ajout dans Tampermonkey d’un masquage publicitaire **cosmétique, facultatif**, indépendant des groupes.
+- Possibilité d’ajouter des domaines publicitaires personnels dans ce panneau.
+- Guide Tampermonkey et page Applications mis à jour.
+- README réécrit ; aucune réintroduction du guide IA dans les menus.
