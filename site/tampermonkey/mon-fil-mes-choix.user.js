@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Mon fil, mes choix — filtre Web personnel
 // @namespace    https://github.com/janintibo-art/mon-fil-mes-choix
-// @version      2.0.0
+// @version      3.0.0
 // @updateURL    https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
 // @downloadURL  https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
-// @description  Masque localement des résultats, cartes et publications selon une liste personnalisable (réseaux, recherche et sites web).
+// @description  Filtre local personnalisable : 303 entrées réparties en 9 groupes indépendants.
 // @author       Communauté Mon fil, mes choix
 // @match        *://*/*
 // @run-at       document-idle
@@ -13,182 +13,294 @@
 // @grant        GM_setValue
 // @grant        GM_registerMenuCommand
 // ==/UserScript==
-
 /*
- * Filtrage LOCAL uniquement : aucune requête réseau, aucun envoi de données.
- * Aucun compte Facebook/X/YouTube n'est bloqué côté serveur.
- * Liste de travail : la présence d'un nom ne constitue pas une accusation.
- * Pour modifier les règles : éditez la variable RULES, puis enregistrez.
+ * Filtrage local et réversible, sans envoi de données. Les listes sont des préférences
+ * personnelles : elles ne qualifient pas les personnes ou organisations citées.
+ * Les 303 entrées sont embarquées : le script fonctionne sans téléchargement de liste.
  */
 (() => {
   'use strict';
-  const RULES = [{"name":"CNews","status":"review"},{"name":"Europe 1","status":"review"},{"name":"Le Journal du Dimanche (JDD)","status":"review"},{"name":"JDNews","status":"review"},{"name":"Frontières","status":"requested"},{"name":"L’Infiltré","status":"review"},{"name":"Canal+","status":"review"},{"name":"CStar","status":"review"},{"name":"Europe 2","status":"review"},{"name":"RFM","status":"review"},{"name":"Télé-Loisirs","status":"review"},{"name":"Femme Actuelle","status":"review"},{"name":"Voici","status":"review"},{"name":"GEO","status":"review"},{"name":"Capital","status":"review"},{"name":"Ça m’intéresse","status":"review"},{"name":"Cuisine Actuelle","status":"review"},{"name":"Prima","status":"review"},{"name":"Télé 2 semaines","status":"review"},{"name":"TV Grandes Chaînes","status":"review"},{"name":"Télé Z","status":"review"},{"name":"Ici Paris","status":"review"},{"name":"France Dimanche","status":"review"},{"name":"Gentside","status":"review"},{"name":"Oh My Mag","status":"review"},{"name":"Rassemblement national","status":"review"},{"name":"Marine Le Pen","status":"consider"},{"name":"Jordan Bardella","status":"consider"},{"name":"Rassemblement National de la Jeunesse","status":"review"},{"name":"Louis Aliot","status":"consider"},{"name":"Sébastien Chenu","status":"consider"},{"name":"Julien Odoul","status":"consider"},{"name":"Jean-Philippe Tanguy","status":"consider"},{"name":"Laure Lavalette","status":"consider"},{"name":"Caroline Parmentier","status":"consider"},{"name":"Reconquête","status":"review"},{"name":"Éric Zemmour","status":"consider"},{"name":"Sarah Knafo","status":"consider"},{"name":"Identité Libertés","status":"review"},{"name":"Marion Maréchal","status":"consider"},{"name":"Les Patriotes","status":"review"},{"name":"Florian Philippot","status":"review"},{"name":"Action française","status":"review"},{"name":"Valeurs actuelles","status":"review"},{"name":"Fdesouche","status":"review"},{"name":"Boulevard Voltaire","status":"review"},{"name":"TV Libertés","status":"review"},{"name":"Radio Courtoisie","status":"review"},{"name":"Causeur","status":"review"},{"name":"Collectif Némésis","status":"requested"},{"name":"Alice Cordier","status":"requested"},{"name":"Égalité et Réconciliation","status":"requested"},{"name":"Franck Allisio","status":"consider"},{"name":"Maxime Amblard","status":"consider"},{"name":"Bénédicte Auzanot","status":"consider"},{"name":"Philippe Ballard","status":"consider"},{"name":"Anchya Bamana","status":"consider"},{"name":"Romain Baubry","status":"consider"},{"name":"José Beaurain","status":"consider"},{"name":"Christophe Bentz","status":"consider"},{"name":"Théo Bernhardt","status":"consider"},{"name":"Guillaume Bigot","status":"consider"},{"name":"Bruno Bilde","status":"consider"},{"name":"Emmanuel Blairy","status":"consider"},{"name":"Sophie Blanc","status":"consider"},{"name":"Frédéric Boccaletti","status":"consider"},{"name":"Anthony Boulogne","status":"consider"},{"name":"Jorys Bovet","status":"consider"},{"name":"Jérôme Buisson","status":"consider"},{"name":"Eddy Casterman","status":"consider"},{"name":"Bernard Chaumeil","status":"consider"},{"name":"Roger Chudeau","status":"consider"},{"name":"Bruno Clavet","status":"consider"},{"name":"Caroline Colombier","status":"consider"},{"name":"Nathalie Da Conceicao Carvalho","status":"consider"},{"name":"Catherine Dellong Meng","status":"consider"},{"name":"Jocelyn Dessigny","status":"consider"},{"name":"Sandrine Dogor-Such","status":"consider"},{"name":"Nicolas Dragon","status":"consider"},{"name":"Alexandre Dufosset","status":"consider"},{"name":"Gaëtan Dussausaye","status":"consider"},{"name":"Aurélien Dutremble","status":"consider"},{"name":"Auguste Evrard","status":"consider"},{"name":"Frédéric Falcon","status":"consider"},{"name":"Muriel Fiol","status":"consider"},{"name":"Marc de Fleurian","status":"consider"},{"name":"Guillaume Florquin","status":"consider"},{"name":"Emmanuel Fouquart","status":"consider"},{"name":"Thierry Frappé","status":"consider"},{"name":"Julien Gabarron","status":"consider"},{"name":"Stéphanie Galzy","status":"consider"},{"name":"Laurence Gardet","status":"consider"},{"name":"Jonathan Gery","status":"consider"},{"name":"Benoît Gilhet","status":"consider"},{"name":"Yoann Gillet","status":"consider"},{"name":"Christian Girard","status":"consider"},{"name":"Antoine Golliot","status":"consider"},{"name":"José Gonzalez","status":"consider"},{"name":"Florence Goulet","status":"consider"},{"name":"Géraldine Grangier","status":"consider"},{"name":"Monique Griseti","status":"consider"},{"name":"Julien Guibert","status":"consider"},{"name":"Michel Guiniot","status":"consider"},{"name":"Jordan Guitton","status":"consider"},{"name":"Marine Hamelet","status":"consider"},{"name":"Timothée Houssin","status":"consider"},{"name":"Sébastien Humbert","status":"consider"},{"name":"Laurent Jacobelli","status":"consider"},{"name":"Pascal Jenft","status":"consider"},{"name":"Alexis Jolly","status":"consider"},{"name":"Tiffany Joncour","status":"consider"},{"name":"Édouard Jordan","status":"consider"},{"name":"Florence Joubert","status":"consider"},{"name":"Hélène Laporte","status":"consider"},{"name":"Robert Le Bourgeois","status":"consider"},{"name":"Julie Lechanteux","status":"consider"},{"name":"Nadine Lechon","status":"consider"},{"name":"Gisèle Lelouis","status":"consider"},{"name":"Hervé de Lépinau","status":"consider"},{"name":"Katiana Levavasseur","status":"consider"},{"name":"Julien Limongi","status":"consider"},{"name":"René Lioret","status":"consider"},{"name":"Christine Loir","status":"consider"},{"name":"Marie-France Lorho","status":"consider"},{"name":"Philippe Lottiaux","status":"consider"},{"name":"Alexandre Loubet","status":"consider"},{"name":"David Magnier","status":"consider"},{"name":"Claire Marais-Beuil","status":"consider"},{"name":"Matthieu Marchio","status":"consider"},{"name":"Pascal Markowsky","status":"consider"},{"name":"Patrice Martin","status":"consider"},{"name":"Michèle Martinez","status":"consider"},{"name":"Kévin Mauvieux","status":"consider"},{"name":"Nicolas Meizonnet","status":"consider"},{"name":"Joëlle Mélin","status":"consider"},{"name":"Yaël Ménaché","status":"consider"},{"name":"Thomas Ménagé","status":"consider"},{"name":"Pierre Meurin","status":"consider"},{"name":"Thibaut Monnier","status":"consider"},{"name":"Serge Muller","status":"consider"},{"name":"Thierry Perez","status":"consider"},{"name":"Kévin Pfeffer","status":"consider"},{"name":"Lisette Pollet","status":"consider"},{"name":"Stéphane Rambaud","status":"consider"},{"name":"Angélique Ranc","status":"consider"},{"name":"Julien Rancoule","status":"consider"},{"name":"Matthias Renault","status":"consider"},{"name":"Catherine Rimbert","status":"consider"},{"name":"Joseph Rivière","status":"consider"},{"name":"Laurence Robert-Dehault","status":"consider"},{"name":"Béatrice Roullaud","status":"consider"},{"name":"Sophie-Laurence Roy","status":"consider"},{"name":"Anaïs Sabatini","status":"consider"},{"name":"Alexandre Sabatou","status":"consider"},{"name":"Emeric Salmon","status":"consider"},{"name":"Philippe Schreck","status":"consider"},{"name":"Anne Sicard","status":"consider"},{"name":"Emmanuel Taché","status":"consider"},{"name":"Michaël Taverne","status":"consider"},{"name":"Thierry Tesson","status":"consider"},{"name":"Lionel Tivoli","status":"consider"},{"name":"Gabriel Tomatis","status":"consider"},{"name":"Romain Tonussi","status":"consider"},{"name":"Cyril Tribuiani","status":"consider"},{"name":"Antoine Villedieu","status":"consider"},{"name":"Frédéric-Pierre Vos","status":"consider"},{"name":"Frédéric Weber","status":"consider"},{"name":"Mathilde Androuët","status":"consider"},{"name":"Eléonore Bez","status":"consider"},{"name":"Manon Bouquin","status":"consider"},{"name":"Wallerand de Saint Just","status":"consider"},{"name":"Edwige Diaz","status":"consider"},{"name":"Thibaut François","status":"consider"},{"name":"Charles-Henri Gallois","status":"consider"},{"name":"Jean-Paul Garraud","status":"consider"},{"name":"Audrey Guibert","status":"consider"},{"name":"Andréa Kotarac","status":"consider"},{"name":"Jean-Lin Lacapelle","status":"consider"},{"name":"Alexandra Masson","status":"consider"},{"name":"Aleksandar Nikolic","status":"consider"},{"name":"Philippe Olivier","status":"consider"},{"name":"Ludovic Pajot","status":"consider"},{"name":"François Paradol","status":"consider"},{"name":"Gilles Pennelle","status":"consider"},{"name":"Julie Rechagneux","status":"consider"},{"name":"Julien Sanchez","status":"consider"},{"name":"Christopher Szczurek","status":"consider"},{"name":"Pierre-Romain Thionnet","status":"consider"},{"name":"Rody Tolassy","status":"consider"},{"name":"Matthieu Valet","status":"consider"},{"name":"Emma Vallain","status":"consider"},{"name":"Éric Ciotti","status":"consider"},{"name":"Alexandre Allegret-Pilot","status":"consider"},{"name":"Charles Alloncle","status":"consider"},{"name":"Matthieu Bloch","status":"consider"},{"name":"Pierre-Henri Carbonnel","status":"consider"},{"name":"Bernard Chaix","status":"consider"},{"name":"Marc Chavent","status":"consider"},{"name":"Christelle D’Intorni","status":"consider"},{"name":"Olivier Fayssat","status":"consider"},{"name":"Bartolomé Lenoir","status":"consider"},{"name":"Hanane Mansouri","status":"consider"},{"name":"Maxime Michelet","status":"consider"},{"name":"Éric Michoux","status":"consider"},{"name":"Sophie Ricourt Vaginay","status":"consider"},{"name":"Vincent Trébuchet","status":"consider"},{"name":"Antoine Valentin","status":"consider"},{"name":"Gérault Verny","status":"consider"},{"name":"Laurence Trochu","status":"consider"},{"name":"Gilbert Payet","status":"consider"},{"name":"Samuel Lafont","status":"consider"},{"name":"Thomas Culerrier","status":"consider"},{"name":"Hilaire Bouyé","status":"consider"},{"name":"Éléonore Lhéritier","status":"consider"},{"name":"Sophie Calvel","status":"consider"},{"name":"Mondane Langlois","status":"consider"},{"name":"Diane Ouvry","status":"consider"},{"name":"Matthieu Louves","status":"consider"},{"name":"Johanna Humphrey","status":"consider"},{"name":"Xavier Fourboul","status":"consider"},{"name":"Pierre-Yves Thomas","status":"consider"},{"name":"Isabelle Lamarque","status":"consider"},{"name":"Marie-Pierre Cesari","status":"consider"},{"name":"Julien Sene","status":"consider"},{"name":"Olivier Le Coq","status":"consider"},{"name":"Virginie Bonthoux","status":"consider"},{"name":"Romain Gresle","status":"consider"},{"name":"Laurent Chomard","status":"consider"},{"name":"Elisabeth de Saint Romain","status":"consider"},{"name":"Stanislas Rigault","status":"review"},{"name":"Damien Rieu","status":"review"},{"name":"Jean Messiha","status":"review"},{"name":"Papacito","status":"review"},{"name":"Thaïs d’Escufon","status":"review"},{"name":"Gilbert Collard","status":"review"},{"name":"Baptiste Marchais","status":"review"},{"name":"Tanguy David","status":"review"},{"name":"Pierre-Édouard Stérin","status":"requested"},{"name":"Arnaud Rérolle","status":"requested"},{"name":"François Durvye","status":"requested"},{"name":"Alexandre Pesey","status":"review"},{"name":"Alban du Rostu","status":"review"},{"name":"Charles Beigbeder","status":"review"},{"name":"Alexandre Avril","status":"review"},{"name":"Philippe de Gestas","status":"review"},{"name":"Stéphane Ravier","status":"review"},{"name":"Claire Geronimi","status":"review"},{"name":"Edward Whalley","status":"review"},{"name":"Périclès","status":"requested"},{"name":"Fonds du bien commun","status":"review"},{"name":"Institut de formation politique (IFP)","status":"review"},{"name":"Politicae","status":"review"},{"name":"Observatoire de l’immigration et de la démographie (OID)","status":"review"},{"name":"L’Incorrect","status":"review"},{"name":"IREF (Institut de recherches économiques et fiscales)","status":"review"},{"name":"Contrepoints","status":"review"},{"name":"Otium Capital","status":"review"},{"name":"Benyamin Netanyahou","status":"requested"},{"name":"Meyer Habib","status":"requested"},{"name":"Donald Trump","status":"requested"},{"name":"Geert Wilders","status":"requested"},{"name":"Santiago Abascal","status":"requested"},{"name":"Viktor Orbán","status":"requested"},{"name":"Javier Milei","status":"requested"},{"name":"Itamar Ben-Gvir","status":"requested"},{"name":"Bezalel Smotrich","status":"requested"},{"name":"Aryeh Deri","status":"requested"},{"name":"Amichai Chikli","status":"requested"},{"name":"Matteo Salvini","status":"review"},{"name":"Likoud","status":"requested"},{"name":"Otzma Yehudit (Pouvoir juif)","status":"requested"},{"name":"Sionisme religieux (Religious Zionism)","status":"requested"},{"name":"Shas","status":"requested"},{"name":"Judaïsme unifié de la Torah (United Torah Judaism)","status":"requested"},{"name":"Mathilda (porte-parole du Collectif Némésis)","status":"review"},{"name":"Léa (porte-parole du Collectif Némésis)","status":"review"},{"name":"Yona (porte-parole du Collectif Némésis)","status":"review"},{"name":"Astrid (porte-parole du Collectif Némésis)","status":"review"},{"name":"Jeunesses identitaires","status":"requested"},{"name":"Une Autre Jeunesse","status":"review"},{"name":"Génération identitaire","status":"consider"},{"name":"Les Identitaires / Bloc identitaire","status":"review"},{"name":"GUD / GUD Paris (Groupe Union Défense)","status":"requested"},{"name":"Jean-Eudes Gannat","status":"requested"},{"name":"L’Alvarium","status":"consider"},{"name":"Mouvement chouan","status":"consider"},{"name":"Rassemblement des étudiants de droite (RED)","status":"review"},{"name":"Comité du 9 mai (C9M)","status":"review"},{"name":"Bordeaux Nationaliste / Bordeaux Nationalistes","status":"review"},{"name":"Paul-Alexandre Martin","status":"review"},{"name":"Ligue Ligérienne","status":"review"},{"name":"Alain Soral","status":"requested"},{"name":"Kontre Kulture","status":"consider"},{"name":"ERFM / Écoute et Respect","status":"consider"},{"name":"Faits & Documents","status":"consider"},{"name":"Au Bon Sens","status":"review"},{"name":"Pierre de Brague","status":"review"},{"name":"Julien Limes","status":"review"},{"name":"Dieudonné M’Bala M’Bala","status":"review"},{"name":"Philippe Péninque","status":"review"},{"name":"Jildaz Mahé O’Chinal","status":"review"},{"name":"Frédéric Chatillon","status":"review"},{"name":"Vincent Lapierre","status":"review"}];
-  const DOMAINS = [{"host":"cnews.fr","label":"CNews"},{"host":"europe1.fr","label":"Europe 1"},{"host":"lejdd.fr","label":"Le Journal du Dimanche"},{"host":"valeursactuelles.com","label":"Valeurs actuelles"},{"host":"fdesouche.com","label":"Fdesouche"},{"host":"bvoltaire.fr","label":"Boulevard Voltaire"},{"host":"tvl.fr","label":"TV Libertés"},{"host":"kontrekulture.com","label":"Kontre Kulture"},{"host":"causeur.fr","label":"Causeur"}];
-  const SKIP_HOSTS = ['localhost', '127.0.0.1', 'janintibo-art.github.io'];
-  const host = location.hostname.toLowerCase().replace(/^www\./, '');
-  if (SKIP_HOSTS.some(d => host===d || host.endsWith('.'+d))) return;
+  const RULES = [{"name":"CNews","group":"Médias et groupes de presse","status":"review"},{"name":"Europe 1","group":"Médias et groupes de presse","status":"review"},{"name":"Le Journal du Dimanche (JDD)","group":"Médias et groupes de presse","status":"review"},{"name":"JDNews","group":"Médias et groupes de presse","status":"review"},{"name":"Frontières","group":"Médias et groupes de presse","status":"requested"},{"name":"L’Infiltré","group":"Médias et groupes de presse","status":"review"},{"name":"Canal+","group":"Médias et groupes de presse","status":"review"},{"name":"CStar","group":"Médias et groupes de presse","status":"review"},{"name":"Europe 2","group":"Médias et groupes de presse","status":"review"},{"name":"RFM","group":"Médias et groupes de presse","status":"review"},{"name":"Télé-Loisirs","group":"Médias et groupes de presse","status":"review"},{"name":"Femme Actuelle","group":"Médias et groupes de presse","status":"review"},{"name":"Voici","group":"Médias et groupes de presse","status":"review"},{"name":"GEO","group":"Médias et groupes de presse","status":"review"},{"name":"Capital","group":"Médias et groupes de presse","status":"review"},{"name":"Ça m’intéresse","group":"Médias et groupes de presse","status":"review"},{"name":"Cuisine Actuelle","group":"Médias et groupes de presse","status":"review"},{"name":"Prima","group":"Médias et groupes de presse","status":"review"},{"name":"Télé 2 semaines","group":"Médias et groupes de presse","status":"review"},{"name":"TV Grandes Chaînes","group":"Médias et groupes de presse","status":"review"},{"name":"Télé Z","group":"Médias et groupes de presse","status":"review"},{"name":"Ici Paris","group":"Médias et groupes de presse","status":"review"},{"name":"France Dimanche","group":"Médias et groupes de presse","status":"review"},{"name":"Gentside","group":"Médias et groupes de presse","status":"review"},{"name":"Oh My Mag","group":"Médias et groupes de presse","status":"review"},{"name":"Rassemblement national","group":"RN et alliés politiques","status":"review"},{"name":"Marine Le Pen","group":"RN et alliés politiques","status":"consider"},{"name":"Jordan Bardella","group":"RN et alliés politiques","status":"consider"},{"name":"Rassemblement National de la Jeunesse","group":"RN et alliés politiques","status":"review"},{"name":"Louis Aliot","group":"RN et alliés politiques","status":"consider"},{"name":"Sébastien Chenu","group":"RN et alliés politiques","status":"consider"},{"name":"Julien Odoul","group":"RN et alliés politiques","status":"consider"},{"name":"Jean-Philippe Tanguy","group":"RN et alliés politiques","status":"consider"},{"name":"Laure Lavalette","group":"RN et alliés politiques","status":"consider"},{"name":"Caroline Parmentier","group":"RN et alliés politiques","status":"consider"},{"name":"Reconquête","group":"Reconquête et autres mouvements","status":"review"},{"name":"Éric Zemmour","group":"Reconquête et autres mouvements","status":"consider"},{"name":"Sarah Knafo","group":"Reconquête et autres mouvements","status":"consider"},{"name":"Identité Libertés","group":"Reconquête et autres mouvements","status":"review"},{"name":"Marion Maréchal","group":"Reconquête et autres mouvements","status":"consider"},{"name":"Les Patriotes","group":"Reconquête et autres mouvements","status":"review"},{"name":"Florian Philippot","group":"Reconquête et autres mouvements","status":"review"},{"name":"Action française","group":"Reconquête et autres mouvements","status":"review"},{"name":"Valeurs actuelles","group":"Médias et groupes de presse","status":"review"},{"name":"Fdesouche","group":"Médias et groupes de presse","status":"review"},{"name":"Boulevard Voltaire","group":"Médias et groupes de presse","status":"review"},{"name":"TV Libertés","group":"Médias et groupes de presse","status":"review"},{"name":"Radio Courtoisie","group":"Médias et groupes de presse","status":"review"},{"name":"Causeur","group":"Médias et groupes de presse","status":"review"},{"name":"Collectif Némésis","group":"Médias et groupes de presse","status":"requested"},{"name":"Alice Cordier","group":"Médias et groupes de presse","status":"requested"},{"name":"Égalité et Réconciliation","group":"Médias et groupes de presse","status":"requested"},{"name":"Franck Allisio","group":"RN et alliés politiques","status":"consider"},{"name":"Maxime Amblard","group":"RN et alliés politiques","status":"consider"},{"name":"Bénédicte Auzanot","group":"RN et alliés politiques","status":"consider"},{"name":"Philippe Ballard","group":"RN et alliés politiques","status":"consider"},{"name":"Anchya Bamana","group":"RN et alliés politiques","status":"consider"},{"name":"Romain Baubry","group":"RN et alliés politiques","status":"consider"},{"name":"José Beaurain","group":"RN et alliés politiques","status":"consider"},{"name":"Christophe Bentz","group":"RN et alliés politiques","status":"consider"},{"name":"Théo Bernhardt","group":"RN et alliés politiques","status":"consider"},{"name":"Guillaume Bigot","group":"RN et alliés politiques","status":"consider"},{"name":"Bruno Bilde","group":"RN et alliés politiques","status":"consider"},{"name":"Emmanuel Blairy","group":"RN et alliés politiques","status":"consider"},{"name":"Sophie Blanc","group":"RN et alliés politiques","status":"consider"},{"name":"Frédéric Boccaletti","group":"RN et alliés politiques","status":"consider"},{"name":"Anthony Boulogne","group":"RN et alliés politiques","status":"consider"},{"name":"Jorys Bovet","group":"RN et alliés politiques","status":"consider"},{"name":"Jérôme Buisson","group":"RN et alliés politiques","status":"consider"},{"name":"Eddy Casterman","group":"RN et alliés politiques","status":"consider"},{"name":"Bernard Chaumeil","group":"RN et alliés politiques","status":"consider"},{"name":"Roger Chudeau","group":"RN et alliés politiques","status":"consider"},{"name":"Bruno Clavet","group":"RN et alliés politiques","status":"consider"},{"name":"Caroline Colombier","group":"RN et alliés politiques","status":"consider"},{"name":"Nathalie Da Conceicao Carvalho","group":"RN et alliés politiques","status":"consider"},{"name":"Catherine Dellong Meng","group":"RN et alliés politiques","status":"consider"},{"name":"Jocelyn Dessigny","group":"RN et alliés politiques","status":"consider"},{"name":"Sandrine Dogor-Such","group":"RN et alliés politiques","status":"consider"},{"name":"Nicolas Dragon","group":"RN et alliés politiques","status":"consider"},{"name":"Alexandre Dufosset","group":"RN et alliés politiques","status":"consider"},{"name":"Gaëtan Dussausaye","group":"RN et alliés politiques","status":"consider"},{"name":"Aurélien Dutremble","group":"RN et alliés politiques","status":"consider"},{"name":"Auguste Evrard","group":"RN et alliés politiques","status":"consider"},{"name":"Frédéric Falcon","group":"RN et alliés politiques","status":"consider"},{"name":"Muriel Fiol","group":"RN et alliés politiques","status":"consider"},{"name":"Marc de Fleurian","group":"RN et alliés politiques","status":"consider"},{"name":"Guillaume Florquin","group":"RN et alliés politiques","status":"consider"},{"name":"Emmanuel Fouquart","group":"RN et alliés politiques","status":"consider"},{"name":"Thierry Frappé","group":"RN et alliés politiques","status":"consider"},{"name":"Julien Gabarron","group":"RN et alliés politiques","status":"consider"},{"name":"Stéphanie Galzy","group":"RN et alliés politiques","status":"consider"},{"name":"Laurence Gardet","group":"RN et alliés politiques","status":"consider"},{"name":"Jonathan Gery","group":"RN et alliés politiques","status":"consider"},{"name":"Benoît Gilhet","group":"RN et alliés politiques","status":"consider"},{"name":"Yoann Gillet","group":"RN et alliés politiques","status":"consider"},{"name":"Christian Girard","group":"RN et alliés politiques","status":"consider"},{"name":"Antoine Golliot","group":"RN et alliés politiques","status":"consider"},{"name":"José Gonzalez","group":"RN et alliés politiques","status":"consider"},{"name":"Florence Goulet","group":"RN et alliés politiques","status":"consider"},{"name":"Géraldine Grangier","group":"RN et alliés politiques","status":"consider"},{"name":"Monique Griseti","group":"RN et alliés politiques","status":"consider"},{"name":"Julien Guibert","group":"RN et alliés politiques","status":"consider"},{"name":"Michel Guiniot","group":"RN et alliés politiques","status":"consider"},{"name":"Jordan Guitton","group":"RN et alliés politiques","status":"consider"},{"name":"Marine Hamelet","group":"RN et alliés politiques","status":"consider"},{"name":"Timothée Houssin","group":"RN et alliés politiques","status":"consider"},{"name":"Sébastien Humbert","group":"RN et alliés politiques","status":"consider"},{"name":"Laurent Jacobelli","group":"RN et alliés politiques","status":"consider"},{"name":"Pascal Jenft","group":"RN et alliés politiques","status":"consider"},{"name":"Alexis Jolly","group":"RN et alliés politiques","status":"consider"},{"name":"Tiffany Joncour","group":"RN et alliés politiques","status":"consider"},{"name":"Édouard Jordan","group":"RN et alliés politiques","status":"consider"},{"name":"Florence Joubert","group":"RN et alliés politiques","status":"consider"},{"name":"Hélène Laporte","group":"RN et alliés politiques","status":"consider"},{"name":"Robert Le Bourgeois","group":"RN et alliés politiques","status":"consider"},{"name":"Julie Lechanteux","group":"RN et alliés politiques","status":"consider"},{"name":"Nadine Lechon","group":"RN et alliés politiques","status":"consider"},{"name":"Gisèle Lelouis","group":"RN et alliés politiques","status":"consider"},{"name":"Hervé de Lépinau","group":"RN et alliés politiques","status":"consider"},{"name":"Katiana Levavasseur","group":"RN et alliés politiques","status":"consider"},{"name":"Julien Limongi","group":"RN et alliés politiques","status":"consider"},{"name":"René Lioret","group":"RN et alliés politiques","status":"consider"},{"name":"Christine Loir","group":"RN et alliés politiques","status":"consider"},{"name":"Marie-France Lorho","group":"RN et alliés politiques","status":"consider"},{"name":"Philippe Lottiaux","group":"RN et alliés politiques","status":"consider"},{"name":"Alexandre Loubet","group":"RN et alliés politiques","status":"consider"},{"name":"David Magnier","group":"RN et alliés politiques","status":"consider"},{"name":"Claire Marais-Beuil","group":"RN et alliés politiques","status":"consider"},{"name":"Matthieu Marchio","group":"RN et alliés politiques","status":"consider"},{"name":"Pascal Markowsky","group":"RN et alliés politiques","status":"consider"},{"name":"Patrice Martin","group":"RN et alliés politiques","status":"consider"},{"name":"Michèle Martinez","group":"RN et alliés politiques","status":"consider"},{"name":"Kévin Mauvieux","group":"RN et alliés politiques","status":"consider"},{"name":"Nicolas Meizonnet","group":"RN et alliés politiques","status":"consider"},{"name":"Joëlle Mélin","group":"RN et alliés politiques","status":"consider"},{"name":"Yaël Ménaché","group":"RN et alliés politiques","status":"consider"},{"name":"Thomas Ménagé","group":"RN et alliés politiques","status":"consider"},{"name":"Pierre Meurin","group":"RN et alliés politiques","status":"consider"},{"name":"Thibaut Monnier","group":"RN et alliés politiques","status":"consider"},{"name":"Serge Muller","group":"RN et alliés politiques","status":"consider"},{"name":"Thierry Perez","group":"RN et alliés politiques","status":"consider"},{"name":"Kévin Pfeffer","group":"RN et alliés politiques","status":"consider"},{"name":"Lisette Pollet","group":"RN et alliés politiques","status":"consider"},{"name":"Stéphane Rambaud","group":"RN et alliés politiques","status":"consider"},{"name":"Angélique Ranc","group":"RN et alliés politiques","status":"consider"},{"name":"Julien Rancoule","group":"RN et alliés politiques","status":"consider"},{"name":"Matthias Renault","group":"RN et alliés politiques","status":"consider"},{"name":"Catherine Rimbert","group":"RN et alliés politiques","status":"consider"},{"name":"Joseph Rivière","group":"RN et alliés politiques","status":"consider"},{"name":"Laurence Robert-Dehault","group":"RN et alliés politiques","status":"consider"},{"name":"Béatrice Roullaud","group":"RN et alliés politiques","status":"consider"},{"name":"Sophie-Laurence Roy","group":"RN et alliés politiques","status":"consider"},{"name":"Anaïs Sabatini","group":"RN et alliés politiques","status":"consider"},{"name":"Alexandre Sabatou","group":"RN et alliés politiques","status":"consider"},{"name":"Emeric Salmon","group":"RN et alliés politiques","status":"consider"},{"name":"Philippe Schreck","group":"RN et alliés politiques","status":"consider"},{"name":"Anne Sicard","group":"RN et alliés politiques","status":"consider"},{"name":"Emmanuel Taché","group":"RN et alliés politiques","status":"consider"},{"name":"Michaël Taverne","group":"RN et alliés politiques","status":"consider"},{"name":"Thierry Tesson","group":"RN et alliés politiques","status":"consider"},{"name":"Lionel Tivoli","group":"RN et alliés politiques","status":"consider"},{"name":"Gabriel Tomatis","group":"RN et alliés politiques","status":"consider"},{"name":"Romain Tonussi","group":"RN et alliés politiques","status":"consider"},{"name":"Cyril Tribuiani","group":"RN et alliés politiques","status":"consider"},{"name":"Antoine Villedieu","group":"RN et alliés politiques","status":"consider"},{"name":"Frédéric-Pierre Vos","group":"RN et alliés politiques","status":"consider"},{"name":"Frédéric Weber","group":"RN et alliés politiques","status":"consider"},{"name":"Mathilde Androuët","group":"RN et alliés politiques","status":"consider"},{"name":"Eléonore Bez","group":"RN et alliés politiques","status":"consider"},{"name":"Manon Bouquin","group":"RN et alliés politiques","status":"consider"},{"name":"Wallerand de Saint Just","group":"RN et alliés politiques","status":"consider"},{"name":"Edwige Diaz","group":"RN et alliés politiques","status":"consider"},{"name":"Thibaut François","group":"RN et alliés politiques","status":"consider"},{"name":"Charles-Henri Gallois","group":"RN et alliés politiques","status":"consider"},{"name":"Jean-Paul Garraud","group":"RN et alliés politiques","status":"consider"},{"name":"Audrey Guibert","group":"RN et alliés politiques","status":"consider"},{"name":"Andréa Kotarac","group":"RN et alliés politiques","status":"consider"},{"name":"Jean-Lin Lacapelle","group":"RN et alliés politiques","status":"consider"},{"name":"Alexandra Masson","group":"RN et alliés politiques","status":"consider"},{"name":"Aleksandar Nikolic","group":"RN et alliés politiques","status":"consider"},{"name":"Philippe Olivier","group":"RN et alliés politiques","status":"consider"},{"name":"Ludovic Pajot","group":"RN et alliés politiques","status":"consider"},{"name":"François Paradol","group":"RN et alliés politiques","status":"consider"},{"name":"Gilles Pennelle","group":"RN et alliés politiques","status":"consider"},{"name":"Julie Rechagneux","group":"RN et alliés politiques","status":"consider"},{"name":"Julien Sanchez","group":"RN et alliés politiques","status":"consider"},{"name":"Christopher Szczurek","group":"RN et alliés politiques","status":"consider"},{"name":"Pierre-Romain Thionnet","group":"RN et alliés politiques","status":"consider"},{"name":"Rody Tolassy","group":"RN et alliés politiques","status":"consider"},{"name":"Matthieu Valet","group":"RN et alliés politiques","status":"consider"},{"name":"Emma Vallain","group":"RN et alliés politiques","status":"consider"},{"name":"Éric Ciotti","group":"RN et alliés politiques","status":"consider"},{"name":"Alexandre Allegret-Pilot","group":"RN et alliés politiques","status":"consider"},{"name":"Charles Alloncle","group":"RN et alliés politiques","status":"consider"},{"name":"Matthieu Bloch","group":"RN et alliés politiques","status":"consider"},{"name":"Pierre-Henri Carbonnel","group":"RN et alliés politiques","status":"consider"},{"name":"Bernard Chaix","group":"RN et alliés politiques","status":"consider"},{"name":"Marc Chavent","group":"RN et alliés politiques","status":"consider"},{"name":"Christelle D’Intorni","group":"RN et alliés politiques","status":"consider"},{"name":"Olivier Fayssat","group":"RN et alliés politiques","status":"consider"},{"name":"Bartolomé Lenoir","group":"RN et alliés politiques","status":"consider"},{"name":"Hanane Mansouri","group":"RN et alliés politiques","status":"consider"},{"name":"Maxime Michelet","group":"RN et alliés politiques","status":"consider"},{"name":"Éric Michoux","group":"RN et alliés politiques","status":"consider"},{"name":"Sophie Ricourt Vaginay","group":"RN et alliés politiques","status":"consider"},{"name":"Vincent Trébuchet","group":"RN et alliés politiques","status":"consider"},{"name":"Antoine Valentin","group":"RN et alliés politiques","status":"consider"},{"name":"Gérault Verny","group":"RN et alliés politiques","status":"consider"},{"name":"Laurence Trochu","group":"RN et alliés politiques","status":"consider"},{"name":"Gilbert Payet","group":"Reconquête et autres mouvements","status":"consider"},{"name":"Samuel Lafont","group":"Reconquête et autres mouvements","status":"consider"},{"name":"Thomas Culerrier","group":"Reconquête et autres mouvements","status":"consider"},{"name":"Hilaire Bouyé","group":"Reconquête et autres mouvements","status":"consider"},{"name":"Éléonore Lhéritier","group":"Reconquête et autres mouvements","status":"consider"},{"name":"Sophie Calvel","group":"Reconquête et autres mouvements","status":"consider"},{"name":"Mondane Langlois","group":"Reconquête et autres mouvements","status":"consider"},{"name":"Diane Ouvry","group":"Reconquête et autres mouvements","status":"consider"},{"name":"Matthieu Louves","group":"Reconquête et autres mouvements","status":"consider"},{"name":"Johanna Humphrey","group":"Reconquête et autres mouvements","status":"consider"},{"name":"Xavier Fourboul","group":"Reconquête et autres mouvements","status":"consider"},{"name":"Pierre-Yves Thomas","group":"Reconquête et autres mouvements","status":"consider"},{"name":"Isabelle Lamarque","group":"Reconquête et autres mouvements","status":"consider"},{"name":"Marie-Pierre Cesari","group":"Reconquête et autres mouvements","status":"consider"},{"name":"Julien Sene","group":"Reconquête et autres mouvements","status":"consider"},{"name":"Olivier Le Coq","group":"Reconquête et autres mouvements","status":"consider"},{"name":"Virginie Bonthoux","group":"Reconquête et autres mouvements","status":"consider"},{"name":"Romain Gresle","group":"Reconquête et autres mouvements","status":"consider"},{"name":"Laurent Chomard","group":"Reconquête et autres mouvements","status":"consider"},{"name":"Elisabeth de Saint Romain","group":"Reconquête et autres mouvements","status":"consider"},{"name":"Stanislas Rigault","group":"Reconquête et autres mouvements","status":"review"},{"name":"Damien Rieu","group":"Reconquête et autres mouvements","status":"review"},{"name":"Jean Messiha","group":"Reconquête et autres mouvements","status":"review"},{"name":"Papacito","group":"Reconquête et autres mouvements","status":"review"},{"name":"Thaïs d’Escufon","group":"Reconquête et autres mouvements","status":"review"},{"name":"Gilbert Collard","group":"Reconquête et autres mouvements","status":"review"},{"name":"Baptiste Marchais","group":"Reconquête et autres mouvements","status":"review"},{"name":"Tanguy David","group":"Reconquête et autres mouvements","status":"review"},{"name":"Pierre-Édouard Stérin","group":"Réseau et initiatives liés à P.-É. Stérin","status":"requested"},{"name":"Arnaud Rérolle","group":"Réseau et initiatives liés à P.-É. Stérin","status":"requested"},{"name":"François Durvye","group":"Réseau et initiatives liés à P.-É. Stérin","status":"requested"},{"name":"Alexandre Pesey","group":"Réseau et initiatives liés à P.-É. Stérin","status":"review"},{"name":"Alban du Rostu","group":"Réseau et initiatives liés à P.-É. Stérin","status":"review"},{"name":"Charles Beigbeder","group":"Réseau et initiatives liés à P.-É. Stérin","status":"review"},{"name":"Alexandre Avril","group":"Réseau et initiatives liés à P.-É. Stérin","status":"review"},{"name":"Philippe de Gestas","group":"Réseau et initiatives liés à P.-É. Stérin","status":"review"},{"name":"Stéphane Ravier","group":"Réseau et initiatives liés à P.-É. Stérin","status":"review"},{"name":"Claire Geronimi","group":"Réseau et initiatives liés à P.-É. Stérin","status":"review"},{"name":"Edward Whalley","group":"Réseau et initiatives liés à P.-É. Stérin","status":"review"},{"name":"Périclès","group":"Réseau et initiatives liés à P.-É. Stérin","status":"requested"},{"name":"Fonds du bien commun","group":"Réseau et initiatives liés à P.-É. Stérin","status":"review"},{"name":"Institut de formation politique (IFP)","group":"Réseau et initiatives liés à P.-É. Stérin","status":"review"},{"name":"Politicae","group":"Réseau et initiatives liés à P.-É. Stérin","status":"review"},{"name":"Observatoire de l’immigration et de la démographie (OID)","group":"Réseau et initiatives liés à P.-É. Stérin","status":"review"},{"name":"L’Incorrect","group":"Réseau et initiatives liés à P.-É. Stérin","status":"review"},{"name":"IREF (Institut de recherches économiques et fiscales)","group":"Réseau et initiatives liés à P.-É. Stérin","status":"review"},{"name":"Contrepoints","group":"Réseau et initiatives liés à P.-É. Stérin","status":"review"},{"name":"Otium Capital","group":"Réseau et initiatives liés à P.-É. Stérin","status":"review"},{"name":"Benyamin Netanyahou","group":"Alliances et soutiens à B. Netanyahou","status":"requested"},{"name":"Meyer Habib","group":"Alliances et soutiens à B. Netanyahou","status":"requested"},{"name":"Donald Trump","group":"Alliances et soutiens à B. Netanyahou","status":"requested"},{"name":"Geert Wilders","group":"Alliances et soutiens à B. Netanyahou","status":"requested"},{"name":"Santiago Abascal","group":"Alliances et soutiens à B. Netanyahou","status":"requested"},{"name":"Viktor Orbán","group":"Alliances et soutiens à B. Netanyahou","status":"requested"},{"name":"Javier Milei","group":"Alliances et soutiens à B. Netanyahou","status":"requested"},{"name":"Itamar Ben-Gvir","group":"Alliances et soutiens à B. Netanyahou","status":"requested"},{"name":"Bezalel Smotrich","group":"Alliances et soutiens à B. Netanyahou","status":"requested"},{"name":"Aryeh Deri","group":"Alliances et soutiens à B. Netanyahou","status":"requested"},{"name":"Amichai Chikli","group":"Alliances et soutiens à B. Netanyahou","status":"requested"},{"name":"Matteo Salvini","group":"Alliances et soutiens à B. Netanyahou","status":"review"},{"name":"Likoud","group":"Alliances et soutiens à B. Netanyahou","status":"requested"},{"name":"Otzma Yehudit (Pouvoir juif)","group":"Alliances et soutiens à B. Netanyahou","status":"requested"},{"name":"Sionisme religieux (Religious Zionism)","group":"Alliances et soutiens à B. Netanyahou","status":"requested"},{"name":"Shas","group":"Alliances et soutiens à B. Netanyahou","status":"requested"},{"name":"Judaïsme unifié de la Torah (United Torah Judaism)","group":"Alliances et soutiens à B. Netanyahou","status":"requested"},{"name":"Mathilda (porte-parole du Collectif Némésis)","group":"Collectif Némésis","status":"review"},{"name":"Léa (porte-parole du Collectif Némésis)","group":"Collectif Némésis","status":"review"},{"name":"Yona (porte-parole du Collectif Némésis)","group":"Collectif Némésis","status":"review"},{"name":"Astrid (porte-parole du Collectif Némésis)","group":"Collectif Némésis","status":"review"},{"name":"Jeunesses identitaires","group":"Mouvements identitaires et GUD","status":"requested"},{"name":"Une Autre Jeunesse","group":"Mouvements identitaires et GUD","status":"review"},{"name":"Génération identitaire","group":"Mouvements identitaires et GUD","status":"consider"},{"name":"Les Identitaires / Bloc identitaire","group":"Mouvements identitaires et GUD","status":"review"},{"name":"GUD / GUD Paris (Groupe Union Défense)","group":"Mouvements identitaires et GUD","status":"requested"},{"name":"Jean-Eudes Gannat","group":"Réseau public de Jean-Eudes Gannat","status":"requested"},{"name":"L’Alvarium","group":"Réseau public de Jean-Eudes Gannat","status":"consider"},{"name":"Mouvement chouan","group":"Réseau public de Jean-Eudes Gannat","status":"consider"},{"name":"Rassemblement des étudiants de droite (RED)","group":"Réseau public de Jean-Eudes Gannat","status":"review"},{"name":"Comité du 9 mai (C9M)","group":"Réseau public de Jean-Eudes Gannat","status":"review"},{"name":"Bordeaux Nationaliste / Bordeaux Nationalistes","group":"Réseau public de Jean-Eudes Gannat","status":"review"},{"name":"Paul-Alexandre Martin","group":"Réseau public de Jean-Eudes Gannat","status":"review"},{"name":"Ligue Ligérienne","group":"Réseau public de Jean-Eudes Gannat","status":"review"},{"name":"Alain Soral","group":"Réseau public et ancien entourage de Soral","status":"requested"},{"name":"Kontre Kulture","group":"Réseau public et ancien entourage de Soral","status":"consider"},{"name":"ERFM / Écoute et Respect","group":"Réseau public et ancien entourage de Soral","status":"consider"},{"name":"Faits & Documents","group":"Réseau public et ancien entourage de Soral","status":"consider"},{"name":"Au Bon Sens","group":"Réseau public et ancien entourage de Soral","status":"review"},{"name":"Pierre de Brague","group":"Réseau public et ancien entourage de Soral","status":"review"},{"name":"Julien Limes","group":"Réseau public et ancien entourage de Soral","status":"review"},{"name":"Dieudonné M’Bala M’Bala","group":"Réseau public et ancien entourage de Soral","status":"review"},{"name":"Philippe Péninque","group":"Réseau public et ancien entourage de Soral","status":"review"},{"name":"Jildaz Mahé O’Chinal","group":"Réseau public et ancien entourage de Soral","status":"review"},{"name":"Frédéric Chatillon","group":"Réseau public et ancien entourage de Soral","status":"review"},{"name":"Vincent Lapierre","group":"Réseau public et ancien entourage de Soral","status":"review"}];
+  const GROUPS = [{"name":"Médias et groupes de presse","count":34},{"name":"RN et alliés politiques","count":167},{"name":"Reconquête et autres mouvements","count":36},{"name":"Réseau et initiatives liés à P.-É. Stérin","count":20},{"name":"Alliances et soutiens à B. Netanyahou","count":17},{"name":"Collectif Némésis","count":4},{"name":"Mouvements identitaires et GUD","count":5},{"name":"Réseau public de Jean-Eudes Gannat","count":8},{"name":"Réseau public et ancien entourage de Soral","count":12}];
+  const DOMAINS = [{"host":"cnews.fr","label":"CNews","group":"Médias et groupes de presse"},{"host":"europe1.fr","label":"Europe 1","group":"Médias et groupes de presse"},{"host":"lejdd.fr","label":"Le Journal du Dimanche","group":"Médias et groupes de presse"},{"host":"valeursactuelles.com","label":"Valeurs actuelles","group":"Médias et groupes de presse"},{"host":"fdesouche.com","label":"Fdesouche","group":"Médias et groupes de presse"},{"host":"bvoltaire.fr","label":"Boulevard Voltaire","group":"Médias et groupes de presse"},{"host":"tvl.fr","label":"TV Libertés","group":"Médias et groupes de presse"},{"host":"kontrekulture.com","label":"Kontre Kulture","group":"Réseau public et ancien entourage de Soral"},{"host":"causeur.fr","label":"Causeur","group":"Médias et groupes de presse"}];
+  const KEY='mfm_filter_web_v2_';
+  const newKey=KEY+'groups_v3';
+  const host=location.hostname.toLowerCase().replace(/^www\./,'');
+  const skip=['localhost','127.0.0.1','janintibo-art.github.io'];
+  if(skip.some(s=>host===s||host.endsWith('.'+s)))return;
+  let enabled=Boolean(GM_getValue(KEY+'enabled',true));
+  let domainsEnabled=Boolean(GM_getValue(KEY+'domains',true));
+  let revealOnce=false;
+  let revealDomainOnce=false;
+  let scheduled=false;
+  let working=false;
+  let hiddenCount=0;
+  const hidden=new Set();
+  const savedGroups=(()=>{try{return JSON.parse(String(GM_getValue(newKey,'{}')))}catch{return {}}})();
+  const activeGroups={};
+  for(const {name} of GROUPS)activeGroups[name]=savedGroups[name]!==false;
 
-  const key = 'mfm_filter_web_v2_';
-  let enabled = Boolean(GM_getValue(key+'enabled', true));
-  let mode = String(GM_getValue(key+'mode', 'all')); // all=303 entrées, requested=demandes explicites
-  let domainsEnabled = Boolean(GM_getValue(key+'domains', true));
-  let revealOnce = false;
-  let domainRevealOnce = false;
-  let hiddenCount = 0;
-  let scheduled = false;
-  let observed = false;
-  let scanning = false;
-  const seen = new WeakSet();
-  const hidden = new Set();
-  const MAX_TEXT = 1800;
-
-  function normalize(v) {
-    return String(v ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase().replace(/[’‘']/g, ' ').replace(/[^\p{L}\p{N}]+/gu, ' ').replace(/\s+/g, ' ').trim();
-  }
-  const ALIASES = {
-    'GUD / GUD Paris (Groupe Union Défense)': ['GUD Paris','Groupe Union Défense'],
-    'Le Journal du Dimanche (JDD)': ['Journal du Dimanche'],
-    'Otzma Yehudit (Pouvoir juif)': ['Otzma Yehudit'],
-    'Sionisme religieux (Religious Zionism)': ['Religious Zionism'],
-    'Collectif Némésis': ['Collectif Nemesis'],
-    'Rassemblement des étudiants de droite (RED)': ['Rassemblement des étudiants de droite'],
+  // Special aliases only for distinctive complete names. Avoid filtering generic acronyms.
+  const ALIASES={
+    'Le Journal du Dimanche (JDD)':['Journal du Dimanche','Le JDD'],
+    'GUD / GUD Paris (Groupe Union Défense)':['GUD Paris','Groupe Union Défense'],
+    'Collectif Némésis':['Collectif Nemesis'],
+    'Rassemblement des étudiants de droite (RED)':['Rassemblement des étudiants de droite'],
+    'Sionisme religieux (Religious Zionism)':['Religious Zionism'],
+    'Otzma Yehudit (Pouvoir juif)':['Otzma Yehudit']
   };
-  function prepare() {
-    return RULES.filter(r => (mode==='all' || r.status==='requested'))
-      .flatMap(r => [r.name,...(ALIASES[r.name]||[])].map(name=>({name:r.name,term:normalize(name)})))
-      // Avoid matching short generic words, common acronyms and first names.
-      .filter(r => r.term.length>=5 && (r.term.includes(' ') || r.term.length>=7 || r.term==='cnews'))
-      .sort((a,b)=>b.term.length-a.term.length);
+  const normalize=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .toLowerCase().replace(/[’‘']/g,' ').replace(/[^\p{L}\p{N}]+/gu,' ').replace(/\s+/g,' ').trim();
+  let terms=[];
+  function refreshTerms(){
+    terms=[];
+    for(const r of RULES){
+      if(!activeGroups[r.group])continue;
+      for(const name of [r.name,...(ALIASES[r.name]||[])]){
+        const term=normalize(name);
+        if(term.length>=5 && (term.includes(' ')||term.length>=7||term==='cnews'))
+          terms.push({term,name:r.name});
+      }
+    }
+    terms.sort((a,b)=>b.term.length-a.term.length);
   }
-  let TERMS = prepare();
-  function findName(text) {
-    const n=' '+normalize(String(text||'').slice(0,MAX_TEXT))+' ';
-    if (n.length<8) return '';
-    for (const r of TERMS) {
-      if (!n.includes(' '+r.term+' ')) continue;
-      // "frontières" is an ordinary French noun: require a capitalized media name.
-      if(r.name==='Frontières' && !/(?:^|[^\p{L}])Frontières(?![\p{L}])/u.test(text))continue;
+  refreshTerms();
+  // Short distinctive brands/acronyms must match the original capitalization exactly.
+  // This keeps terms such as GEO or RFM without filtering ordinary lowercase words.
+  const SHORT_FORMS={
+    'RFM':'RFM','GEO':'GEO','CStar':'CStar',
+    'Le Journal du Dimanche (JDD)':'JDD',
+    'GUD / GUD Paris (Groupe Union Défense)':'GUD',
+    'Shas':'Shas'
+  };
+  const shortMatches=Object.entries(SHORT_FORMS).map(([name,short])=>({
+    name,short,group:RULES.find(r=>r.name===name)?.group,
+    re:new RegExp('(?:^|[^\\p{L}\\p{N}])'+short+'(?=$|[^\\p{L}\\p{N}])','u')
+  }));
+  function matchName(txt){
+    if(!txt)return '';
+    const original=String(txt).slice(0,2300);
+    const n=' '+normalize(original)+' ';
+    for(const r of terms){
+      if(!n.includes(' '+r.term+' '))continue;
+      // Common word: require its original publisher capitalization.
+      if(r.name==='Frontières' && !/(?:^|[^\p{L}])Frontières(?![\p{L}])/u.test(original))continue;
       return r.name;
     }
-    // Distinctive all-caps acronym in the original visible content.
-    if (mode==='all'||RULES.some(r=>r.status==='requested'&&r.name.startsWith('GUD /')))
-      if(/(?:^|[^\p{L}\p{N}])GUD(?![\p{L}\p{N}])/u.test(text))return 'GUD / GUD Paris (Groupe Union Défense)';
+    for(const r of shortMatches) {
+      if(r.group && activeGroups[r.group] && r.re.test(original))return r.name;
+    }
     return '';
   }
-  function blockedDomain() {
-    return DOMAINS.find(d => host===d.host || host.endsWith('.'+d.host));
+  function domainRule(h){
+    return DOMAINS.find(d=>activeGroups[d.group] && (h===d.host||h.endsWith('.'+d.host)));
   }
-  function addCSS() {
-    if (document.getElementById('mfm-filter-style')) return;
-    const css=document.createElement('style');css.id='mfm-filter-style';
-    css.textContent='[data-mfm-hidden="1"]{display:none!important}#mfm-screen{position:fixed!important;inset:0!important;z-index:2147483647!important;background:#0a1728!important;color:#fff!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:24px!important;font:16px/1.6 system-ui,sans-serif!important}#mfm-screen .mfm-box{width:min(550px,100%);background:#132d3b;border:1px solid #52717b;border-radius:22px;padding:34px;box-shadow:0 20px 100px #0007}#mfm-screen button{margin:12px 8px 0 0;padding:12px 15px;border:0;border-radius:9px;cursor:pointer;font:600 14px system-ui;background:#d9efb4;color:#102522}#mfm-screen .mfm-muted{background:transparent;border:1px solid #8aa;color:white}';
-    (document.head||document.documentElement).appendChild(css);
+  function matchUrl(href){
+    try{
+      const u=new URL(href,location.href);
+      let h=u.hostname.toLowerCase().replace(/^www\./,'');
+      // Google may link to a destination through /url?q=...
+      if(h==='google.com'||h.endsWith('.google.com')){
+        const dest=u.searchParams.get('q')||u.searchParams.get('url');
+        if(dest)h=new URL(dest).hostname.toLowerCase().replace(/^www\./,'');
+      }
+      const d=domainRule(h);return d ? d.label : '';
+    }catch{return ''}
   }
-  function unhideAll() {
-    hidden.forEach(el=>{try{el.removeAttribute('data-mfm-hidden');el.removeAttribute('data-mfm-name')}catch(e){}});
+  function style(){
+    if(document.getElementById('mfm-style'))return;
+    const el=document.createElement('style');el.id='mfm-style';
+    el.textContent=`
+    [data-mfm-hidden="1"]{display:none!important}
+    #mfm-domain-screen{position:fixed!important;inset:0!important;z-index:2147483643!important;background:#070e1c!important;color:#fff!important;display:grid!important;place-items:center!important;padding:20px!important;font:16px/1.6 system-ui,sans-serif!important}
+    #mfm-domain-screen>div{max-width:580px;background:#132034;border:1px solid #34465d;border-radius:20px;padding:28px;box-shadow:0 20px 70px #0008}
+    #mfm-domain-screen button{background:#fb3155;color:#fff;border:0;border-radius:10px;padding:12px;margin:7px 8px 0 0;font-weight:700;cursor:pointer}
+    #mfm-settings-overlay{position:fixed!important;inset:0!important;z-index:2147483646!important;display:flex!important;align-items:center!important;justify-content:center!important;background:rgba(0,0,0,.79)!important;padding:14px!important;font:15px/1.5 system-ui,sans-serif!important;color:#eef3f9!important}
+    #mfm-settings-overlay *{box-sizing:border-box!important}
+    #mfm-settings-overlay .mfm-dialog{width:min(680px,100%);max-height:min(92vh,880px);overflow:auto;background:linear-gradient(155deg,#151c2b,#0b1625);color:#eef3f9;border:1px solid #415067;border-radius:23px;padding:clamp(18px,3vw,28px);box-shadow:0 20px 90px #000b}
+    #mfm-settings-overlay .mfm-header{display:flex;justify-content:space-between;gap:15px;align-items:flex-start}
+    #mfm-settings-overlay h2{font-size:clamp(22px,4vw,30px)!important;line-height:1.2!important;font-family:system-ui,sans-serif!important;color:#fff!important;margin:4px 0 7px!important}
+    #mfm-settings-overlay p{color:#c9d6e5!important;margin:0 0 18px!important;font-size:14px!important}
+    #mfm-settings-overlay .mfm-groups{display:grid;gap:9px;margin:15px 0!important}
+    #mfm-settings-overlay label{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:14px!important;background:#162338!important;border:1px solid #304159!important;border-radius:12px!important;padding:13px 15px!important;color:#fff!important;font:600 15px/1.3 system-ui,sans-serif!important;cursor:pointer!important}
+    #mfm-settings-overlay label small{display:block;color:#acbbce;font:12px/1.3 system-ui,sans-serif;margin-top:3px}
+    #mfm-settings-overlay input[type=checkbox]{height:24px!important;width:24px!important;accent-color:#ff3559!important;flex:0 0 auto!important;cursor:pointer!important}
+    #mfm-settings-overlay button{font:700 14px system-ui,sans-serif!important;border-radius:11px!important;min-height:40px!important;padding:9px 14px!important;cursor:pointer!important;border:1px solid #5e6e83!important;background:#1a2a3e!important;color:#fff!important}
+    #mfm-settings-overlay button.mfm-primary{border-color:#ff3559!important;background:#ff3559!important;color:#fff!important}
+    #mfm-settings-overlay .mfm-actions{display:flex!important;flex-wrap:wrap!important;gap:8px!important;margin-top:20px!important}
+    #mfm-settings-overlay .mfm-note{font-size:12px!important;line-height:1.55!important;border-top:1px solid #35445a!important;padding-top:12px!important;margin-top:15px!important}
+    `;
+    (document.head||document.documentElement).appendChild(el);
+  }
+  function restore(){
+    for(const el of hidden){try{el.removeAttribute('data-mfm-hidden');el.removeAttribute('data-mfm-name')}catch{}}
     hidden.clear();hiddenCount=0;
-    document.getElementById('mfm-screen')?.remove();
+    document.getElementById('mfm-domain-screen')?.remove();
   }
-  function menu() {
-    GM_registerMenuCommand(enabled?'⏸ Désactiver le filtre':'▶ Activer le filtre', ()=>{
-      enabled=!enabled;GM_setValue(key+'enabled',enabled);
-      if (!enabled) unhideAll(); else {seenReset();scan(true)}
-      alert('Mon fil, mes choix : '+(enabled?'filtre activé. Rechargez la page pour appliquer tous les réglages.':'filtre désactivé.'));
-    });
-    GM_registerMenuCommand(mode==='all'?'🛡 Mode : liste complète (303) → blocages demandés':'🛡 Mode : blocages demandés → liste complète', ()=>{
-      mode=mode==='all'?'requested':'all';GM_setValue(key+'mode',mode);TERMS=prepare();
-      unhideAll();seenReset();scan(true);
-      alert('Mode '+(mode==='all'?'liste complète':'demandes explicites')+'. Rechargez la page si nécessaire.');
-    });
-    GM_registerMenuCommand(domainsEnabled?'🌐 Désactiver le masquage des domaines':'🌐 Activer le masquage des domaines',()=>{
-      domainsEnabled=!domainsEnabled;GM_setValue(key+'domains',domainsEnabled);
-      document.getElementById('mfm-screen')?.remove();scan(true);
-      alert('Blocage de domaines '+(domainsEnabled?'activé':'désactivé')+'.');
-    });
-    GM_registerMenuCommand('👁 Afficher tout sur cette page (jusqu’au rechargement)',()=>{
-      revealOnce=true;domainRevealOnce=true;unhideAll();
-    });
-    GM_registerMenuCommand('ℹ Aide et compteurs',()=>alert('Mon fil, mes choix\n'+RULES.length+' entrées. '+TERMS.length+' règles textuelles utilisables.\n'+DOMAINS.length+' domaines.\n'+hiddenCount+' éléments masqués sur cette page.\nAucun compte n’est bloqué sur les plateformes.'));
-  }
-  function seenReset() { // Existing WeakSet cannot be cleared; tracked elements are enough for rescan.
+  function apply(){
+    GM_setValue(newKey,JSON.stringify(activeGroups));
+    refreshTerms();restore();
     document.querySelectorAll('[data-mfm-scanned]').forEach(e=>e.removeAttribute('data-mfm-scanned'));
+    scan(true);
   }
-  function showBlockedDomain(domain){
-    if (!document.body || document.getElementById('mfm-screen')) return;
-    const wrap=document.createElement('div');wrap.id='mfm-screen';
-    const panel=document.createElement('div');panel.className='mfm-box';
-    const title=document.createElement('h1');title.textContent='Site masqué';title.style.cssText='color:#d9efb4;font-size:34px;margin:0 0 8px';
-    const p=document.createElement('p');p.textContent='« '+domain.label+' » fait partie de votre liste personnelle de domaines à masquer. Vous pouvez afficher ce site une fois ou désactiver cette protection.';
-    const note=document.createElement('p');note.textContent='Ce filtre agit uniquement dans votre navigateur, pas sur Internet ni sur votre compte.';note.style.cssText='color:#bdcbd4;font-size:13px';
-    const open=document.createElement('button');open.type='button';open.textContent='Afficher ce site une fois';open.addEventListener('click',()=>{domainRevealOnce=true;wrap.remove();scan(true)});
-    const off=document.createElement('button');off.type='button';off.className='mfm-muted';off.textContent='Désactiver le blocage des domaines';off.addEventListener('click',()=>{domainsEnabled=false;GM_setValue(key+'domains',false);wrap.remove();scan(true)});
-    panel.append(title,p,note,open,off);wrap.appendChild(panel);document.body.appendChild(wrap);
+  function openSettings(){
+    if(document.getElementById('mfm-settings-overlay'))return;
+    style();
+    const overlay=document.createElement('div');overlay.id='mfm-settings-overlay';
+    const dialog=document.createElement('section');dialog.className='mfm-dialog';
+    dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');dialog.setAttribute('aria-label','Choisir les groupes à filtrer');
+    const header=document.createElement('div');header.className='mfm-header';
+    const heading=document.createElement('div');
+    heading.innerHTML='<div style="color:#ff93a6;font-size:12px;font-weight:800;letter-spacing:.12em">MON FIL, MES CHOIX</div><h2>Choisir les groupes</h2>';
+    const close=button('✕',()=>overlay.remove());close.setAttribute('aria-label','Fermer le panneau');
+    header.append(heading,close);
+    const intro=document.createElement('p');intro.textContent='Activez ou désactivez chaque groupe. Les choix sont enregistrés sur cet appareil et s’appliquent immédiatement.';
+    const summary=document.createElement('p');summary.style.fontWeight='700';
+    const list=document.createElement('div');list.className='mfm-groups';
+    const inputs=[];
+    function updateSummary(){
+      const groupsOn=GROUPS.filter(g=>activeGroups[g.name]);
+      const n=groupsOn.reduce((s,g)=>s+g.count,0);
+      summary.textContent=`${groupsOn.length} groupe(s) actif(s) sur ${GROUPS.length} · ${n} entrée(s) sur ${RULES.length}`;
+    }
+    for(const g of GROUPS){
+      const label=document.createElement('label');
+      const names=document.createElement('span');names.textContent=g.name;
+      const small=document.createElement('small');small.textContent=`${g.count} entrée(s)`;names.appendChild(small);
+      const input=document.createElement('input');input.type='checkbox';input.checked=activeGroups[g.name];
+      input.setAttribute('aria-label','Filtrer '+g.name);
+      input.addEventListener('change',()=>{activeGroups[g.name]=input.checked;apply();updateSummary()});
+      inputs.push(input);label.append(names,input);list.appendChild(label);
+    }
+    const actions=document.createElement('div');actions.className='mfm-actions';
+    actions.append(button('Tout activer',()=>{for(const g of GROUPS)activeGroups[g.name]=true;inputs.forEach(i=>i.checked=true);apply();updateSummary()}),
+                   button('Tout désactiver',()=>{for(const g of GROUPS)activeGroups[g.name]=false;inputs.forEach(i=>i.checked=false);apply();updateSummary()}),
+                   button('Fermer',()=>overlay.remove(),'mfm-primary'));
+    const note=document.createElement('p');note.className='mfm-note';
+    note.textContent='Un nom dans cette liste est une préférence de filtrage, pas une accusation. Certains résultats peuvent rester visibles selon le site et son navigateur. Utilisez « Afficher tout » en cas de faux positif.';
+    dialog.append(header,intro,summary,list,actions,note);overlay.appendChild(dialog);document.body.appendChild(overlay);
+    overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove()});
+    overlay.addEventListener('keydown',e=>{if(e.key==='Escape')overlay.remove()});
+    close.focus();updateSummary();
   }
-
-  function selectors() {
-    const s=['article','[role="article"]','[data-testid="tweet"]','[data-testid="post-container"]',
-       'ytd-video-renderer','ytd-rich-item-renderer','ytd-compact-video-renderer','ytd-grid-video-renderer',
-       'ytd-reel-item-renderer','yt-lockup-view-model','ytd-comment-thread-renderer',
-       '.post-card','.search-result','.video-card','.news-card','.post-list-item'];
-    if (host.startsWith('www.google.')||host.startsWith('google.')||host.includes('.google.'))
-      s.push('#search .MjjYud','#search .g','#rso .g');
-    if (host==='bing.com' || host.endsWith('.bing.com')) s.push('#b_results li.b_algo');
-    if (host==='duckduckgo.com' || host.endsWith('.duckduckgo.com'))
-      s.push('article[data-testid="result"]','[data-testid="result"]');
-    if (host==='x.com'||host==='twitter.com') s.push('[data-testid="cellInnerDiv"]');
-    if (host.endsWith('.reddit.com')) s.push('shreddit-post','[data-testid="post-container"]');
-    if (host.includes('facebook.com')) s.push('[data-pagelet*="FeedUnit"]');
-    return [...new Set(s)];
+  function button(text,click,cls=''){
+    const b=document.createElement('button');b.type='button';b.textContent=text;
+    if(cls)b.className=cls;b.addEventListener('click',click);return b;
   }
-  const cardSelector=selectors().join(',');
-  function mask(el,match){
-    if (hidden.has(el)) return;
+  function domainScreen(domain){
+    if(!document.body||document.getElementById('mfm-domain-screen')||revealDomainOnce)return;
+    const wrap=document.createElement('div');wrap.id='mfm-domain-screen';
+    const card=document.createElement('div');
+    const title=document.createElement('h2');title.textContent='Site masqué : '+domain.label;
+    const p=document.createElement('p');p.textContent='Ce site figure dans l’un de vos groupes activés. Le masquage est local, réversible et ne modifie pas le site d’origine.';
+    card.append(title,p,button('Afficher ce site une fois',()=>{revealDomainOnce=true;wrap.remove()}),
+      button('Désactiver ce groupe',()=>{activeGroups[domain.group]=false;apply();wrap.remove()}));
+    wrap.appendChild(card);document.body.appendChild(wrap);
+  }
+  function cardSelectors(){
+    const result=['article','[role="article"]','[data-testid="tweet"]','[data-testid="post-container"]',
+      'ytd-video-renderer','ytd-rich-item-renderer','ytd-compact-video-renderer','ytd-grid-video-renderer',
+      'yt-lockup-view-model','ytd-comment-thread-renderer','.post-card','.search-result','.video-card','.news-card','.post-list-item'];
+    if(host==='google.com'||host.endsWith('.google.com')||host.startsWith('google.'))
+      result.push('#search .MjjYud','#rso .g','#search .g','#search .Ww4FFb');
+    if(host==='bing.com'||host.endsWith('.bing.com'))result.push('#b_results li.b_algo');
+    if(host==='duckduckgo.com'||host.endsWith('.duckduckgo.com'))result.push('[data-testid="result"]');
+    if(host==='x.com'||host==='twitter.com')result.push('[data-testid="cellInnerDiv"]');
+    if(host.endsWith('.reddit.com'))result.push('shreddit-post');
+    if(host==='facebook.com'||host.endsWith('.facebook.com'))result.push('[data-pagelet*="FeedUnit"]');
+    return result.join(',');
+  }
+  const selectors=cardSelectors();
+  function hide(el,match){
+    if(!el||hidden.has(el)||el.closest('#mfm-settings-overlay,#mfm-domain-screen,form,[contenteditable="true"]'))return;
     el.setAttribute('data-mfm-hidden','1');el.setAttribute('data-mfm-name',match);
     hidden.add(el);hiddenCount++;
   }
-  function scan(force=false){
-    if (!enabled||revealOnce||!document.body||scanning) return;
-    scanning=true;
-    try {
-      if(domainsEnabled && !domainRevealOnce) {
-        const domain=blockedDomain(); if(domain) {showBlockedDomain(domain);return}
-      }
-      addCSS();
-      // Never hide forms, editable controls, page-level containers or the tool's own overlay.
-      const cards=document.querySelectorAll(cardSelector);
-      let checked=0;
-      for(const el of cards){
-        if(++checked>1400)break;
-        if(el.closest('#mfm-screen,[contenteditable="true"],form'))continue;
-        if(!force && el.hasAttribute('data-mfm-scanned'))continue;
-        const txt=(el.innerText||el.textContent||'').slice(0,MAX_TEXT);
-        el.setAttribute('data-mfm-scanned','1');
-        // Avoid hiding entire timelines / broad wrappers when they aggregate many items.
-        if(txt.length>MAX_TEXT-1)continue;
-        const match=findName(txt);
-        if(match)mask(el,match);
-      }
-      // Links whose visible title matches; never remove site navigation containers.
-      const links=document.querySelectorAll('main a, #search a, #rso a, #b_results a, [role="main"] a');
-      let count=0;
-      for(const a of links){
-        if(++count>600)break;
-        if(a.closest('#mfm-screen,form,[data-mfm-hidden="1"]'))continue;
-        if(!force && a.hasAttribute('data-mfm-scanned'))continue;
-        a.setAttribute('data-mfm-scanned','1');
-        const txt=(a.innerText||a.getAttribute('aria-label')||'').slice(0,200);
-        if(txt.length>190 || txt.length<4)continue;
-        const match=findName(txt);if(match)mask(a,match);
-      }
-    } finally {scanning=false}
+  function candidateText(el){
+    const s=(el.innerText||el.textContent||'').slice(0,2300);
+    if(s.length>2200)return '';
+    return s;
   }
-  function schedule(){if(!enabled||revealOnce||scheduled)return;scheduled=true;setTimeout(()=>{scheduled=false;scan()},650)}
-  addCSS();menu();scan();
-  const ob=new MutationObserver(records=>{
-    if(records.every(r => r.type==='attributes' && r.attributeName?.startsWith('data-mfm-')))return;
+  function googleCardFor(heading){
+    let el=heading;
+    for(let i=0;i<8 && el?.parentElement;i++,el=el.parentElement){
+      if(el.matches?.('.MjjYud,.g,.Ww4FFb,[data-hveid]')){
+        if(el.querySelectorAll('h3').length<=2 && candidateText(el).length<2200)return el;
+      }
+    }
+    let a=heading.closest('a');
+    return a?.parentElement?.parentElement||a||heading;
+  }
+  function scan(force=false){
+    if(!enabled||revealOnce||!document.body||working)return;
+    working=true;
+    try{
+      if(domainsEnabled&&!revealDomainOnce){const d=domainRule(host);if(d){domainScreen(d);return}}
+      style();
+      // Search cards and social posts; never hide broad page wrappers or editable forms.
+      const cards=document.querySelectorAll(selectors);
+      let n=0;
+      for(const el of cards){
+        if(++n>1800)break;
+        if(!force&&el.hasAttribute('data-mfm-scanned'))continue;
+        el.setAttribute('data-mfm-scanned','1');
+        const txt=candidateText(el);
+        if(!txt||el.querySelectorAll('h3').length>3)continue;
+        let match=matchName(txt);
+        if(!match){
+          const links=el.querySelectorAll('a[href]');
+          let m=0;for(const a of links){if(++m>12)break;match=matchUrl(a.href);if(match)break}
+        }
+        if(match)hide(el,match);
+      }
+      // Google results: titles may not be inside the older .g / .MjjYud wrappers.
+      if(host==='google.com'||host.endsWith('.google.com')||host.startsWith('google.')){
+        let hcount=0;
+        for(const h of document.querySelectorAll('#search h3,#rso h3')){
+          if(++hcount>600)break;
+          if(h.closest('[data-mfm-hidden="1"],form'))continue;
+          const link=h.closest('a');
+          const match=matchName(h.innerText||h.textContent)|| (link?matchUrl(link.href):'');
+          if(match)hide(googleCardFor(h),match);
+        }
+      }
+      // Fallback for links on other search engines where the full card is unknown.
+      let count=0;
+      for(const a of document.querySelectorAll('main a[href],#search a[href],#rso a[href],#b_results a[href],[role="main"] a[href]')){
+        if(++count>900)break;
+        if(a.closest('[data-mfm-hidden="1"],#mfm-settings-overlay,#mfm-domain-screen,form'))continue;
+        if(!force&&a.hasAttribute('data-mfm-scanned'))continue;
+        a.setAttribute('data-mfm-scanned','1');
+        const title=(a.innerText||a.getAttribute('aria-label')||'').slice(0,200);
+        let match=matchName(title);
+        if(!match)match=matchUrl(a.href);
+        if(match)hide(a,match);
+      }
+    }finally{working=false}
+  }
+  function schedule(){if(!enabled||revealOnce||scheduled)return;scheduled=true;setTimeout(()=>{scheduled=false;scan()},500)}
+  function menu(){
+    GM_registerMenuCommand('⚙️ Gérer les groupes ('+GROUPS.length+')',openSettings);
+    GM_registerMenuCommand(enabled?'⏸ Désactiver le filtre':'▶ Activer le filtre',()=>{
+      enabled=!enabled;GM_setValue(KEY+'enabled',enabled);
+      if(!enabled)restore();else {revealOnce=false;apply()}
+      alert('Filtre '+(enabled?'activé':'désactivé')+'. Rechargez la page si besoin.');
+    });
+    GM_registerMenuCommand(domainsEnabled?'🌐 Désactiver les domaines':'🌐 Activer les domaines',()=>{
+      domainsEnabled=!domainsEnabled;GM_setValue(KEY+'domains',domainsEnabled);
+      restore();scan(true);
+    });
+    GM_registerMenuCommand('👁 Afficher tout jusqu’au rechargement',()=>{revealOnce=true;revealDomainOnce=true;restore()});
+    GM_registerMenuCommand('ℹ Résumé',()=>{
+      const active=GROUPS.filter(g=>activeGroups[g.name]);
+      alert(`Mon fil, mes choix\n${RULES.length} entrées réparties en ${GROUPS.length} groupes.\n${active.length} groupes actifs (${active.reduce((s,g)=>s+g.count,0)} entrées).\n${hiddenCount} éléments masqués sur cette page.\nAucun compte n’est bloqué côté plateforme.`)
+    });
+  }
+  style();menu();scan();
+  const observer=new MutationObserver(records=>{
+    if(records.every(r=>r.type==='attributes'&&r.attributeName?.startsWith('data-mfm-')))return;
     schedule();
   });
-  ob.observe(document.documentElement,{childList:true,subtree:true,attributes:false});
+  observer.observe(document.documentElement,{childList:true,subtree:true,attributes:false});
   setInterval(()=>{if(enabled&&!revealOnce)scan()},8000);
 })();

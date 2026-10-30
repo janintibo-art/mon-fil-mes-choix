@@ -104,13 +104,13 @@
         </div>
       </div>
       <aside class="panel quick" aria-label="Résumé rapide des étapes">
-        <h2>Résumé en 4 étapes</h2>
+        <h2>Résumé en 5 étapes</h2>
         <p>Suivez toujours cet ordre. Si une étape ne marche pas, passez à la partie dépannage plus bas.</p>
         <ol>
           <li>Installer l’extension Tampermonkey dans le navigateur.</li>
           <li>Autoriser les scripts utilisateur si le navigateur le demande.</li>
           <li>Ouvrir et installer le script « Mon fil, mes choix ».</li>
-          <li>Tester le menu Tampermonkey sur une page Web.</li>
+          <li>Tester le menu Tampermonkey sur une page Web.</li><li>Choisir les groupes à masquer dans « Gérer les groupes ».</li>
         </ol>
       </aside>
     </div>
@@ -180,6 +180,24 @@
         </ul>
       </div>
       <figure class="capture"><img src="./assets/guides/tm-step4.svg" alt="Capture d’écran illustrative du menu Tampermonkey montrant le script activé et plusieurs actions disponibles"><figcaption>Capture 4 · Le script apparaît activé dans le menu Tampermonkey.</figcaption></figure>
+    </section>
+
+
+    <section class="panel step" id="groupes">
+      <div>
+        <div class="step-num">05</div>
+        <h3>Choisir les groupes que vous voulez masquer</h3>
+        <p>La V12 contient <strong>les 303 entrées</strong> de la liste, réparties en <strong>9 groupes indépendants</strong>. Tous les groupes sont actifs lors de la première installation.</p>
+        <ul>
+          <li>Ouvrez le menu de l’extension Tampermonkey sur une page Web ordinaire, par exemple une recherche Google.</li>
+          <li>Choisissez <strong>« ⚙️ Gérer les groupes (9) »</strong> dans le menu du script.</li>
+          <li>Cochez ou décochez les groupes souhaités. Le changement est <strong>immédiatement enregistré</strong>.</li>
+          <li>Utilisez <strong>« Tout activer »</strong> ou <strong>« Tout désactiver »</strong> si vous préférez commencer de zéro.</li>
+          <li>Fermez le panneau, puis rechargez la page si des résultats restent visibles.</li>
+        </ul>
+        <p><strong>Exemple :</strong> si vous désactivez le groupe « Médias et groupes de presse », CNews ne sera plus masqué par notre script. Pour le masquer, réactivez ce groupe.</p>
+      </div>
+      <figure class="capture"><img src="./assets/guides/tm-step5.png" alt="Capture illustrative du panneau Gérer les groupes : neuf interrupteurs et boutons Tout activer et Tout désactiver"><figcaption>Capture 5 · Le panneau réel de sélection des groupes, sur une page de démonstration.</figcaption></figure>
     </section>
 
     <section class="checklist">
