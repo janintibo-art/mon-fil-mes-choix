@@ -75,7 +75,7 @@ public class MainActivity extends Activity {
         if(bold)t.setTypeface(null,Typeface.BOLD);return t;
     }
     private Button button(String label,int bg,int fg){
-        Button b=new Button(this);b.setText(label);b.setTextAllCaps(false);b.setTextSize(15);b.setTextColor(fg);b.setBackground(rounded(bg,14));
+        Button b=new Button(this);b.setText(label);b.setAllCaps(false);b.setTextSize(15);b.setTextColor(fg);b.setBackground(rounded(bg,14));
         LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(50));p.topMargin=dp(10);b.setLayoutParams(p);return b;
     }
     private GradientDrawable rounded(int color, int r) { GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(dp(r));return d; }
