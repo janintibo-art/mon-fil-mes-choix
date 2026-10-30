@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="800" viewBox="0 0 1280 800" role="img" aria-labelledby="title desc">
+<title>Capture d’écran illustrative — utiliser le menu Tampermonkey</title><desc>Menu du script avec les principales actions mises en évidence.</desc>
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#091321"/><stop offset="100%" stop-color="#101a28"/></linearGradient><filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="18" stdDeviation="20" flood-color="#000" flood-opacity="0.28"/></filter></defs>
+<rect width="1280" height="800" fill="url(#bg)"/>
+<text x="86" y="100" fill="#7fffd4" font-family="Arial, sans-serif" font-size="18" font-weight="700">ÉTAPE 4</text>
+<text x="86" y="156" fill="#fff" font-family="Arial, sans-serif" font-size="52" font-weight="800">Tester et utiliser le menu</text>
+<rect x="84" y="206" width="540" height="500" rx="28" fill="#0a1321" stroke="#22344b" filter="url(#shadow)"/>
+<text x="126" y="266" fill="#fff" font-family="Arial, sans-serif" font-size="30" font-weight="800">Menu Tampermonkey</text>
+<rect x="126" y="302" width="456" height="74" rx="18" fill="#112238" stroke="#27405c"/>
+<text x="154" y="344" fill="#fff" font-family="Arial, sans-serif" font-size="28" font-weight="800">Mon fil, mes choix</text>
+<text x="154" y="373" fill="#7fe7c0" font-family="Arial, sans-serif" font-size="20">Activé sur cette page</text>
+<rect x="126" y="406" width="456" height="62" rx="16" fill="#0d1a2b" stroke="#1f3349"/>
+<text x="154" y="444" fill="#dce6ef" font-family="Arial, sans-serif" font-size="24">Mode liste complète</text>
+<rect x="126" y="484" width="456" height="62" rx="16" fill="#0d1a2b" stroke="#1f3349"/>
+<text x="154" y="522" fill="#dce6ef" font-family="Arial, sans-serif" font-size="24">Blocages demandés seulement</text>
+<rect x="126" y="562" width="456" height="62" rx="16" fill="#0d1a2b" stroke="#1f3349"/>
+<text x="154" y="600" fill="#dce6ef" font-family="Arial, sans-serif" font-size="24">Afficher tout sur cette page</text>
+<rect x="126" y="640" width="456" height="62" rx="16" fill="#0d1a2b" stroke="#1f3349"/>
+<text x="154" y="678" fill="#dce6ef" font-family="Arial, sans-serif" font-size="24">Désactiver le script</text>
+<rect x="680" y="232" width="516" height="448" rx="28" fill="#101c2d" stroke="#23364e"/>
+<text x="720" y="296" fill="#ff9fb0" font-family="Arial, sans-serif" font-size="24" font-weight="800">À vérifier</text>
+<text x="720" y="354" fill="#ffffff" font-family="Arial, sans-serif" font-size="28" font-weight="800">1. Le script est marqué « Activé »</text>
+<text x="720" y="410" fill="#dce6ef" font-family="Arial, sans-serif" font-size="24">2. Ouvrez une page Web puis le menu de l’extension.</text>
+<text x="720" y="454" fill="#dce6ef" font-family="Arial, sans-serif" font-size="24">3. Choisissez le mode qui vous convient.</text>
+<text x="720" y="498" fill="#dce6ef" font-family="Arial, sans-serif" font-size="24">4. Utilisez « Afficher tout » pour vérifier les faux positifs.</text>
+<text x="720" y="542" fill="#dce6ef" font-family="Arial, sans-serif" font-size="24">5. Si rien ne se passe, rechargez la page.</text>
+</svg>

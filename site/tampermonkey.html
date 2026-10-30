@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Guide détaillé Tampermonkey avec captures d'écran : installer l'extension, autoriser les scripts, installer le script Mon fil, mes choix et l'utiliser au quotidien.">
+  <meta name="theme-color" content="#0b1524">
+  <link rel="icon" type="image/png" href="./assets/favicon.png">
+  <title>Guide Tampermonkey — Mon fil, mes choix</title>
+  <link rel="stylesheet" href="./assets/v8-theme.css">
+  <style>
+    :root{--tm-red:#ff2d55;--tm-red2:#ff4a5c;--tm-bg:#07111d;--tm-card:#0d1828;--tm-line:#24384d;--tm-text:#e9eef4;--tm-muted:#b9c6d3;--tm-green:#1fd39a;}
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(circle at 15% 0%, rgba(255,45,85,.16), transparent 34%),linear-gradient(160deg,#070f1a,#101522 45%,#0a1320 100%);color:var(--tm-text);font-family:Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;line-height:1.6}
+    a{color:#fff;text-underline-offset:3px}
+    .shell{max-width:1180px;margin:auto;padding:0 22px}
+    .topbar{position:sticky;top:0;z-index:20;background:rgba(7,14,24,.86);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.08)}
+    .topbar-inner{min-height:74px;display:flex;align-items:center;justify-content:space-between;gap:14px}
+    .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:#fff;font-weight:800;font-size:14px}
+    .brand img{width:44px;height:44px;border-radius:14px;box-shadow:0 0 0 1px rgba(255,255,255,.08),0 0 20px rgba(255,45,85,.24)}
+    .nav{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+    .nav a{text-decoration:none;color:#d7dfe9;font-size:13px;font-weight:650}
+    .nav a:hover{color:#fff}
+    .cta{display:inline-flex;align-items:center;gap:8px;text-decoration:none;background:linear-gradient(135deg,var(--tm-red),#ff4e69);color:#fff;border-radius:14px;padding:11px 15px;font-weight:800;font-size:13px;box-shadow:0 14px 36px rgba(255,45,85,.25)}
+    header.hero{padding:42px 0 24px}
+    .eyebrow{display:inline-flex;align-items:center;gap:10px;text-transform:uppercase;font-size:12px;font-weight:800;letter-spacing:.17em;color:#ff9fb0}
+    .eyebrow::before{content:'';width:24px;height:2px;background:#ff6a82;display:inline-block}
+    .hero-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(280px,.95fr);gap:24px;align-items:start}
+    h1{font-size:clamp(2.7rem,7vw,5.3rem);line-height:1.02;letter-spacing:-.05em;margin:16px 0 20px;font-weight:900}
+    h1 span{color:var(--tm-red)}
+    .lead{max-width:760px;color:#d4dce5;font-size:18px;margin:0 0 22px}
+    .hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 18px;border-radius:14px;font-weight:800;text-decoration:none;border:1px solid transparent;transition:.16s ease}
+    .btn:hover{transform:translateY(-1px)}
+    .btn-primary{background:linear-gradient(135deg,var(--tm-red),#ff4e69);color:#fff;box-shadow:0 14px 36px rgba(255,45,85,.25)}
+    .btn-dark{background:rgba(255,255,255,.04);color:#fff;border-color:rgba(255,255,255,.12)}
+    .btn-soft{background:linear-gradient(135deg,#151f30,#18263a);color:#fff;border-color:#2b4057}
+    .hero-note{display:flex;flex-wrap:wrap;gap:12px;color:#c6d1dc;font-size:13px}
+    .hero-note span{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.08)}
+    .panel{background:linear-gradient(180deg,rgba(19,27,43,.96),rgba(10,18,29,.96));border:1px solid rgba(255,255,255,.08);border-radius:22px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+    .quick{padding:26px;display:grid;gap:16px}
+    .quick h2{margin:0;font-size:28px;line-height:1.15}
+    .quick p{margin:0;color:#c8d1dc}
+    .quick ol{margin:0;padding-left:18px;color:#e9eef4;display:grid;gap:8px}
+    main{padding-bottom:52px}
+    .prep{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:26px 0 10px}
+    .prep-card{padding:20px}
+    .prep-card h3{margin:0 0 8px;font-size:19px}
+    .prep-card p{margin:0;color:#c8d2dd;font-size:14px}
+    .section-title{font-size:34px;line-height:1.1;margin:38px 0 8px;font-weight:900;letter-spacing:-.03em}
+    .section-lead{max-width:820px;color:#c5d0dc;margin:0 0 22px}
+    .step{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(320px,.98fr);gap:20px;padding:22px;margin-bottom:18px}
+    .step-num{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:14px;background:rgba(255,45,85,.18);color:#ff94a5;font-weight:900;margin-bottom:14px}
+    .step h3{margin:0 0 8px;font-size:30px;line-height:1.1}
+    .step p{margin:0 0 12px;color:#d7dfe8}
+    .step ul{margin:0;padding-left:18px;color:#d7dfe8;display:grid;gap:8px}
+    .step li strong{color:#fff}
+    figure.capture{margin:0;background:#08111e;border:1px solid var(--tm-line);border-radius:20px;overflow:hidden}
+    figure.capture img{display:block;width:100%;height:auto;background:#050b12}
+    figure.capture figcaption{padding:12px 14px;color:#c4cfdb;font-size:13px;background:rgba(255,255,255,.03)}
+    .faq{display:grid;gap:12px;margin-top:26px}
+    .faq details{padding:18px 20px;border-radius:18px;background:linear-gradient(180deg,#101b2b,#0c1624);border:1px solid rgba(255,255,255,.08)}
+    .faq summary{cursor:pointer;font-weight:800}
+    .faq p{margin:12px 0 0;color:#d4dde7}
+    .warn{padding:18px 20px;border-radius:18px;background:rgba(255,45,85,.10);border:1px solid rgba(255,45,85,.28);color:#ffe8ec;margin-top:22px}
+    .checklist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:24px}
+    .check-card{padding:20px}
+    .check-card h3{margin:0 0 8px}
+    .check-card ul{margin:0;padding-left:18px;display:grid;gap:8px;color:#d8e0ea}
+    footer{padding:32px 0 46px;color:#b8c5d1}
+    @media (max-width: 980px){.hero-grid,.step,.prep,.checklist{grid-template-columns:1fr} .nav{display:none} .cta{display:none}}
+    @media (max-width: 760px){h1{font-size:clamp(2.45rem,13vw,4rem)} .section-title{font-size:28px} .step h3{font-size:25px} .hero-actions{flex-direction:column} .btn{width:100%} .quick{padding:20px} .step{padding:18px} }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="shell topbar-inner">
+      <a class="brand" href="./"><img src="./assets/icone_antifa.png" alt="Logo Mon fil, mes choix"><span>Mon fil, mes choix</span></a>
+      <nav class="nav" aria-label="Navigation principale">
+        <a href="./">Accueil</a>
+        <a href="./#annuaire">La liste</a>
+        <a href="./tampermonkey.html" aria-current="page">Guide Tampermonkey</a>
+        <a href="./dns.html">Applications</a>
+        <a href="./ia.html">Guide IA</a>
+      </nav>
+      <a class="cta" href="./tampermonkey/mon-fil-mes-choix.user.js">Installer le script ↗</a>
+    </div>
+  </div>
+  <header class="hero">
+    <div class="shell hero-grid">
+      <div>
+        <div class="eyebrow">Guide détaillé avec captures</div>
+        <h1>Installer <span>Tampermonkey</span> pas à pas.</h1>
+        <p class="lead">Ce guide a été pensé pour les personnes qui ne connaissent pas encore les scripts utilisateur. Vous y trouverez les étapes dans le bon ordre, des captures d’écran illustratives et des solutions si quelque chose ne fonctionne pas.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="https://www.tampermonkey.net/" target="_blank" rel="noopener noreferrer">1 · Ouvrir le site officiel ↗</a>
+          <a class="btn btn-soft" href="./tampermonkey/mon-fil-mes-choix.user.js">2 · Installer notre script ↗</a>
+          <a class="btn btn-dark" href="#depannage">Dépannage</a>
+        </div>
+        <div class="hero-note">
+          <span>📌 Sans connaissances techniques avancées</span>
+          <span>🖼️ Avec captures d’écran illustratives</span>
+          <span>🔒 Filtrage local dans le navigateur</span>
+        </div>
+      </div>
+      <aside class="panel quick" aria-label="Résumé rapide des étapes">
+        <h2>Résumé en 4 étapes</h2>
+        <p>Suivez toujours cet ordre. Si une étape ne marche pas, passez à la partie dépannage plus bas.</p>
+        <ol>
+          <li>Installer l’extension Tampermonkey dans le navigateur.</li>
+          <li>Autoriser les scripts utilisateur si le navigateur le demande.</li>
+          <li>Ouvrir et installer le script « Mon fil, mes choix ».</li>
+          <li>Tester le menu Tampermonkey sur une page Web.</li>
+        </ol>
+      </aside>
+    </div>
+  </header>
+  <main class="shell">
+    <section class="prep" aria-label="Avant de commencer">
+      <article class="panel prep-card"><h3>Ce qu’il vous faut</h3><p>Un navigateur compatible avec Tampermonkey sur ordinateur. Sur téléphone, la compatibilité dépend du navigateur utilisé.</p></article>
+      <article class="panel prep-card"><h3>À quoi sert le script</h3><p>Le script masque localement des résultats, cartes ou publications sur certains sites compatibles. Il ne supprime rien à la source.</p></article>
+      <article class="panel prep-card"><h3>Important</h3><p>Si un site change de structure, il peut falloir mettre le script à jour. Vous pouvez aussi désactiver le filtre à tout moment.</p></article>
+    </section>
+
+    <h2 class="section-title">Le guide détaillé</h2>
+    <p class="section-lead">Chaque étape ci-dessous montre ce que vous devez faire et ce que vous devriez voir à l’écran. Les captures sont illustratives, pour vous aider à vous repérer plus facilement.</p>
+
+    <section class="panel step" id="etape-1">
+      <div>
+        <div class="step-num">01</div>
+        <h3>Installer l’extension officielle</h3>
+        <p>Commencez toujours par l’extension officielle Tampermonkey. Sans elle, le script ne pourra pas s’installer ni fonctionner.</p>
+        <ul>
+          <li><strong>Ouvrez</strong> le site officiel <a href="https://www.tampermonkey.net/" target="_blank" rel="noopener noreferrer">tampermonkey.net</a>.</li>
+          <li><strong>Choisissez</strong> votre navigateur (Chrome, Edge, Firefox ou un autre navigateur compatible).</li>
+          <li><strong>Validez</strong> l’installation si le navigateur affiche une fenêtre de confirmation.</li>
+        </ul>
+      </div>
+      <figure class="capture"><img src="./assets/guides/tm-step1.svg" alt="Capture d’écran illustrative de la page officielle Tampermonkey avec le bouton d’installation"><figcaption>Capture 1 · Le site officiel Tampermonkey avec le bouton d’ajout au navigateur.</figcaption></figure>
+    </section>
+
+    <section class="panel step" id="etape-2">
+      <div>
+        <div class="step-num">02</div>
+        <h3>Autoriser les scripts utilisateur</h3>
+        <p>Certains navigateurs demandent une autorisation supplémentaire pour que les scripts utilisateur fonctionnent correctement.</p>
+        <ul>
+          <li><strong>Ouvrez</strong> la gestion de l’extension Tampermonkey.</li>
+          <li><strong>Cherchez</strong> l’option « Autoriser les scripts utilisateur ».</li>
+          <li><strong>Activez-la</strong> si elle est visible. Sur certains navigateurs, activez aussi le mode développeur.</li>
+        </ul>
+      </div>
+      <figure class="capture"><img src="./assets/guides/tm-step2.svg" alt="Capture d’écran illustrative des réglages de Tampermonkey avec l’option Autoriser les scripts utilisateur activée"><figcaption>Capture 2 · L’option à activer si votre navigateur la demande.</figcaption></figure>
+    </section>
+
+    <section class="panel step" id="etape-3">
+      <div>
+        <div class="step-num">03</div>
+        <h3>Installer le script Mon fil, mes choix</h3>
+        <p>Une fois l’extension prête, ouvrez notre script. Tampermonkey affichera normalement une page d’installation.</p>
+        <ul>
+          <li><strong>Cliquez</strong> sur ce lien : <a href="./tampermonkey/mon-fil-mes-choix.user.js">installer notre script</a>.</li>
+          <li><strong>Vérifiez</strong> que le nom du script affiché contient bien « Mon fil, mes choix ».</li>
+          <li><strong>Appuyez</strong> sur « Installer ».</li>
+          <li><strong>Si rien ne se passe</strong>, ouvrez le tableau de bord Tampermonkey, créez un script, collez le contenu du fichier, puis enregistrez.</li>
+        </ul>
+      </div>
+      <figure class="capture"><img src="./assets/guides/tm-step3.svg" alt="Capture d’écran illustrative de la page d’installation du script utilisateur avec le bouton Installer"><figcaption>Capture 3 · L’écran d’installation du script dans Tampermonkey.</figcaption></figure>
+    </section>
+
+    <section class="panel step" id="etape-4">
+      <div>
+        <div class="step-num">04</div>
+        <h3>Tester le menu et choisir un mode</h3>
+        <p>Après installation, ouvrez une page Web puis le menu Tampermonkey. Le script doit apparaître comme activé.</p>
+        <ul>
+          <li><strong>Repérez</strong> le script « Mon fil, mes choix » dans le menu.</li>
+          <li><strong>Essayez</strong> les modes proposés : liste complète, blocages demandés seulement, afficher tout, désactiver.</li>
+          <li><strong>Rechargez</strong> la page Web si vous venez tout juste d’installer ou de modifier le script.</li>
+        </ul>
+      </div>
+      <figure class="capture"><img src="./assets/guides/tm-step4.svg" alt="Capture d’écran illustrative du menu Tampermonkey montrant le script activé et plusieurs actions disponibles"><figcaption>Capture 4 · Le script apparaît activé dans le menu Tampermonkey.</figcaption></figure>
+    </section>
+
+    <section class="checklist">
+      <article class="panel check-card"><h3>Tout fonctionne si…</h3><ul><li>L’extension Tampermonkey est visible dans le navigateur.</li><li>Le script « Mon fil, mes choix » apparaît dans son tableau de bord.</li><li>Le menu du script s’ouvre sur une page Web.</li><li>Le rechargement de la page active le masquage local.</li></ul></article>
+      <article class="panel check-card"><h3>À retenir</h3><ul><li>Le filtrage est local : il ne change rien sur les sites eux-mêmes.</li><li>Tous les sites ne sont pas compatibles de la même façon.</li><li>Certains mots trop courts ou trop génériques ne sont pas bloqués pour éviter les erreurs.</li><li>Vous pouvez désactiver le script quand vous voulez.</li></ul></article>
+    </section>
+
+    <div class="warn"><strong>Attention :</strong> un script Tampermonkey peut parfois provoquer des faux positifs. Si une page masque trop de choses, utilisez « Afficher tout sur cette page » ou désactivez temporairement le script pour vérifier.</div>
+
+    <h2 class="section-title" id="depannage">Dépannage rapide</h2>
+    <div class="faq">
+      <details open><summary>Je clique sur le script, mais rien ne s’installe.</summary><p>Vérifiez d’abord que l’extension Tampermonkey est bien installée. Ensuite, retournez sur le lien du script. Si le navigateur l’ouvre comme un simple texte, copiez le contenu dans « Tableau de bord → Créer un script », puis enregistrez.</p></details>
+      <details><summary>Je ne trouve pas l’option « Autoriser les scripts utilisateur ».</summary><p>Selon le navigateur, cette option peut ne pas être visible. Si elle n’apparaît pas, vérifiez le mode développeur ou consultez la documentation officielle de Tampermonkey pour votre navigateur.</p></details>
+      <details><summary>Le script est installé, mais rien ne change sur la page.</summary><p>Rechargez la page Web. Ouvrez ensuite le menu Tampermonkey pour vérifier que le script est activé sur cette page. Certains sites peuvent aussi être moins compatibles que d’autres.</p></details>
+      <details><summary>Je veux revenir en arrière.</summary><p>Vous pouvez désactiver le script depuis le menu Tampermonkey, ou le supprimer complètement depuis le tableau de bord de l’extension.</p></details>
+    </div>
+
+    <section class="panel" style="padding:24px;margin-top:26px">
+      <h2 style="margin:0 0 10px;font-size:28px">Liens utiles</h2>
+      <div class="hero-actions" style="margin-bottom:0">
+        <a class="btn btn-primary" href="https://www.tampermonkey.net/" target="_blank" rel="noopener noreferrer">Site officiel Tampermonkey ↗</a>
+        <a class="btn btn-soft" href="./tampermonkey/mon-fil-mes-choix.user.js">Installer notre script ↗</a>
+        <a class="btn btn-dark" href="./">Retour à l’accueil</a>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <div class="shell">Guide détaillé Tampermonkey — Mon fil, mes choix · Pour un filtrage local, réversible et plus compréhensible.</div>
+  </footer>
+</body>
+</html>
