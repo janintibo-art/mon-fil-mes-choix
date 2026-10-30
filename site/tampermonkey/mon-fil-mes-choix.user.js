@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Mon fil, mes choix — filtre Web personnel
 // @namespace    https://github.com/janintibo-art/mon-fil-mes-choix
-// @version      3.8.0
+// @version      3.9.0
 // @updateURL    https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
 // @downloadURL  https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
-// @description  V32 : correction des fiches, photos et resultats Google.
+// @description  V33 : filtrage Google contextuel, fiches et galeries, sans page blanche inutile.
 // @author       Communauté Mon fil, mes choix
 // @match        *://*/*
 // @run-at       document-idle
@@ -374,29 +374,41 @@
   // v31 : Google expose souvent les personnalités dans une fiche latérale,
   // hors des cartes classiques. On ne masque jamais la barre de recherche.
   // v32 : les fiches Google sont souvent hors des conteneurs classiques.
+  // v33 : masquer la zone de résultats complète seulement si la requête
+  // correspond exactement à une expression choisie (espaces tolérés).
+  // Sinon, masquer les fiches individuelles pertinentes.
   function scanGooglePanels(){
     if(!(host==='google.com'||host.endsWith('.google.com')||host.startsWith('google.')))return;
-    const qs=new URLSearchParams(location.search);
-    const field=document.querySelector('input[name="q"],textarea[name="q"]');
-    const query=qs.get('q')||field?.value||'';
-    const compact=normalize(query).replace(/\s/g,'');
-    let chosen=matchName(query);
-    if(!chosen && compact.length>=5 && userWordsActive){
+    const q=new URLSearchParams(location.search).get('q')||
+      document.querySelector('input[name="q"],textarea[name="q"]')?.value||'';
+    const normalized=normalize(q);
+    const compact=normalized.replace(/\s/g,'');
+    if(!normalized)return;
+    const exact=word=> {
+      const w=normalize(word);
+      return w && (normalized===w||(compact.length>=5&&compact===w.replace(/\s/g,'')));
+    };
+    let chosen='';
+    if(userWordsActive){
       for(const p of profiles){
-        if([p.label,...p.aliases].some(w=>normalize(w).replace(/\s/g,'')===compact)){
-          chosen=p.label;break;
-        }
+        if([p.label,...p.aliases].some(exact)){chosen=p.label;break}
+      }
+    }
+    if(!chosen){
+      for(const r of RULES){
+        if(!activeGroups[r.group]||entryExcluded.has(r.id))continue;
+        if([r.name,...(ALIASES[r.name]||[])].some(exact)){chosen=r.name;break}
       }
     }
     if(chosen){
-      // #rcnt contient aussi les photos, connaissances et fiches recentes.
-      // La barre de recherche et le tableau de bord restent accessibles.
+      // Google met parfois les galeries hors de #search : #rcnt les contient.
       for(const sel of ['#rcnt','#main','#center_col','#search','#rso','#rhs',
         '.kp-wholepage','#kp-wp-tab-overview','#islmp']){
         for(const el of document.querySelectorAll(sel))hide(el,chosen);
       }
       return;
     }
+    // Requête composite (« actualité sur ... ») : pas de page blanche.
     for(const sel of ['#rhs','.kp-wholepage','#kp-wp-tab-overview']){
       for(const el of document.querySelectorAll(sel)){
         if(hidden.has(el))continue;
