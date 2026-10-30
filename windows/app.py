@@ -375,6 +375,7 @@ class GUI:
         self._button(buttons, "ACTIVER LE FILTRE", self.enable, self.RED).pack(side="left", fill="x", expand=True, padx=(0, 8))
         self._button(buttons, "DÉSACTIVER", self.disable, self.CARD2).pack(side="left", fill="x", expand=True, padx=(0, 8))
         self._button(buttons, "ENREGISTRER", self.save, "#2a3949").pack(side="left", fill="x", expand=True)
+        self._button(actions, "VÉRIFIER MA PROTECTION", self.show_diagnostic, self.CARD2).pack(anchor="w", pady=(12, 0))
         self._label(actions, "Une autorisation administrateur peut être nécessaire pour appliquer les changements.",
                     10, self.MUTED).pack(anchor="w", pady=(12, 0))
 
@@ -695,6 +696,30 @@ class GUI:
     def _update_count(self):
         valid, bad = normalize(self.editor.get("1.0", "end"))
         self.domain_count.config(text=str(len(all_filter_domains(valid,self.entries,self.excluded,self.ads))) + ("  •  erreurs à corriger" if bad else ""))
+
+    def show_diagnostic(self):
+        """Read-only checks. Does not modify the Windows hosts file."""
+        try:
+            content = read_hosts()
+            readable = True
+            markers = OPEN in content and CLOSE in content
+            incomplete = (OPEN in content) != (CLOSE in content)
+        except OSError:
+            readable, markers, incomplete = False, False, False
+        selected = len(self.entries) - len(self.excluded)
+        domains, invalid = normalize(self.editor.get("1.0", "end"))
+        count = len(all_filter_domains(domains, self.entries, self.excluded, self.ads))
+        report = (
+            f"Protection : {'activée' if markers else 'désactivée ou inaccessible'}\n"
+            f"Fichier système : {'lisible' if readable else 'non accessible'}\n"
+            f"Choix : {selected} / 303\n"
+            f"Domaines préparés : {count}\n"
+            f"Domaines incorrects dans la saisie : {len(invalid)}\n"
+            f"Droits administrateur : {'oui' if is_admin() else 'non (normal pour la consultation)'}\n"
+            + ("\nAttention : la zone gérée dans hosts est incomplète.\n" if incomplete else "")
+            + "\nDiagnostic local uniquement : aucun site Internet n'est contacté."
+        )
+        messagebox.showinfo("Vérifier ma protection", report)
 
     def refresh(self):
         enabled = active()

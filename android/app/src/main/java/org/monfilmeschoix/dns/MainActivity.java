@@ -147,6 +147,11 @@ public class MainActivity extends Activity {
             }
         });
 
+        // V23: quick, read-only diagnostics. Never changes VPN or user rules.
+        Button diagnostic = button("Vérifier ma protection", CARD_ALT, FG, true);
+        page.addView(diagnostic, lp(-1, dp(49), 0, 0, 0, 13));
+        diagnostic.setOnClickListener(v -> showDiagnostic());
+
         // V22: beginner mode. Keep every advanced control available, without overwhelming first-time users.
         LinearLayout advanced = vertical();
         Button toggleAdvanced = button("Afficher mes réglages et options  ▾", CARD_ALT, FG, true);
@@ -504,6 +509,25 @@ public class MainActivity extends Activity {
         detail.setText("Vérifiez l'indication VPN dans Android et la notification.");
         handler.postDelayed(this::refreshStatus, 900);
         handler.postDelayed(this::refreshStatus, 1900);
+    }
+
+    private void showDiagnostic() {
+        boolean active = DnsVpnService.ACTIVE;
+        boolean authorized;
+        try { authorized = VpnService.prepare(this) == null; }
+        catch (Exception ignored) { authorized = false; }
+        int selected = selection.countSelected();
+        int domainsCount = totalDomainCount(domains.getText().toString());
+        String issue = DnsVpnService.lastError(this);
+        String report = "Protection : " + (active ? "activée" : "désactivée")
+            + "\nAutorisation VPN : " + (authorized ? "accordée" : "à demander")
+            + "\nMes choix : " + selected + " sur 303"
+            + "\nDomaines préparés : " + domainsCount
+            + "\nDernière erreur : " + (issue.isEmpty() ? "aucune erreur enregistrée" : issue)
+            + "\n\nCette vérification lit les réglages du téléphone. "
+            + "Elle ne teste pas la connexion Internet et ne modifie pas la protection.";
+        new AlertDialog.Builder(this).setTitle("Diagnostic de ma protection")
+            .setMessage(report).setPositiveButton("Compris", null).show();
     }
 
     private void refreshStatus() {
