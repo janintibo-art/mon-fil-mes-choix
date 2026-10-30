@@ -1,6 +1,53 @@
-# Mon fil, mes choix — V16
+# Mon fil, mes choix — avancées v30 à v33
 
 Projet indépendant de personnalisation **locale et réversible** de la navigation. Les listes représentent des préférences de filtrage : la présence d’une personne ou organisation ne constitue pas une accusation.
+
+<!-- MFM-NOUVEAUTES-V33 -->
+## Avancées du filtrage Web — v30 à v33 (octobre 2026)
+
+**Objectif :** reprendre la maîtrise de son attention en personnalisant localement
+les contenus affichés. Il ne s'agit ni d'effacer des publications à la source, ni de
+restreindre l'accès des autres personnes à l'information.
+
+- **v30 — Fiches et transfert :** expressions personnalisées, variantes
+  (surnoms, orthographes), panneau « Mon fil · Invisibilité », export et import JSON
+  des réglages entre navigateurs Android et Windows. Les transferts sont manuels,
+  pas une synchronisation dans le cloud.
+- **v31 — Première amélioration Google :** détection de résultats, fiches et
+  panneaux de connaissance absents des cartes de recherche classiques.
+- **v32 — Fiches et galeries :** prise en compte d'un conteneur Google plus large
+  pour masquer les photos et informations lors d'une recherche correspondant à
+  une expression choisie.
+- **v33 — Précision contextuelle :** sur Google, une recherche correspondant
+  exactement à une expression ou à une variante (avec gestion de certains espaces)
+  peut masquer toute la zone de résultats ; pour les autres recherches, le filtre
+  tente de masquer seulement les éléments concernés.
+
+### Pourquoi ?
+Un nom cité même pour être critiqué peut réapparaître dans des recommandations,
+résultats ou suggestions. La possibilité de le masquer **pour soi-même** permet
+de choisir sa propre exposition, sans modifier les contenus sur les plateformes.
+
+### Mise en route
+1. Installer Tampermonkey puis installer ou mettre à jour le script depuis
+   `site/tampermonkey/mon-fil-mes-choix.user.js`.
+2. Ouvrir « Mon fil · Invisibilité » ou le menu Tampermonkey pour ajouter ses mots,
+   variantes et ajuster les neuf groupes.
+3. Pour transférer les préférences, choisir « Sauvegarder mes choix » sur un
+   appareil puis « Récupérer mes choix » sur l'autre.
+
+### Limites et confidentialité
+- Le filtre est **cosmétique, local et réversible** : il ne supprime pas les
+  publications, ne bloque pas les comptes et ne garantit pas un résultat sur tous
+  les sites.
+- Les sites modifient leur structure ; des contenus peuvent rester visibles ou
+  être masqués à tort, y compris des articles critiques.
+- Les données de préférence sont conservées localement, sauf si vous exportez
+  volontairement un fichier JSON. Évitez de partager ce fichier publiquement.
+- Les neuf groupes et les 303 entrées correspondent à des **choix de filtrage**,
+  pas à des affirmations sur les personnes ou organisations concernées.
+
+<!-- /MFM-NOUVEAUTES-V33 -->
 
 ## Ce que contient le projet
 
