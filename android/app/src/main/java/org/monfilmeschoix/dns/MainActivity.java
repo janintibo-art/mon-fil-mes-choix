@@ -16,6 +16,10 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.content.Context;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.app.AlertDialog;
+import java.util.ArrayList;
+import java.util.Set;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -34,11 +38,13 @@ public class MainActivity extends Activity {
     private static final int RED = 0xffed233e;
     private static final int GREEN = 0xff47daa2;
     private EditText domains;
-    private TextView state, detail, counter;
+    private TextView state, detail, counter, selectionCounter;
+    private SelectionRules selection;
     private final android.os.Handler handler = new android.os.Handler(android.os.Looper.getMainLooper());
 
     @Override public void onCreate(Bundle saved) {
         super.onCreate(saved);
+        selection = new SelectionRules(this);
         getWindow().setStatusBarColor(BG);
         getWindow().setNavigationBarColor(BG);
         ScrollView scroll = new ScrollView(this);
@@ -80,7 +86,7 @@ public class MainActivity extends Activity {
         page.addView(stats, lp(-1,-2,0,0,0,13));
         LinearLayout countCard = panel(CARD, 16, LINE);
         stats.addView(countCard, new LinearLayout.LayoutParams(0, -2, 1));
-        countCard.addView(text("DOMAINES CONFIGURÉS", 10, MUTED, true));
+        countCard.addView(text("DOMAINES DNS ACTIFS", 10, MUTED, true));
         counter = text("0", 23, FG, true);
         countCard.addView(counter, lp(-1,-2,0,6,0,0));
         View gap = new View(this);
@@ -96,7 +102,7 @@ public class MainActivity extends Activity {
         page.addView(start, lp(-1,dp(54),0,2,0,9));
         start.setOnClickListener(v -> {
             if (!saveDomains(false)) return;
-            if (DomainRules.parse(domains.getText().toString()).isEmpty()) {
+            if (selection.effectiveDomains(domains.getText().toString()).isEmpty()) {
                 Toast.makeText(this, "Ajoutez un domaine avant d'activer", Toast.LENGTH_LONG).show();
                 return;
             }
@@ -115,11 +121,34 @@ public class MainActivity extends Activity {
             handler.postDelayed(this::refreshStatus, 600);
         });
 
-        // Domain list — user remains in control of every rule.
+        // Group and entry management; all 303 are selected by default.
+        LinearLayout choose = panel(CARD, 19, LINE);
+        page.addView(choose, lp(-1,-2,0,0,0,12));
+        choose.addView(text("Gérer les 303 entrées", 20, FG, true));
+        choose.addView(text("9 groupes activés par défaut. Cochez ou décochez des groupes ou des noms, comme dans Tampermonkey.",
+                13, MUTED, false), lp(-1,-2,0,4,0,11));
+        selectionCounter = text("", 13, GREEN, true);
+        choose.addView(selectionCounter, lp(-1,-2,0,0,0,10));
+        Button groupButton = button("⚙ Gérer les groupes", RED, Color.WHITE, false);
+        choose.addView(groupButton, lp(-1,dp(50),0,0,0,9));
+        groupButton.setOnClickListener(v -> showGroupDialog());
+        LinearLayout allBtns = horizontal();
+        choose.addView(allBtns);
+        Button all = button("Tout cocher", CARD_ALT, FG, true);
+        Button none = button("Tout décocher", CARD_ALT, FG, true);
+        allBtns.addView(all, new LinearLayout.LayoutParams(0,dp(47),1));
+        allBtns.addView(none, new LinearLayout.LayoutParams(0,dp(47),1));
+        all.setOnClickListener(v -> {selection.selectAll(true); updateSelectionCount(); applyActiveRules();});
+        none.setOnClickListener(v -> {selection.selectAll(false); updateSelectionCount(); applyActiveRules();});
+        choose.addView(text("Important : seuls les domaines identifiés (9 au départ) peuvent être filtrés par DNS. " +
+                "Les autres noms restent sélectionnés dans le catalogue, sans blocage réseau tant qu'aucun domaine vérifié ne leur est associé.",
+                12, MUTED, false), lp(-1,-2,0,12,0,0));
+
+        // Domain list — user remains in control of additional rules.
         LinearLayout rules = panel(CARD, 19, LINE);
         page.addView(rules, lp(-1,-2,0,0,0,12));
-        rules.addView(text("Liste des domaines", 20, FG, true));
-        rules.addView(text("Un domaine par ligne. Ajoutez ou retirez des sites librement.",
+        rules.addView(text("Domaines personnels supplémentaires", 20, FG, true));
+        rules.addView(text("Facultatif : les domaines associés aux groupes sont ajoutés automatiquement.",
                 13, MUTED, false), lp(-1,-2,0,4,0,12));
         domains = new EditText(this);
         domains.setTextColor(FG);
@@ -131,17 +160,17 @@ public class MainActivity extends Activity {
         domains.setBackground(shape(0xff10161e, 14, LINE));
         domains.setSingleLine(false);
         domains.setVerticalScrollBarEnabled(true);
-        domains.setText(DomainRules.get(this));
+        domains.setText(String.join("\n",selection.manualDomains(DomainRules.get(this))));
         domains.setContentDescription("Liste des domaines à filtrer, un par ligne");
         rules.addView(domains, new LinearLayout.LayoutParams(-1, dp(230)));
         domains.addTextChangedListener(new TextWatcher(){
             public void beforeTextChanged(CharSequence s,int start,int count,int after){}
             public void onTextChanged(CharSequence s,int start,int before,int count){
-                if (counter != null) counter.setText(String.valueOf(DomainRules.parse(s.toString()).size()));
+                if (counter != null) counter.setText(String.valueOf(selection.effectiveDomains(s.toString()).size()));
             }
             public void afterTextChanged(Editable e){}
         });
-        counter.setText(String.valueOf(DomainRules.parse(domains.getText().toString()).size()));
+        updateSelectionCount();
         Button save = button("Enregistrer la liste", CARD_ALT, FG, true);
         rules.addView(save, lp(-1,dp(49),0,12,0,0));
         save.setOnClickListener(v -> saveDomains(true));
@@ -151,7 +180,7 @@ public class MainActivity extends Activity {
         LinearLayout help = panel(CARD, 19, LINE);
         page.addView(help, lp(-1,-2,0,0,0,12));
         help.addView(text("Comment ça marche ?", 19, FG, true));
-        help.addView(text("01  Choisissez les domaines à filtrer.\n02  Enregistrez et activez le filtre.\n03  Autorisez le VPN local demandé par Android.\n04  Désactivez-le à tout moment avec le bouton ci-dessus.",
+        help.addView(text("01  Les 303 entrées sont précochées.\n02  Choisissez vos groupes et noms, puis les domaines personnels éventuels.\n03  Autorisez le VPN DNS local Android et activez-le.\n04  Modifiez ou désactivez le filtre à tout moment.",
                 14, FG, false), lp(-1,-2,0,11,0,0));
         help.addView(text("Ce filtre DNS masque des domaines, pas des personnes sur un réseau social. Il ne s'agit pas d'un VPN d'anonymisation. Certains navigateurs avec DNS chiffré et le DNS privé peuvent contourner le filtrage. Un autre VPN peut être incompatible.",
                 13, MUTED, false), lp(-1,-2,0,15,0,0));
@@ -162,11 +191,81 @@ public class MainActivity extends Activity {
         refreshStatus();
     }
 
+    private void updateSelectionCount() {
+        if(selectionCounter != null)selectionCounter.setText(selection.countSelected()+" / 303 entrées sélectionnées  •  "
+                +selection.domains().size()+" domaine(s) associés");
+        if(counter != null && domains != null)counter.setText(String.valueOf(selection.effectiveDomains(domains.getText().toString()).size()));
+    }
+
+    private void applyActiveRules() {
+        if(DnsVpnService.ACTIVE) {
+            startService(new Intent(this,DnsVpnService.class).setAction(DnsVpnService.RELOAD));
+            if(detail!=null) detail.setText("Règles DNS mises à jour.");
+        }
+    }
+
+    private void showGroupDialog() {
+        ScrollView scroller=new ScrollView(this);
+        LinearLayout list=vertical(); list.setPadding(dp(14),dp(12),dp(14),dp(12));
+        list.setBackgroundColor(BG);scroller.addView(list);
+        for(String group:selection.groups.keySet()) {
+            ArrayList<SelectionRules.Entry> items=selection.groups.get(group);
+            LinearLayout row=panel(CARD,14,LINE);
+            list.addView(row,lp(-1,-2,0,0,0,9));
+            CheckBox groupBox=new CheckBox(this);
+            groupBox.setText(group+"  ("+selection.groupSelected(group)+"/"+items.size()+")");
+            groupBox.setTextColor(FG);groupBox.setTextSize(14);
+            groupBox.setButtonTintList(android.content.res.ColorStateList.valueOf(RED));
+            groupBox.setChecked(selection.groupSelected(group)==items.size());
+            row.addView(groupBox);
+            groupBox.setOnCheckedChangeListener((button,checked)->{
+                selection.setGroup(group,checked);
+                groupBox.setText(group+"  ("+selection.groupSelected(group)+"/"+items.size()+")");
+                updateSelectionCount();applyActiveRules();
+            });
+            Button details=button("Choisir les entrées ("+items.size()+")",CARD_ALT,FG,true);
+            row.addView(details,lp(-1,dp(43),0,4,0,0));
+            details.setOnClickListener(v -> showEntriesDialog(group,groupBox));
+        }
+        new AlertDialog.Builder(this).setTitle("Gérer les 9 groupes")
+            .setView(scroller).setPositiveButton("Terminé",(d,w)->updateSelectionCount()).show();
+    }
+
+    private void showEntriesDialog(String group, CheckBox groupBox) {
+        ScrollView scroll = new ScrollView(this);
+        LinearLayout list=vertical();list.setPadding(dp(14),dp(8),dp(14),dp(8));
+        list.setBackgroundColor(BG);scroll.addView(list);
+        for(SelectionRules.Entry entry:selection.groups.get(group)){
+            CheckBox checkbox=new CheckBox(this);
+            checkbox.setText(entry.name + (entry.domain.isEmpty()?"  · sans domaine DNS":"  · "+entry.domain));
+            checkbox.setTextColor(FG);checkbox.setTextSize(14);
+            checkbox.setButtonTintList(android.content.res.ColorStateList.valueOf(RED));
+            checkbox.setChecked(selection.isSelected(entry.id));
+            checkbox.setPadding(dp(6),dp(5),dp(6),dp(5));
+            list.addView(checkbox);
+            checkbox.setOnCheckedChangeListener((button,checked)->{
+                selection.setSelected(entry.id,checked);
+                updateSelectionCount(); applyActiveRules();
+                int selected=selection.groupSelected(group), count=selection.groups.get(group).size();
+                groupBox.setOnCheckedChangeListener(null);
+                groupBox.setChecked(selected==count);
+                groupBox.setText(group+"  ("+selected+"/"+count+")");
+                groupBox.setOnCheckedChangeListener((b,on)->{
+                    selection.setGroup(group,on); updateSelectionCount();applyActiveRules();
+                    groupBox.setText(group+"  ("+selection.groupSelected(group)+"/"+count+")");
+                });
+            });
+        }
+        new AlertDialog.Builder(this).setTitle(group).setView(scroll)
+            .setPositiveButton("Fermer",(d,w)->updateSelectionCount()).show();
+    }
+
     private boolean saveDomains(boolean toast) {
         java.util.Set<String> list = DomainRules.parse(domains.getText().toString());
         getSharedPreferences("dns", MODE_PRIVATE).edit().putString(DomainRules.KEY, String.join("\n", list)).apply();
-        if (toast) Toast.makeText(this, list.size() + " domaines enregistrés", Toast.LENGTH_SHORT).show();
-        counter.setText(String.valueOf(list.size()));
+        applyActiveRules();
+        if (toast) Toast.makeText(this, list.size() + " domaine(s) personnels enregistrés", Toast.LENGTH_SHORT).show();
+        updateSelectionCount();
         return true;
     }
 

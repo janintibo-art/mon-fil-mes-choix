@@ -21,20 +21,24 @@ import java.util.concurrent.Executors;
 
 /** VPN with one /32 route to its own synthetic DNS server. Does not route web traffic. */
 public final class DnsVpnService extends VpnService {
-    static final String START="org.monfilmeschoix.START", STOP="org.monfilmeschoix.STOP";
+    static final String START="org.monfilmeschoix.START", STOP="org.monfilmeschoix.STOP", RELOAD="org.monfilmeschoix.RELOAD";
     static volatile boolean ACTIVE = false;
     private volatile boolean running;
     private ParcelFileDescriptor tun;
     private Thread tunnelThread;
     private ExecutorService workers;
     private FileOutputStream output;
-    private Set<String> denied;
+    private volatile Set<String> denied;
     private final Object writeLock = new Object();
     private static final byte[] LOCAL_IP = new byte[]{10,111,0,1};
     private static final byte[] DNS_IP = new byte[]{10,111,0,2};
 
     @Override public int onStartCommand(Intent command, int flags, int id) {
         if(command != null && STOP.equals(command.getAction())) { stopSelf(); return START_NOT_STICKY; }
+        if(command != null && RELOAD.equals(command.getAction())) {
+            if(running) denied = new SelectionRules(this).effectiveDomains(DomainRules.get(this));
+            return running ? START_STICKY : START_NOT_STICKY;
+        }
         if(running) return START_STICKY;
         try {
             NotificationManager nm = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
@@ -47,7 +51,7 @@ public final class DnsVpnService extends VpnService {
                 .setContentText("Filtrage DNS actif • ouvrir pour désactiver")
                 .setContentIntent(pi).setOngoing(true).build();
             startForeground(15,notice);
-            denied = DomainRules.parse(DomainRules.get(this));
+            denied = new SelectionRules(this).effectiveDomains(DomainRules.get(this));
             Builder builder = new Builder().setSession("Mon fil, mes choix DNS")
                 .setMtu(1500).addAddress("10.111.0.1",30)
                 .addDnsServer("10.111.0.2").addRoute("10.111.0.2",32);

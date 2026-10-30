@@ -46,3 +46,13 @@ Le script Tampermonkey fait du filtrage textuel sujet à de faux positifs et peu
 - Après la première compilation verte, utiliser les **Artifacts** de `Actions → Construire APK et EXE DNS` pour l’APK et l’EXE.
 - Une release peut être générée pour un tag Git `v4`, mais aucun binaire n’est fourni dans cette archive.
 - Tous les changements se font dans le dépôt GitHub public ; la liste reste personnelle, éditable et réversible.
+
+## V14 — sélection par groupes dans Android et Windows
+
+- 303 entrées / 9 groupes inclus dans `selection_v14.json` (ressource locale des deux applications).
+- Toutes les entrées sont sélectionnées par défaut ; chaque groupe et chaque fiche peuvent être désactivés.
+- La sélection est enregistrée localement.
+- Seules les **neuf correspondances entre une fiche et un domaine identifié** produisent une règle DNS/hosts initialement. Le fait de cocher un nom sans domaine ne bloque pas automatiquement ses pages sociales ni ses articles.
+- Les domaines personnels supplémentaires se gèrent séparément ; dans une ancienne installation, les neuf domaines par défaut passent sous la responsabilité de la sélection par groupes.
+- Android applique les choix au VPN DNS en cours via une commande RELOAD ; Windows nécessite de cliquer sur ACTIVER / RÉAPPLIQUER (autorisation administrateur).
+- Le guide Tampermonkey inclut une procédure mobile avec illustrations annotées, distinctes de véritables captures d'écran système.

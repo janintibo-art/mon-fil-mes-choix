@@ -79,6 +79,16 @@
     .mfm-manual button{margin-top:12px}
     .mfm-install-note{background:rgba(255,255,255,.05);border-left:3px solid #ff4d6b;border-radius:10px;padding:16px 18px;margin:16px 0}
     .mfm-install-note ol{margin:9px 0 0;padding-left:20px;display:grid;gap:8px;color:#d7dfe8}
+
+    .manual-box{margin-top:30px;padding:28px;background:linear-gradient(160deg,#131e2f,#0d1623);border:1px solid rgba(255,63,94,.24);border-radius:24px}
+    .manual-step-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:22px}
+    .manual-step{background:#0b1523;border:1px solid #253449;border-radius:20px;overflow:hidden}
+    .manual-step header{padding:18px 20px}
+    .manual-step h3{margin:5px 0 7px;font-size:19px;line-height:1.22}
+    .manual-step p{margin:0;color:#c4d0dc;font-size:14px}
+    .manual-step img{display:block;width:100%;height:auto;max-height:550px;object-fit:contain;background:#fafafa}
+    .manual-step figcaption{font-size:12px;color:#aab9cb;padding:11px 18px 16px}
+    @media(max-width:780px){.manual-step-list{grid-template-columns:1fr}.manual-box{padding:15px}}
   </style>
 </head>
 <body>
@@ -105,6 +115,7 @@
           <a class="btn btn-primary" href="https://www.tampermonkey.net/" target="_blank" rel="noopener noreferrer">1 · Ouvrir le site officiel ↗</a>
           <a class="btn btn-soft" href="./tampermonkey/mon-fil-mes-choix.user.js">2 · Installer notre script ↗</a>
           <button class="btn btn-primary mfm-copy-button" type="button" data-copy-script>📋 Copier le script</button>
+          <a class="btn btn-dark" href="#installation-samsung">Guide Samsung avec images ↓</a>
           <a class="btn btn-dark" href="#depannage">Dépannage</a>
         </div>
         <div class="hero-note">
@@ -131,6 +142,23 @@
       <article class="panel prep-card"><h3>À quoi sert le script</h3><p>Le script masque localement des résultats, cartes ou publications sur certains sites compatibles. Il ne supprime rien à la source.</p></article>
       <article class="panel prep-card"><h3>Important</h3><p>Si un site change de structure, il peut falloir mettre le script à jour. Vous pouvez aussi désactiver le filtre à tout moment.</p></article>
     </section>
+
+    <section class="manual-box" id="installation-samsung" aria-labelledby="phone-title">
+      <span class="eyebrow">Guide spécial téléphone</span>
+      <h2 id="phone-title" class="section-title" style="margin-top:12px">Installer le script en copiant le code sur Samsung</h2>
+      <p class="section-lead">Ce parcours est prévu si Tampermonkey affiche encore <strong>« New Userscript »</strong> sur votre téléphone. Les visuels sont des <strong>illustrations annotées</strong>, inspirées de l'interface mobile : les boutons exacts peuvent varier selon votre navigateur et sa version.</p>
+      <div class="hero-actions">
+        <button id="manualCopyButton" type="button" class="btn btn-primary mfm-copy-button" data-copy-script>📋 Copier le script complet</button>
+        <a class="btn btn-dark" href="#etape-1">Voir le guide d'installation classique</a>
+      </div>
+      <div class="manual-step-list">
+        <article class="manual-step"><header><div class="step-num">01</div><h3>Ouvrez « New Userscript » → « Éditer »</h3><p>Dans Tampermonkey, touchez la ligne « Éditer » sous le script créé par défaut.</p></header><img loading="lazy" src="./assets/guides/tuto-etape1-editer.webp" alt="Illustration de Tampermonkey sur Samsung avec le bouton Éditer entouré en rouge"><figcaption>Illustration 1 — repérez le bouton Éditer.</figcaption></article>
+        <article class="manual-step"><header><div class="step-num">02</div><h3>Effacez le code présent</h3><p>Dans l'éditeur, sélectionnez tout le code par défaut puis supprimez-le. N'en gardez aucune ligne.</p></header><img loading="lazy" src="./assets/guides/tuto-etape2-effacer.webp" alt="Illustration de l'éditeur avec le code initial entouré en rouge"><figcaption>Illustration 2 — supprimez intégralement le contenu existant.</figcaption></article>
+        <article class="manual-step"><header><div class="step-num">03</div><h3>Collez le véritable script puis enregistrez</h3><p>Revenez sur notre site, utilisez « Copier le script », puis collez son contenu dans l'éditeur Tampermonkey et utilisez l'icône de sauvegarde. <strong>Ne recopiez pas le faux code présent dans l'illustration.</strong></p></header><img loading="lazy" src="./assets/guides/tuto-etape3-coller.webp" alt="Illustration montrant l'éditeur de script et son bouton Enregistrer"><figcaption>Illustration 3 — le code montré est fictif ; seul le bouton et la procédure comptent.</figcaption></article>
+        <article class="manual-step"><header><div class="step-num">04</div><h3>Vérifiez le nouveau nom</h3><p>Le script doit s'appeler <strong>« Mon fil, mes choix — filtre Web personnel »</strong> et être activé. Revenez sur Google, rechargez la page et ouvrez « Gérer les groupes (9) ».</p></header><img loading="lazy" src="./assets/guides/tuto-etape4-verifier.webp" alt="Illustration du script Mon fil, mes choix activé dans Tampermonkey"><figcaption>Illustration 4 — vérifiez le nom du script et l'interrupteur vert.</figcaption></article>
+      </div>
+    </section>
+
 
     <h2 class="section-title">Le guide détaillé</h2>
     <p class="section-lead">Chaque étape ci-dessous montre ce que vous devez faire et ce que vous devriez voir à l’écran. Les captures sont illustratives, pour vous aider à vous repérer plus facilement.</p>
@@ -226,6 +254,7 @@
       </div>
       <figure class="capture"><img src="./assets/guides/tm-step5.png" alt="Capture illustrative du panneau Gérer les groupes : neuf interrupteurs et boutons Tout activer et Tout désactiver"><figcaption>Capture 5 · Le panneau réel de sélection des groupes, sur une page de démonstration.</figcaption></figure>
     </section>
+
 
     <section class="checklist">
       <article class="panel check-card"><h3>Tout fonctionne si…</h3><ul><li>L’extension Tampermonkey est visible dans le navigateur.</li><li>Le script « Mon fil, mes choix » apparaît dans son tableau de bord.</li><li>Le menu du script s’ouvre sur une page Web.</li><li>Le rechargement de la page active le masquage local.</li></ul></article>

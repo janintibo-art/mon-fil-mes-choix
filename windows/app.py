@@ -13,6 +13,7 @@ import subprocess
 import sys
 import tkinter as tk
 from tkinter import messagebox
+from collections import OrderedDict
 
 APP = "Mon fil, mes choix • Filtre DNS"
 OPEN = "# DEBUT MON_FIL_MES_CHOIX_DNS — zone gérée par l'application"
@@ -21,6 +22,55 @@ HOST_RE = re.compile(r"(?=.{4,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[
 DATA_DIR = Path(os.environ.get("LOCALAPPDATA", str(Path.home()))) / "MonFilMesChoix"
 CUSTOM = DATA_DIR / "domaines.txt"
 HOSTS = Path(os.environ.get("SystemRoot", r"C:\Windows")) / "System32" / "drivers" / "etc" / "hosts"
+SELECTION_FILE = DATA_DIR / "selection_v14.json"
+DEFAULT_FILTERS = Path(getattr(sys, "_MEIPASS", Path(__file__).parent)) / "selection_v14.json"
+
+
+def catalog():
+    """303 public entries, not a list of 303 DNS-addressable people."""
+    items = json.loads(DEFAULT_FILTERS.read_text(encoding="utf-8"))["entries"]
+    if len(items) != 303 or len({int(x["id"]) for x in items}) != len(items):
+        raise ValueError("Répertoire incomplet ou identifiants dupliqués.")
+    return items
+
+
+def selection_load():
+    try:
+        data = json.loads(SELECTION_FILE.read_text(encoding="utf-8"))
+        return {int(i) for i in data.get("excluded", [])}
+    except (OSError, ValueError, TypeError):
+        return set()
+
+
+def selection_save(excluded):
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    temp = SELECTION_FILE.with_suffix(".tmp")
+    temp.write_text(json.dumps({"version": 14, "excluded": sorted(excluded)}, ensure_ascii=False), encoding="utf-8")
+    temp.replace(SELECTION_FILE)
+
+
+def selection_domains(entries, excluded):
+    return sorted({x["domain"] for x in entries if x["id"] not in excluded and x["domain"]})
+
+
+def group_catalog(entries):
+    groups = OrderedDict()
+    for item in entries:
+        groups.setdefault(item["group"], []).append(item)
+    return groups
+
+
+def initial_custom_domains():
+    """Old installation stored 9 defaults in CUSTOM; migrate only the extras."""
+    try:
+        current = CUSTOM.read_text(encoding="utf-8")
+    except OSError:
+        return ""
+    recognized, invalid = normalize(current)
+    defaults_set = {e["domain"] for e in catalog() if e["domain"]}
+    custom = [x for x in recognized if x not in defaults_set]
+    return "\n".join(custom + invalid) + ("\n" if custom or invalid else "")
+
 BG, PANEL, FG, DIM, GREEN = "#0e1522", "#192639", "#f0f6ff", "#aebbc9", "#54dfb6"
 
 
@@ -112,7 +162,7 @@ def elevate():
 
 
 class GUI:
-    """Interface V9 — présentation uniquement ; les règles hosts restent inchangées."""
+    """Interface V14 — selection all by default, DNS rules only for known domains."""
 
     BG = "#0a0d11"
     SIDE = "#10151c"
@@ -154,8 +204,12 @@ class GUI:
         self.canvas.bind("<Configure>", lambda e: self.canvas.itemconfigure(self.content_window, width=e.width))
         self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
 
+        self.entries = catalog()
+        self.groups = group_catalog(self.entries)
+        self.excluded = selection_load()
         self._build_header()
         self._build_overview()
+        self._build_selection()
         self._build_rules()
         self._build_help()
         self.refresh()
@@ -212,7 +266,7 @@ class GUI:
         self._label(self.sidebar, "RÉGLAGES LOCAUX", 9, self.MUTED, True).pack(anchor="w", pady=(30, 8))
         self._label(self.sidebar, "• Aucun compte requis\n• Aucune télémétrie ajoutée\n• Réversible à tout moment",
                     10, self.MUTED).pack(anchor="w")
-        self._label(self.sidebar, "V9  •  MON FIL, MES CHOIX", 9, self.MUTED).pack(side="bottom", anchor="w", pady=(15, 0))
+        self._label(self.sidebar, "V14  •  MON FIL, MES CHOIX", 9, self.MUTED).pack(side="bottom", anchor="w", pady=(15, 0))
 
     def _scroll_to(self, section):
         widget = getattr(self, section + "_section")
@@ -227,7 +281,7 @@ class GUI:
         hero.pack(fill="x", pady=(3, 20))
         self._label(hero, "VOTRE NAVIGATION, VOS RÈGLES", 10, self.RED, True).pack(anchor="w")
         self._label(hero, "Mon fil, mes choix", 28, self.TEXT, True).pack(anchor="w", pady=(6, 1))
-        self._label(hero, "Bloquez les domaines sélectionnés, sans modifier vos serveurs DNS.",
+        self._label(hero, "303 fiches sélectionnées par défaut • seuls les domaines vérifiés sont bloquables par hosts.",
                     12, self.MUTED).pack(anchor="w")
 
     def _build_overview(self):
@@ -244,10 +298,10 @@ class GUI:
                     10, self.MUTED).pack(anchor="w")
         stat_card = self._card(row)
         stat_card.pack(side="left", fill="both", expand=True)
-        self._label(stat_card, "DOMAINES DANS VOTRE LISTE", 10, self.MUTED, True).pack(anchor="w")
+        self._label(stat_card, "DOMAINES DNS SÉLECTIONNÉS", 10, self.MUTED, True).pack(anchor="w")
         self.domain_count = self._label(stat_card, "0", 23, self.TEXT, True)
         self.domain_count.pack(anchor="w", pady=(9, 4))
-        self._label(stat_card, "Seuls les sites définis ci-dessous sont concernés.",
+        self._label(stat_card, "303 noms sont sélectionnés par défaut : seuls les 9 domaines connus sont filtrables.",
                     10, self.MUTED).pack(anchor="w")
         actions = self._card(self.overview_section)
         actions.pack(fill="x", pady=(10, 0))
@@ -260,11 +314,130 @@ class GUI:
         self._label(actions, "Une autorisation administrateur peut être nécessaire pour appliquer les changements.",
                     10, self.MUTED).pack(anchor="w", pady=(12, 0))
 
+    def _build_selection(self):
+        self.selection_section = self._card(self.content)
+        self.selection_section.pack(fill="x", pady=(0, 18))
+        self._label(self.selection_section, "Choisir les groupes et les 303 entrées", 17, self.TEXT, True).pack(anchor="w")
+        self._label(self.selection_section,
+                    "Toutes les entrées sont cochées au départ. Le filtrage Windows agit uniquement sur les domaines connus.",
+                    10, self.MUTED, wraplength=630).pack(anchor="w", pady=(5, 9))
+        self.selection_count = self._label(self.selection_section, "", 11, self.GREEN, True)
+        self.selection_count.pack(anchor="w", pady=(0, 12))
+        row = tk.Frame(self.selection_section, bg=self.CARD)
+        row.pack(fill="x")
+        self._button(row, "GÉRER LES GROUPES", self.manage_groups, self.RED).pack(side="left", padx=(0, 8))
+        self._button(row, "TOUT COCHER", lambda: self.change_all(True), self.CARD2).pack(side="left", padx=(0, 8))
+        self._button(row, "TOUT DÉCOCHER", lambda: self.change_all(False), self.CARD2).pack(side="left")
+
+    def _selection_changed(self):
+        selection_save(self.excluded)
+        self._update_count()
+        self._label_selection_count()
+
+    def _label_selection_count(self):
+        chosen = len(self.entries) - len(self.excluded)
+        dns = len(selection_domains(self.entries, self.excluded))
+        self.selection_count.config(text=f"{chosen} / 303 entrées sélectionnées  •  {dns} domaine(s) relié(s) à ces entrées")
+
+    def change_all(self, on):
+        self.excluded = set() if on else {x["id"] for x in self.entries}
+        self._selection_changed()
+
+    def manage_groups(self):
+        dlg = tk.Toplevel(self.root)
+        dlg.title("Groupes • Mon fil, mes choix")
+        dlg.geometry("730x690")
+        dlg.configure(bg=self.BG)
+        dlg.transient(self.root)
+        dlg.grab_set()
+        title = tk.Frame(dlg, bg=self.BG, padx=20, pady=15)
+        title.pack(fill="x")
+        self._label(title, "Gérer les groupes", 22, self.TEXT, True).pack(anchor="w")
+        self._label(title, "Décochez un groupe, ou ouvrez-le pour choisir les entrées une par une.",
+                    10, self.MUTED).pack(anchor="w")
+        main = tk.Frame(dlg, bg=self.BG)
+        main.pack(fill="both", expand=True)
+        canvas = tk.Canvas(main, bg=self.BG, highlightthickness=0)
+        scroll = tk.Scrollbar(main, command=canvas.yview)
+        scroll.pack(side="right", fill="y")
+        canvas.pack(side="left", fill="both", expand=True)
+        canvas.config(yscrollcommand=scroll.set)
+        list_frame = tk.Frame(canvas, bg=self.BG, padx=20, pady=8)
+        window = canvas.create_window((0,0), window=list_frame, anchor="nw")
+        list_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+        canvas.bind("<Configure>", lambda e: canvas.itemconfigure(window, width=e.width))
+        variables = {}
+        def update_indicators():
+            for name, items in self.groups.items():
+                chosen = sum(x["id"] not in self.excluded for x in items)
+                variables[name][1].configure(text=f"{chosen} / {len(items)} sélectionnées")
+                variables[name][0].set(chosen == len(items))
+        def toggle_group(name):
+            items=self.groups[name]
+            on=bool(variables[name][0].get())
+            for item in items:
+                if on: self.excluded.discard(item["id"])
+                else: self.excluded.add(item["id"])
+            self._selection_changed()
+            update_indicators()
+        for name, items in self.groups.items():
+            panel = self._card(list_frame, 14, 12)
+            panel.pack(fill="x", pady=5)
+            line = tk.Frame(panel, bg=self.CARD)
+            line.pack(fill="x")
+            value = tk.BooleanVar(value=all(item["id"] not in self.excluded for item in items))
+            tk.Checkbutton(line, text=name, variable=value, command=lambda n=name: toggle_group(n),
+                           bg=self.CARD, fg=self.TEXT, activebackground=self.CARD, activeforeground=self.TEXT,
+                           selectcolor=self.SIDE, font=("Segoe UI", 11, "bold"), anchor="w").pack(side="left", fill="x", expand=True)
+            counter = self._label(panel, "", 10, self.MUTED)
+            counter.pack(side="left")
+            self._button(panel, "Choisir les entrées", lambda n=name: self.manage_entries(n, update_indicators),
+                         self.CARD2, small=True).pack(side="right")
+            variables[name] = (value, counter)
+        update_indicators()
+        self._button(dlg, "FERMER", dlg.destroy, self.RED).pack(anchor="e", padx=20, pady=15)
+
+    def manage_entries(self, group, callback):
+        dlg = tk.Toplevel(self.root)
+        dlg.title("Entrées • " + group)
+        dlg.geometry("680x730")
+        dlg.configure(bg=self.BG)
+        dlg.transient(self.root)
+        dlg.grab_set()
+        head = tk.Frame(dlg, bg=self.BG, padx=18, pady=13)
+        head.pack(fill="x")
+        self._label(head, group, 17, self.TEXT, True, wraplength=610).pack(anchor="w")
+        self._label(head, "Les entrées sans domaine vérifié ne créent aucune règle hosts.", 10, self.MUTED).pack(anchor="w")
+        container = tk.Frame(dlg, bg=self.BG)
+        container.pack(fill="both", expand=True)
+        canvas = tk.Canvas(container, bg=self.BG, highlightthickness=0)
+        scrollbar = tk.Scrollbar(container, command=canvas.yview)
+        scrollbar.pack(side="right", fill="y")
+        canvas.pack(side="left", fill="both", expand=True)
+        canvas.config(yscrollcommand=scrollbar.set)
+        inner = tk.Frame(canvas, bg=self.BG, padx=18, pady=10)
+        win = canvas.create_window((0,0), window=inner, anchor="nw")
+        inner.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+        canvas.bind("<Configure>", lambda e: canvas.itemconfigure(win, width=e.width))
+        def toggle(entry_id, variable):
+            if variable.get(): self.excluded.discard(entry_id)
+            else: self.excluded.add(entry_id)
+            self._selection_changed()
+            callback()
+        for entry in self.groups[group]:
+            sel = tk.BooleanVar(value=entry["id"] not in self.excluded)
+            label = entry["name"] + ("  •  " + entry["domain"] if entry["domain"] else "  •  sans domaine")
+            tk.Checkbutton(inner, text=label, variable=sel, command=lambda i=entry["id"],v=sel: toggle(i,v),
+                           bg=self.BG, fg=self.TEXT, activebackground=self.BG, activeforeground=self.TEXT,
+                           selectcolor=self.SIDE, font=("Segoe UI", 10), wraplength=560,
+                           justify="left", anchor="w").pack(fill="x", pady=4)
+        self._button(dlg, "FERMER", dlg.destroy, self.RED).pack(anchor="e", padx=18, pady=14)
+
     def _build_rules(self):
         self.rules_section = self._card(self.content)
         self.rules_section.pack(fill="both", expand=True, pady=(0, 18))
-        self._label(self.rules_section, "Liste des domaines", 18, self.TEXT, True).pack(anchor="w")
-        self._label(self.rules_section, "Un domaine par ligne • commentaires commençant par # autorisés",
+        self._label(self.rules_section, "Domaines personnels supplémentaires", 18, self.TEXT, True).pack(anchor="w")
+        self._label(self.rules_section, "Facultatif : un domaine par ligne. Les domaines associés aux groupes s’ajoutent automatiquement.",
                     10, self.MUTED).pack(anchor="w", pady=(3, 12))
         editor_row = tk.Frame(self.rules_section, bg=self.CARD)
         editor_row.pack(fill="both", expand=True)
@@ -279,10 +452,10 @@ class GUI:
         try:
             value = CUSTOM.read_text(encoding="utf-8")
         except OSError:
-            value = defaults()
-        self.editor.insert("1.0", value)
+            value = ""
+        self.editor.insert("1.0", initial_custom_domains())
         self.editor.bind("<KeyRelease>", lambda _: self._update_count())
-        self._label(self.rules_section, "Conseil : enregistrez la liste, puis réactivez le filtre pour appliquer les nouveaux domaines.",
+        self._label(self.rules_section, "Enregistrez, puis cliquez sur Activer / Réappliquer pour mettre les règles Windows à jour.",
                     10, self.MUTED).pack(anchor="w", pady=(10, 0))
 
     def _build_help(self):
@@ -290,9 +463,10 @@ class GUI:
         self.help_section.pack(fill="x", pady=(0, 18))
         self._label(self.help_section, "Comment ça marche ?", 16, self.TEXT, True).pack(anchor="w", pady=(0, 9))
         self._label(self.help_section,
-                    "1. Ajoutez les domaines à masquer, puis cliquez sur Enregistrer.\n"
-                    "2. Activez le filtre et autorisez Windows si nécessaire.\n"
-                    "3. Pour annuler, cliquez sur Désactiver : seules nos règles sont retirées.",
+                    "1. Tous les groupes et leurs entrées sont cochés au premier démarrage.\n"
+                    "2. Choisissez les groupes / entrées, ajoutez des domaines personnels au besoin.\n"
+                    "3. Activez / réappliquez le filtre et autorisez Windows si nécessaire.\n"
+                    "4. Pour annuler, Désactiver retire uniquement nos règles hosts.",
                     11, self.TEXT).pack(anchor="w")
         self._label(self.help_section,
                     "Le filtrage par fichier hosts ne bloque ni les noms de personnes dans les articles, ni tous les sous-domaines. "
@@ -303,13 +477,14 @@ class GUI:
 
     def _update_count(self):
         valid, bad = normalize(self.editor.get("1.0", "end"))
-        self.domain_count.config(text=str(len(valid)) + ("  •  erreurs à corriger" if bad else ""))
+        self.domain_count.config(text=str(len(set(valid) | set(selection_domains(self.entries,self.excluded)))) + ("  •  erreurs à corriger" if bad else ""))
 
     def refresh(self):
         enabled = active()
         self.status.config(text="● Protection active" if enabled else "○ Protection désactivée",
                            fg=self.GREEN if enabled else self.MUTED)
         self._update_count()
+        self._label_selection_count()
 
     def save(self, show_message=True):
         raw = self.editor.get("1.0", "end")
@@ -321,13 +496,14 @@ class GUI:
         CUSTOM.write_text("\n".join(parsed) + ("\n" if parsed else ""), encoding="utf-8")
         self._update_count()
         if show_message:
-            messagebox.showinfo("Liste enregistrée", f"{len(parsed)} domaine(s) prêts à être filtrés.")
+            messagebox.showinfo("Liste enregistrée", f"{len(parsed)} domaine(s) personnels enregistrés.\nLes domaines des groupes sélectionnés s’ajoutent lors de l’activation.")
         return parsed
 
     def enable(self):
         domains = self.save(show_message=False)
         if domains is None:
             return
+        domains = sorted(set(domains) | set(selection_domains(self.entries, self.excluded)))
         if not domains:
             messagebox.showwarning("Liste vide", "Ajoutez un domaine avant d'activer.")
             return

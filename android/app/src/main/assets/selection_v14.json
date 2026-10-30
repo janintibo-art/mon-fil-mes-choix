@@ -1,0 +1,1823 @@
+{
+  "version":14,
+  "entries":[
+    {
+      "id":1,
+      "name":"CNews",
+      "group":"Médias et groupes de presse",
+      "domain":"cnews.fr"
+    },
+    {
+      "id":2,
+      "name":"Europe 1",
+      "group":"Médias et groupes de presse",
+      "domain":"europe1.fr"
+    },
+    {
+      "id":3,
+      "name":"Le Journal du Dimanche (JDD)",
+      "group":"Médias et groupes de presse",
+      "domain":"lejdd.fr"
+    },
+    {
+      "id":4,
+      "name":"JDNews",
+      "group":"Médias et groupes de presse",
+      "domain":""
+    },
+    {
+      "id":5,
+      "name":"Frontières",
+      "group":"Médias et groupes de presse",
+      "domain":""
+    },
+    {
+      "id":6,
+      "name":"L’Infiltré",
+      "group":"Médias et groupes de presse",
+      "domain":""
+    },
+    {
+      "id":7,
+      "name":"Canal+",
+      "group":"Médias et groupes de presse",
+      "domain":""
+    },
+    {
+      "id":8,
+      "name":"CStar",
+      "group":"Médias et groupes de presse",
+      "domain":""
+    },
+    {
+      "id":9,
+      "name":"Europe 2",
+      "group":"Médias et groupes de presse",
+      "domain":""
+    },
+    {
+      "id":10,
+      "name":"RFM",
+      "group":"Médias et groupes de presse",
+      "domain":""
+    },
+    {
+      "id":11,
+      "name":"Télé-Loisirs",
+      "group":"Médias et groupes de presse",
+      "domain":""
+    },
+    {
+      "id":12,
+      "name":"Femme Actuelle",
+      "group":"Médias et groupes de presse",
+      "domain":""
+    },
+    {
+      "id":13,
+      "name":"Voici",
+      "group":"Médias et groupes de presse",
+      "domain":""
+    },
+    {
+      "id":14,
+      "name":"GEO",
+      "group":"Médias et groupes de presse",
+      "domain":""
+    },
+    {
+      "id":15,
+      "name":"Capital",
+      "group":"Médias et groupes de presse",
+      "domain":""
+    },
+    {
+      "id":16,
+      "name":"Ça m’intéresse",
+      "group":"Médias et groupes de presse",
+      "domain":""
+    },
+    {
+      "id":17,
+      "name":"Cuisine Actuelle",
+      "group":"Médias et groupes de presse",
+      "domain":""
+    },
+    {
+      "id":18,
+      "name":"Prima",
+      "group":"Médias et groupes de presse",
+      "domain":""
+    },
+    {
+      "id":19,
+      "name":"Télé 2 semaines",
+      "group":"Médias et groupes de presse",
+      "domain":""
+    },
+    {
+      "id":20,
+      "name":"TV Grandes Chaînes",
+      "group":"Médias et groupes de presse",
+      "domain":""
+    },
+    {
+      "id":21,
+      "name":"Télé Z",
+      "group":"Médias et groupes de presse",
+      "domain":""
+    },
+    {
+      "id":22,
+      "name":"Ici Paris",
+      "group":"Médias et groupes de presse",
+      "domain":""
+    },
+    {
+      "id":23,
+      "name":"France Dimanche",
+      "group":"Médias et groupes de presse",
+      "domain":""
+    },
+    {
+      "id":24,
+      "name":"Gentside",
+      "group":"Médias et groupes de presse",
+      "domain":""
+    },
+    {
+      "id":25,
+      "name":"Oh My Mag",
+      "group":"Médias et groupes de presse",
+      "domain":""
+    },
+    {
+      "id":26,
+      "name":"Rassemblement national",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":27,
+      "name":"Marine Le Pen",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":28,
+      "name":"Jordan Bardella",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":29,
+      "name":"Rassemblement National de la Jeunesse",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":30,
+      "name":"Louis Aliot",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":31,
+      "name":"Sébastien Chenu",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":32,
+      "name":"Julien Odoul",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":33,
+      "name":"Jean-Philippe Tanguy",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":34,
+      "name":"Laure Lavalette",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":35,
+      "name":"Caroline Parmentier",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":36,
+      "name":"Reconquête",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":37,
+      "name":"Éric Zemmour",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":38,
+      "name":"Sarah Knafo",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":39,
+      "name":"Identité Libertés",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":40,
+      "name":"Marion Maréchal",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":41,
+      "name":"Les Patriotes",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":42,
+      "name":"Florian Philippot",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":43,
+      "name":"Action française",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":44,
+      "name":"Valeurs actuelles",
+      "group":"Médias et groupes de presse",
+      "domain":"valeursactuelles.com"
+    },
+    {
+      "id":45,
+      "name":"Fdesouche",
+      "group":"Médias et groupes de presse",
+      "domain":"fdesouche.com"
+    },
+    {
+      "id":46,
+      "name":"Boulevard Voltaire",
+      "group":"Médias et groupes de presse",
+      "domain":"bvoltaire.fr"
+    },
+    {
+      "id":47,
+      "name":"TV Libertés",
+      "group":"Médias et groupes de presse",
+      "domain":"tvl.fr"
+    },
+    {
+      "id":48,
+      "name":"Radio Courtoisie",
+      "group":"Médias et groupes de presse",
+      "domain":""
+    },
+    {
+      "id":49,
+      "name":"Causeur",
+      "group":"Médias et groupes de presse",
+      "domain":"causeur.fr"
+    },
+    {
+      "id":50,
+      "name":"Collectif Némésis",
+      "group":"Médias et groupes de presse",
+      "domain":""
+    },
+    {
+      "id":51,
+      "name":"Alice Cordier",
+      "group":"Médias et groupes de presse",
+      "domain":""
+    },
+    {
+      "id":52,
+      "name":"Égalité et Réconciliation",
+      "group":"Médias et groupes de presse",
+      "domain":""
+    },
+    {
+      "id":53,
+      "name":"Franck Allisio",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":54,
+      "name":"Maxime Amblard",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":55,
+      "name":"Bénédicte Auzanot",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":56,
+      "name":"Philippe Ballard",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":57,
+      "name":"Anchya Bamana",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":58,
+      "name":"Romain Baubry",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":59,
+      "name":"José Beaurain",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":60,
+      "name":"Christophe Bentz",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":61,
+      "name":"Théo Bernhardt",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":62,
+      "name":"Guillaume Bigot",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":63,
+      "name":"Bruno Bilde",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":64,
+      "name":"Emmanuel Blairy",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":65,
+      "name":"Sophie Blanc",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":66,
+      "name":"Frédéric Boccaletti",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":67,
+      "name":"Anthony Boulogne",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":68,
+      "name":"Jorys Bovet",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":69,
+      "name":"Jérôme Buisson",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":70,
+      "name":"Eddy Casterman",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":71,
+      "name":"Bernard Chaumeil",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":72,
+      "name":"Roger Chudeau",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":73,
+      "name":"Bruno Clavet",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":74,
+      "name":"Caroline Colombier",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":75,
+      "name":"Nathalie Da Conceicao Carvalho",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":76,
+      "name":"Catherine Dellong Meng",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":77,
+      "name":"Jocelyn Dessigny",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":78,
+      "name":"Sandrine Dogor-Such",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":79,
+      "name":"Nicolas Dragon",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":80,
+      "name":"Alexandre Dufosset",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":81,
+      "name":"Gaëtan Dussausaye",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":82,
+      "name":"Aurélien Dutremble",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":83,
+      "name":"Auguste Evrard",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":84,
+      "name":"Frédéric Falcon",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":85,
+      "name":"Muriel Fiol",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":86,
+      "name":"Marc de Fleurian",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":87,
+      "name":"Guillaume Florquin",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":88,
+      "name":"Emmanuel Fouquart",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":89,
+      "name":"Thierry Frappé",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":90,
+      "name":"Julien Gabarron",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":91,
+      "name":"Stéphanie Galzy",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":92,
+      "name":"Laurence Gardet",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":93,
+      "name":"Jonathan Gery",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":94,
+      "name":"Benoît Gilhet",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":95,
+      "name":"Yoann Gillet",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":96,
+      "name":"Christian Girard",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":97,
+      "name":"Antoine Golliot",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":98,
+      "name":"José Gonzalez",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":99,
+      "name":"Florence Goulet",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":100,
+      "name":"Géraldine Grangier",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":101,
+      "name":"Monique Griseti",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":102,
+      "name":"Julien Guibert",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":103,
+      "name":"Michel Guiniot",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":104,
+      "name":"Jordan Guitton",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":105,
+      "name":"Marine Hamelet",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":106,
+      "name":"Timothée Houssin",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":107,
+      "name":"Sébastien Humbert",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":108,
+      "name":"Laurent Jacobelli",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":109,
+      "name":"Pascal Jenft",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":110,
+      "name":"Alexis Jolly",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":111,
+      "name":"Tiffany Joncour",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":112,
+      "name":"Édouard Jordan",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":113,
+      "name":"Florence Joubert",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":114,
+      "name":"Hélène Laporte",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":115,
+      "name":"Robert Le Bourgeois",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":116,
+      "name":"Julie Lechanteux",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":117,
+      "name":"Nadine Lechon",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":118,
+      "name":"Gisèle Lelouis",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":119,
+      "name":"Hervé de Lépinau",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":120,
+      "name":"Katiana Levavasseur",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":121,
+      "name":"Julien Limongi",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":122,
+      "name":"René Lioret",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":123,
+      "name":"Christine Loir",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":124,
+      "name":"Marie-France Lorho",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":125,
+      "name":"Philippe Lottiaux",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":126,
+      "name":"Alexandre Loubet",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":127,
+      "name":"David Magnier",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":128,
+      "name":"Claire Marais-Beuil",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":129,
+      "name":"Matthieu Marchio",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":130,
+      "name":"Pascal Markowsky",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":131,
+      "name":"Patrice Martin",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":132,
+      "name":"Michèle Martinez",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":133,
+      "name":"Kévin Mauvieux",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":134,
+      "name":"Nicolas Meizonnet",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":135,
+      "name":"Joëlle Mélin",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":136,
+      "name":"Yaël Ménaché",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":137,
+      "name":"Thomas Ménagé",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":138,
+      "name":"Pierre Meurin",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":139,
+      "name":"Thibaut Monnier",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":140,
+      "name":"Serge Muller",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":141,
+      "name":"Thierry Perez",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":142,
+      "name":"Kévin Pfeffer",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":143,
+      "name":"Lisette Pollet",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":144,
+      "name":"Stéphane Rambaud",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":145,
+      "name":"Angélique Ranc",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":146,
+      "name":"Julien Rancoule",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":147,
+      "name":"Matthias Renault",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":148,
+      "name":"Catherine Rimbert",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":149,
+      "name":"Joseph Rivière",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":150,
+      "name":"Laurence Robert-Dehault",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":151,
+      "name":"Béatrice Roullaud",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":152,
+      "name":"Sophie-Laurence Roy",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":153,
+      "name":"Anaïs Sabatini",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":154,
+      "name":"Alexandre Sabatou",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":155,
+      "name":"Emeric Salmon",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":156,
+      "name":"Philippe Schreck",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":157,
+      "name":"Anne Sicard",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":158,
+      "name":"Emmanuel Taché",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":159,
+      "name":"Michaël Taverne",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":160,
+      "name":"Thierry Tesson",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":161,
+      "name":"Lionel Tivoli",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":162,
+      "name":"Gabriel Tomatis",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":163,
+      "name":"Romain Tonussi",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":164,
+      "name":"Cyril Tribuiani",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":165,
+      "name":"Antoine Villedieu",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":166,
+      "name":"Frédéric-Pierre Vos",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":167,
+      "name":"Frédéric Weber",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":168,
+      "name":"Mathilde Androuët",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":169,
+      "name":"Eléonore Bez",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":170,
+      "name":"Manon Bouquin",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":171,
+      "name":"Wallerand de Saint Just",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":172,
+      "name":"Edwige Diaz",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":173,
+      "name":"Thibaut François",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":174,
+      "name":"Charles-Henri Gallois",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":175,
+      "name":"Jean-Paul Garraud",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":176,
+      "name":"Audrey Guibert",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":177,
+      "name":"Andréa Kotarac",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":178,
+      "name":"Jean-Lin Lacapelle",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":179,
+      "name":"Alexandra Masson",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":180,
+      "name":"Aleksandar Nikolic",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":181,
+      "name":"Philippe Olivier",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":182,
+      "name":"Ludovic Pajot",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":183,
+      "name":"François Paradol",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":184,
+      "name":"Gilles Pennelle",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":185,
+      "name":"Julie Rechagneux",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":186,
+      "name":"Julien Sanchez",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":187,
+      "name":"Christopher Szczurek",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":188,
+      "name":"Pierre-Romain Thionnet",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":189,
+      "name":"Rody Tolassy",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":190,
+      "name":"Matthieu Valet",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":191,
+      "name":"Emma Vallain",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":192,
+      "name":"Éric Ciotti",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":193,
+      "name":"Alexandre Allegret-Pilot",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":194,
+      "name":"Charles Alloncle",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":195,
+      "name":"Matthieu Bloch",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":196,
+      "name":"Pierre-Henri Carbonnel",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":197,
+      "name":"Bernard Chaix",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":198,
+      "name":"Marc Chavent",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":199,
+      "name":"Christelle D’Intorni",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":200,
+      "name":"Olivier Fayssat",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":201,
+      "name":"Bartolomé Lenoir",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":202,
+      "name":"Hanane Mansouri",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":203,
+      "name":"Maxime Michelet",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":204,
+      "name":"Éric Michoux",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":205,
+      "name":"Sophie Ricourt Vaginay",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":206,
+      "name":"Vincent Trébuchet",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":207,
+      "name":"Antoine Valentin",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":208,
+      "name":"Gérault Verny",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":209,
+      "name":"Laurence Trochu",
+      "group":"RN et alliés politiques",
+      "domain":""
+    },
+    {
+      "id":210,
+      "name":"Gilbert Payet",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":211,
+      "name":"Samuel Lafont",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":212,
+      "name":"Thomas Culerrier",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":213,
+      "name":"Hilaire Bouyé",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":214,
+      "name":"Éléonore Lhéritier",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":215,
+      "name":"Sophie Calvel",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":216,
+      "name":"Mondane Langlois",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":217,
+      "name":"Diane Ouvry",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":218,
+      "name":"Matthieu Louves",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":219,
+      "name":"Johanna Humphrey",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":220,
+      "name":"Xavier Fourboul",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":221,
+      "name":"Pierre-Yves Thomas",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":222,
+      "name":"Isabelle Lamarque",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":223,
+      "name":"Marie-Pierre Cesari",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":224,
+      "name":"Julien Sene",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":225,
+      "name":"Olivier Le Coq",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":226,
+      "name":"Virginie Bonthoux",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":227,
+      "name":"Romain Gresle",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":228,
+      "name":"Laurent Chomard",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":229,
+      "name":"Elisabeth de Saint Romain",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":230,
+      "name":"Stanislas Rigault",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":231,
+      "name":"Damien Rieu",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":232,
+      "name":"Jean Messiha",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":233,
+      "name":"Papacito",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":234,
+      "name":"Thaïs d’Escufon",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":235,
+      "name":"Gilbert Collard",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":236,
+      "name":"Baptiste Marchais",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":237,
+      "name":"Tanguy David",
+      "group":"Reconquête et autres mouvements",
+      "domain":""
+    },
+    {
+      "id":238,
+      "name":"Pierre-Édouard Stérin",
+      "group":"Réseau et initiatives liés à P.-É. Stérin",
+      "domain":""
+    },
+    {
+      "id":239,
+      "name":"Arnaud Rérolle",
+      "group":"Réseau et initiatives liés à P.-É. Stérin",
+      "domain":""
+    },
+    {
+      "id":240,
+      "name":"François Durvye",
+      "group":"Réseau et initiatives liés à P.-É. Stérin",
+      "domain":""
+    },
+    {
+      "id":241,
+      "name":"Alexandre Pesey",
+      "group":"Réseau et initiatives liés à P.-É. Stérin",
+      "domain":""
+    },
+    {
+      "id":242,
+      "name":"Alban du Rostu",
+      "group":"Réseau et initiatives liés à P.-É. Stérin",
+      "domain":""
+    },
+    {
+      "id":243,
+      "name":"Charles Beigbeder",
+      "group":"Réseau et initiatives liés à P.-É. Stérin",
+      "domain":""
+    },
+    {
+      "id":244,
+      "name":"Alexandre Avril",
+      "group":"Réseau et initiatives liés à P.-É. Stérin",
+      "domain":""
+    },
+    {
+      "id":245,
+      "name":"Philippe de Gestas",
+      "group":"Réseau et initiatives liés à P.-É. Stérin",
+      "domain":""
+    },
+    {
+      "id":246,
+      "name":"Stéphane Ravier",
+      "group":"Réseau et initiatives liés à P.-É. Stérin",
+      "domain":""
+    },
+    {
+      "id":247,
+      "name":"Claire Geronimi",
+      "group":"Réseau et initiatives liés à P.-É. Stérin",
+      "domain":""
+    },
+    {
+      "id":248,
+      "name":"Edward Whalley",
+      "group":"Réseau et initiatives liés à P.-É. Stérin",
+      "domain":""
+    },
+    {
+      "id":249,
+      "name":"Périclès",
+      "group":"Réseau et initiatives liés à P.-É. Stérin",
+      "domain":""
+    },
+    {
+      "id":250,
+      "name":"Fonds du bien commun",
+      "group":"Réseau et initiatives liés à P.-É. Stérin",
+      "domain":""
+    },
+    {
+      "id":251,
+      "name":"Institut de formation politique (IFP)",
+      "group":"Réseau et initiatives liés à P.-É. Stérin",
+      "domain":""
+    },
+    {
+      "id":252,
+      "name":"Politicae",
+      "group":"Réseau et initiatives liés à P.-É. Stérin",
+      "domain":""
+    },
+    {
+      "id":253,
+      "name":"Observatoire de l’immigration et de la démographie (OID)",
+      "group":"Réseau et initiatives liés à P.-É. Stérin",
+      "domain":""
+    },
+    {
+      "id":254,
+      "name":"L’Incorrect",
+      "group":"Réseau et initiatives liés à P.-É. Stérin",
+      "domain":""
+    },
+    {
+      "id":255,
+      "name":"IREF (Institut de recherches économiques et fiscales)",
+      "group":"Réseau et initiatives liés à P.-É. Stérin",
+      "domain":""
+    },
+    {
+      "id":256,
+      "name":"Contrepoints",
+      "group":"Réseau et initiatives liés à P.-É. Stérin",
+      "domain":""
+    },
+    {
+      "id":257,
+      "name":"Otium Capital",
+      "group":"Réseau et initiatives liés à P.-É. Stérin",
+      "domain":""
+    },
+    {
+      "id":258,
+      "name":"Benyamin Netanyahou",
+      "group":"Alliances et soutiens à B. Netanyahou",
+      "domain":""
+    },
+    {
+      "id":259,
+      "name":"Meyer Habib",
+      "group":"Alliances et soutiens à B. Netanyahou",
+      "domain":""
+    },
+    {
+      "id":260,
+      "name":"Donald Trump",
+      "group":"Alliances et soutiens à B. Netanyahou",
+      "domain":""
+    },
+    {
+      "id":261,
+      "name":"Geert Wilders",
+      "group":"Alliances et soutiens à B. Netanyahou",
+      "domain":""
+    },
+    {
+      "id":262,
+      "name":"Santiago Abascal",
+      "group":"Alliances et soutiens à B. Netanyahou",
+      "domain":""
+    },
+    {
+      "id":263,
+      "name":"Viktor Orbán",
+      "group":"Alliances et soutiens à B. Netanyahou",
+      "domain":""
+    },
+    {
+      "id":264,
+      "name":"Javier Milei",
+      "group":"Alliances et soutiens à B. Netanyahou",
+      "domain":""
+    },
+    {
+      "id":265,
+      "name":"Itamar Ben-Gvir",
+      "group":"Alliances et soutiens à B. Netanyahou",
+      "domain":""
+    },
+    {
+      "id":266,
+      "name":"Bezalel Smotrich",
+      "group":"Alliances et soutiens à B. Netanyahou",
+      "domain":""
+    },
+    {
+      "id":267,
+      "name":"Aryeh Deri",
+      "group":"Alliances et soutiens à B. Netanyahou",
+      "domain":""
+    },
+    {
+      "id":268,
+      "name":"Amichai Chikli",
+      "group":"Alliances et soutiens à B. Netanyahou",
+      "domain":""
+    },
+    {
+      "id":269,
+      "name":"Matteo Salvini",
+      "group":"Alliances et soutiens à B. Netanyahou",
+      "domain":""
+    },
+    {
+      "id":270,
+      "name":"Likoud",
+      "group":"Alliances et soutiens à B. Netanyahou",
+      "domain":""
+    },
+    {
+      "id":271,
+      "name":"Otzma Yehudit (Pouvoir juif)",
+      "group":"Alliances et soutiens à B. Netanyahou",
+      "domain":""
+    },
+    {
+      "id":272,
+      "name":"Sionisme religieux (Religious Zionism)",
+      "group":"Alliances et soutiens à B. Netanyahou",
+      "domain":""
+    },
+    {
+      "id":273,
+      "name":"Shas",
+      "group":"Alliances et soutiens à B. Netanyahou",
+      "domain":""
+    },
+    {
+      "id":274,
+      "name":"Judaïsme unifié de la Torah (United Torah Judaism)",
+      "group":"Alliances et soutiens à B. Netanyahou",
+      "domain":""
+    },
+    {
+      "id":275,
+      "name":"Mathilda (porte-parole du Collectif Némésis)",
+      "group":"Collectif Némésis",
+      "domain":""
+    },
+    {
+      "id":276,
+      "name":"Léa (porte-parole du Collectif Némésis)",
+      "group":"Collectif Némésis",
+      "domain":""
+    },
+    {
+      "id":277,
+      "name":"Yona (porte-parole du Collectif Némésis)",
+      "group":"Collectif Némésis",
+      "domain":""
+    },
+    {
+      "id":278,
+      "name":"Astrid (porte-parole du Collectif Némésis)",
+      "group":"Collectif Némésis",
+      "domain":""
+    },
+    {
+      "id":279,
+      "name":"Jeunesses identitaires",
+      "group":"Mouvements identitaires et GUD",
+      "domain":""
+    },
+    {
+      "id":280,
+      "name":"Une Autre Jeunesse",
+      "group":"Mouvements identitaires et GUD",
+      "domain":""
+    },
+    {
+      "id":281,
+      "name":"Génération identitaire",
+      "group":"Mouvements identitaires et GUD",
+      "domain":""
+    },
+    {
+      "id":282,
+      "name":"Les Identitaires / Bloc identitaire",
+      "group":"Mouvements identitaires et GUD",
+      "domain":""
+    },
+    {
+      "id":283,
+      "name":"GUD / GUD Paris (Groupe Union Défense)",
+      "group":"Mouvements identitaires et GUD",
+      "domain":""
+    },
+    {
+      "id":284,
+      "name":"Jean-Eudes Gannat",
+      "group":"Réseau public de Jean-Eudes Gannat",
+      "domain":""
+    },
+    {
+      "id":285,
+      "name":"L’Alvarium",
+      "group":"Réseau public de Jean-Eudes Gannat",
+      "domain":""
+    },
+    {
+      "id":286,
+      "name":"Mouvement chouan",
+      "group":"Réseau public de Jean-Eudes Gannat",
+      "domain":""
+    },
+    {
+      "id":287,
+      "name":"Rassemblement des étudiants de droite (RED)",
+      "group":"Réseau public de Jean-Eudes Gannat",
+      "domain":""
+    },
+    {
+      "id":288,
+      "name":"Comité du 9 mai (C9M)",
+      "group":"Réseau public de Jean-Eudes Gannat",
+      "domain":""
+    },
+    {
+      "id":289,
+      "name":"Bordeaux Nationaliste / Bordeaux Nationalistes",
+      "group":"Réseau public de Jean-Eudes Gannat",
+      "domain":""
+    },
+    {
+      "id":290,
+      "name":"Paul-Alexandre Martin",
+      "group":"Réseau public de Jean-Eudes Gannat",
+      "domain":""
+    },
+    {
+      "id":291,
+      "name":"Ligue Ligérienne",
+      "group":"Réseau public de Jean-Eudes Gannat",
+      "domain":""
+    },
+    {
+      "id":292,
+      "name":"Alain Soral",
+      "group":"Réseau public et ancien entourage de Soral",
+      "domain":""
+    },
+    {
+      "id":293,
+      "name":"Kontre Kulture",
+      "group":"Réseau public et ancien entourage de Soral",
+      "domain":"kontrekulture.com"
+    },
+    {
+      "id":294,
+      "name":"ERFM / Écoute et Respect",
+      "group":"Réseau public et ancien entourage de Soral",
+      "domain":""
+    },
+    {
+      "id":295,
+      "name":"Faits & Documents",
+      "group":"Réseau public et ancien entourage de Soral",
+      "domain":""
+    },
+    {
+      "id":296,
+      "name":"Au Bon Sens",
+      "group":"Réseau public et ancien entourage de Soral",
+      "domain":""
+    },
+    {
+      "id":297,
+      "name":"Pierre de Brague",
+      "group":"Réseau public et ancien entourage de Soral",
+      "domain":""
+    },
+    {
+      "id":298,
+      "name":"Julien Limes",
+      "group":"Réseau public et ancien entourage de Soral",
+      "domain":""
+    },
+    {
+      "id":299,
+      "name":"Dieudonné M’Bala M’Bala",
+      "group":"Réseau public et ancien entourage de Soral",
+      "domain":""
+    },
+    {
+      "id":300,
+      "name":"Philippe Péninque",
+      "group":"Réseau public et ancien entourage de Soral",
+      "domain":""
+    },
+    {
+      "id":301,
+      "name":"Jildaz Mahé O’Chinal",
+      "group":"Réseau public et ancien entourage de Soral",
+      "domain":""
+    },
+    {
+      "id":302,
+      "name":"Frédéric Chatillon",
+      "group":"Réseau public et ancien entourage de Soral",
+      "domain":""
+    },
+    {
+      "id":303,
+      "name":"Vincent Lapierre",
+      "group":"Réseau public et ancien entourage de Soral",
+      "domain":""
+    }
+  ]
+}
