@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Mon fil, mes choix — filtre Web personnel
 // @namespace    https://github.com/janintibo-art/mon-fil-mes-choix
-// @version      3.5.0
+// @version      3.6.0
 // @updateURL    https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
 // @downloadURL  https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
-// @description  303 entrées en 9 groupes + filtre publicitaire facultatif et domaines personnels.
+// @description  V30 : fiches et variantes, sauvegarde complète Android/Windows et filtrage réversible.
 // @author       Communauté Mon fil, mes choix
 // @match        *://*/*
 // @run-at       document-idle
@@ -420,38 +420,51 @@
     }finally{working=false}
   }
   function schedule(){if(!enabled||revealOnce||scheduled)return;scheduled=true;setTimeout(()=>{scheduled=false;scan()},500)}
+  // Sauvegarde V30 complète et import des anciens fichiers V1.
   function exportChoices(){
     const excluded=RULES.filter(r=>!activeGroups[r.group]||entryExcluded.has(r.id)).map(r=>r.id).sort((a,b)=>a-b);
-    const profile={format:'mon-fil-mes-choix-preferences',version:1,excluded_ids:excluded,custom_domains:[...new Set(customDomains)]};
+    const profile={format:'mon-fil-mes-choix-preferences',version:2,excluded_ids:excluded,
+      custom_domains:[...new Set(customDomains)],profiles:asProfiles(profiles),
+      keywords_active:userWordsActive,filter_enabled:enabled,domains_enabled:domainsEnabled,ads_enabled:adsEnabled};
     const url=URL.createObjectURL(new Blob([JSON.stringify(profile,null,2)],{type:'application/json'}));
-    const a=document.createElement('a');a.href=url;a.download='mes-choix.json';document.body.appendChild(a);a.click();a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),2000);
-    alert('Vos choix sont sauvegardés dans mes-choix.json. Vous pouvez transférer ce fichier sur un autre appareil.');
+    const a=document.createElement('a');a.href=url;a.download='mes-choix-v30.json';document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),5000);
+    alert('Sauvegarde complète créée : mes-choix-v30.json. Transférez ce fichier sur votre autre appareil puis choisissez « Récupérer mes choix ».');
   }
   function importChoices(){
     const input=document.createElement('input');input.type='file';input.accept='.json,application/json';
     input.addEventListener('change',async()=>{
       const file=input.files?.[0];if(!file)return;
       try{
-        if(file.size>100000)throw Error('Fichier trop volumineux');
+        if(file.size>150000)throw Error('Fichier trop volumineux');
         const obj=JSON.parse(await file.text());
-        if(obj?.format!=='mon-fil-mes-choix-preferences'||obj.version!==1||!Array.isArray(obj.excluded_ids)||!Array.isArray(obj.custom_domains))throw Error('Sauvegarde incompatible');
+        if(obj?.format!=='mon-fil-mes-choix-preferences'||![1,2].includes(obj.version)||!Array.isArray(obj.excluded_ids)||!Array.isArray(obj.custom_domains))throw Error('Sauvegarde incompatible');
         const allowed=new Set(RULES.map(r=>r.id));
-        if(obj.excluded_ids.length>303||obj.excluded_ids.some(id=>!Number.isInteger(id)||!allowed.has(id))||new Set(obj.excluded_ids).size!==obj.excluded_ids.length)throw Error('Choix invalides');
+        if(obj.excluded_ids.length>RULES.length||obj.excluded_ids.some(id=>!Number.isInteger(id)||!allowed.has(id))||new Set(obj.excluded_ids).size!==obj.excluded_ids.length)throw Error('Choix invalides');
         if(obj.custom_domains.length>500||obj.custom_domains.some(d=>typeof d!=='string'||!/^(?:[a-z0-9-]+\.)+[a-z]{2,}$/.test(d))||new Set(obj.custom_domains).size!==obj.custom_domains.length)throw Error('Domaines invalides');
-        if(!confirm(`Ce fichier contient ${303-obj.excluded_ids.length} choix sélectionnés. Remplacer vos choix actuels ?`))return;
-        entryExcluded.clear();
-        for(const id of obj.excluded_ids)entryExcluded.add(id);
+        if(obj.version===2){
+          if(!Array.isArray(obj.profiles)||obj.profiles.length>60||obj.profiles.some(p=>!p||typeof p.label!=='string'||!Array.isArray(p.aliases)||p.aliases.length>10||p.aliases.some(a=>typeof a!=='string')))throw Error('Fiches invalides');
+          for(const key of ['keywords_active','filter_enabled','domains_enabled','ads_enabled'])if(typeof obj[key]!=='boolean')throw Error('Option invalide : '+key);
+        }
+        if(!confirm('Remplacer vos préférences sur cet appareil ?'+(obj.version===1?' (Ancien fichier : les mots-clés actuels seront conservés.)':'')))return;
+        entryExcluded.clear();for(const id of obj.excluded_ids)entryExcluded.add(id);
         for(const group of GROUPS)activeGroups[group.name]=true;
-        customDomains=obj.custom_domains.slice(0,500);
+        customDomains=obj.custom_domains.slice();
         GM_setValue(KEY+'adCustomDomains',customDomains.join('\n'));
         GM_setValue(KEY+'excluded_ids_v19',JSON.stringify([...entryExcluded]));
         GM_setValue(newKey,JSON.stringify(activeGroups));
-        refreshTerms();restore();apply();
-        alert('Vos choix ont bien été récupérés. Rechargez la page si besoin.');
+        if(obj.version===2){
+          profiles=asProfiles(obj.profiles);userWords=profiles.map(p=>p.label);
+          userWordsActive=obj.keywords_active;enabled=obj.filter_enabled;
+          domainsEnabled=obj.domains_enabled;adsEnabled=obj.ads_enabled;
+          GM_setValue(PROFILES_KEY,JSON.stringify(profiles));GM_setValue(WORDS_KEY,userWords.join('\n'));
+          GM_setValue(WORDS_ACTIVE_KEY,userWordsActive);GM_setValue(KEY+'enabled',enabled);
+          GM_setValue(KEY+'domains',domainsEnabled);GM_setValue(KEY+'adsEnabled',adsEnabled);
+        }
+        revealOnce=false;revealDomainOnce=false;refreshTerms();restore();apply();
+        alert('Préférences importées. Rechargez la page pour mettre le menu à jour.');
       }catch(error){alert('Impossible de récupérer ce fichier : '+error.message)}
-    });
-    input.click();
+    });input.click();
   }
   function menu(){
     GM_registerMenuCommand('👁️ Tableau de bord Invisibilité',openDashboard);
@@ -537,6 +550,12 @@
   style();menu();scan();addLauncher();
   const observer=new MutationObserver(records=>{
     if(records.every(r=>r.type==='attributes'&&r.attributeName?.startsWith('data-mfm-')))return;
+    for(const r of records){
+      if(r.type!=='childList')continue;
+      const node=r.target.nodeType===1?r.target:r.target.parentElement;
+      const card=node?.closest?.(selectors);
+      if(card)card.removeAttribute('data-mfm-scanned');
+    }
     schedule();
   });
   observer.observe(document.documentElement,{childList:true,subtree:true,attributes:false});
