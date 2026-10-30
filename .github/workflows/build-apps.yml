@@ -49,14 +49,13 @@ jobs:
         run: python -m unittest discover -s windows -p "test_*.py"
       - name: Compiler EXE
         shell: pwsh
-        run: python -m PyInstaller --noconfirm --clean --onefile --windowed --name MonFilMesChoix_DNS --icon windows/assets/icone_antifa.ico --add-data 'windows/domaines_v1.json;.' --add-data 'windows/selection_v14.json;.' windows/app.py
+        run: python -m PyInstaller --noconfirm --clean --onefile --windowed --name MonFilMesChoix_DNS --icon windows/assets/logo_windows.ico --add-data 'windows/assets/logo_windows.png;assets' --add-data 'windows/domaines_v1.json;.' --add-data 'windows/selection_v14.json;.' windows/app.py
       - uses: actions/upload-artifact@v4
         with:
           name: MonFilMesChoix-Windows-EXE
           path: dist/MonFilMesChoix_DNS.exe
           if-no-files-found: error
   release:
-    # Un APK et un EXE doivent être disponibles avant publication.
     if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     needs: [android, windows]

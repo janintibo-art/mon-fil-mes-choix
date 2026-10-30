@@ -234,6 +234,12 @@ class GUI:
         self.root.geometry("1120x790")
         self.root.minsize(860, 610)
         self.root.configure(bg=self.BG)
+        try:
+            icon_path = Path(getattr(sys, "_MEIPASS", Path(__file__).parent)) / "assets" / "logo_windows.png"
+            self._taskbar_icon = tk.PhotoImage(file=str(icon_path))
+            self.root.iconphoto(True, self._taskbar_icon)
+        except (OSError, tk.TclError):
+            pass
         self.root.columnconfigure(1, weight=1)
         self.root.rowconfigure(0, weight=1)
 
@@ -279,19 +285,15 @@ class GUI:
             return
         self.canvas.yview_scroll(-int(event.delta / 120), "units")
 
-    def _brand(self, parent, size=60):
-        """Tiny vector interpretation of the black/red flag emblem."""
-        c = tk.Canvas(parent, bg=parent.cget("bg"), width=size, height=size,
-                      highlightthickness=0, bd=0)
-        c.create_oval(2, 2, size-2, size-2, fill="#f8f8f8", outline="#d7dce3", width=2)
-        c.create_oval(7, 7, size-7, size-7, fill="#111318", outline="#111318")
-        c.create_oval(11, 11, size-11, size-11, fill="#f8f8f8", outline="#f8f8f8")
-        s = size / 60
-        pts = [(13,29),(22,19),(36,23),(50,21),(48,35),(38,30),(25,35),(14,35)]
-        c.create_polygon(*[v*s for p in pts for v in p], fill=self.RED, outline=self.RED)
-        pts = [(14,38),(27,36),(39,32),(46,37),(38,43),(30,42),(25,51),(20,44)]
-        c.create_polygon(*[v*s for p in pts for v in p], fill="#16191e", outline="#16191e")
-        return c
+    def _brand(self, parent, size=88):
+        """High-resolution PNG, bundled within the Windows executable."""
+        asset = Path(getattr(sys, "_MEIPASS", Path(__file__).parent)) / "assets" / "logo_windows.png"
+        try:
+            original = tk.PhotoImage(file=str(asset))
+            self._brand_image = original.subsample(3, 3)  # 256 -> 85 pixels
+            return tk.Label(parent, image=self._brand_image, bg=parent.cget("bg"), bd=0)
+        except (OSError, tk.TclError):
+            return self._label(parent, "MON FIL", 18, self.RED, True)
 
     def _label(self, parent, text, size=11, color=None, bold=False, **kw):
         return tk.Label(parent, text=text, bg=parent.cget("bg"), fg=color or self.TEXT,
@@ -310,7 +312,7 @@ class GUI:
                         highlightbackground=self.EDGE, highlightthickness=1)
 
     def _build_sidebar(self):
-        self._brand(self.sidebar, 60).pack(anchor="w", pady=(1, 13))
+        self._brand(self.sidebar, 88).pack(anchor="w", pady=(1, 13))
         self._label(self.sidebar, "MON FIL,", 16, self.TEXT, True).pack(anchor="w")
         self._label(self.sidebar, "MES CHOIX", 16, self.RED, True).pack(anchor="w")
         self._label(self.sidebar, "FILTRE DNS  /  WINDOWS", 9, self.MUTED, True).pack(anchor="w", pady=(6, 28))
@@ -323,7 +325,7 @@ class GUI:
         self._label(self.sidebar, "RÉGLAGES LOCAUX", 9, self.MUTED, True).pack(anchor="w", pady=(30, 8))
         self._label(self.sidebar, "• Aucun compte requis\n• Aucune télémétrie ajoutée\n• Réversible à tout moment",
                     10, self.MUTED).pack(anchor="w")
-        self._label(self.sidebar, "V22  •  MON FIL, MES CHOIX", 9, self.MUTED).pack(side="bottom", anchor="w", pady=(15, 0))
+        self._label(self.sidebar, "V25  •  MON FIL, MES CHOIX", 9, self.MUTED).pack(side="bottom", anchor="w", pady=(15, 0))
 
     def _scroll_to(self, section):
         widget = getattr(self, section + "_section")
