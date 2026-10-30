@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mon fil, mes choix — filtre Web personnel
 // @namespace    https://github.com/janintibo-art/mon-fil-mes-choix
-// @version      3.4.0
+// @version      3.5.0
 // @updateURL    https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
 // @downloadURL  https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
 // @description  303 entrées en 9 groupes + filtre publicitaire facultatif et domaines personnels.
@@ -32,7 +32,33 @@
   const WORDS_KEY='mfm_keywords_v26';
   const WORDS_ACTIVE_KEY='mfm_keywords_active_v26';
   const cleanWords=raw=>[...new Set(String(raw).split(/[\n;,]+/u).map(w=>w.trim().replace(/\s+/gu,' ')).filter(w=>w.length>=3&&w.length<=70))].slice(0,60);
-  let userWords=cleanWords(GM_getValue(WORDS_KEY,''));
+  // V30 : fiches avec variantes, migration sans perte des expressions V29.
+  const PROFILES_KEY='mfm_profiles_v30';
+  const asProfiles=raw=>{
+    if(!Array.isArray(raw))return [];
+    const seen=new Set(),out=[];
+    for(const item of raw){
+      if(!item||typeof item.label!=='string')continue;
+      const label=cleanWords(item.label)[0];if(!label)continue;
+      const id=label.toLocaleLowerCase('fr');if(seen.has(id))continue;seen.add(id);
+      const aliases=cleanWords(Array.isArray(item.aliases)?item.aliases.join('\n'):'')
+        .filter(x=>x.toLocaleLowerCase('fr')!==id).slice(0,10);
+      out.push({label,aliases});if(out.length>=60)break;
+    }
+    return out;
+  };
+  let profiles;
+  try{profiles=asProfiles(JSON.parse(GM_getValue(PROFILES_KEY,'null')))}catch{profiles=[]}
+  if(!GM_getValue(PROFILES_KEY,''))profiles=cleanWords(GM_getValue(WORDS_KEY,'')).map(label=>({label,aliases:[]}));
+  let userWords=profiles.map(p=>p.label);
+  function saveProfiles(){
+    profiles=asProfiles(profiles);
+    userWords=profiles.map(p=>p.label);
+    GM_setValue(PROFILES_KEY,JSON.stringify(profiles));
+    GM_setValue(WORDS_KEY,userWords.join('\n')); // compatibilité V29
+    GM_setValue(WORDS_ACTIVE_KEY,userWordsActive);
+    revealOnce=false;apply();
+  }
   let userWordsActive=Boolean(GM_getValue(WORDS_ACTIVE_KEY,true));
   let enabled=Boolean(GM_getValue(KEY+'enabled',true));
   let domainsEnabled=Boolean(GM_getValue(KEY+'domains',true));
@@ -148,9 +174,11 @@
     const original=String(txt).slice(0,2300);
     const n=' '+normalize(original)+' ';
     if(userWordsActive){
-      for(const word of userWords){
-        const normalized=normalize(word);
-        if(normalized&&n.includes(' '+normalized+' '))return word;
+      for(const profile of profiles){
+        for(const word of [profile.label,...profile.aliases]){
+          const normalized=normalize(word);
+          if(normalized&&n.includes(' '+normalized+' '))return profile.label;
+        }
       }
     }
     for(const r of terms){
@@ -285,10 +313,10 @@
     dialog.append(info);
     const actions=document.createElement('div');actions.className='mfm-actions';
     actions.append(button('Enregistrer',()=>{
-      userWords=cleanWords(area.value);userWordsActive=toggle.checked;
-      GM_setValue(WORDS_KEY,userWords.join('\n'));
-      GM_setValue(WORDS_ACTIVE_KEY,userWordsActive);
-      revealOnce=false;apply();overlay.remove();
+      const words=cleanWords(area.value);
+      profiles=words.map(label=>profiles.find(p=>p.label.toLocaleLowerCase('fr')===label.toLocaleLowerCase('fr'))||{label,aliases:[]});
+      userWordsActive=toggle.checked;
+      saveProfiles();overlay.remove();
     },'mfm-primary'),button('Annuler',()=>overlay.remove()));
     dialog.append(actions);overlay.appendChild(dialog);document.body.appendChild(overlay);
     overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove()});
@@ -459,7 +487,7 @@
     const title=document.createElement('strong');title.textContent='Mon fil · Invisibilité';title.style.fontSize='17px';
     const close=button('✕',()=>root.remove());close.setAttribute('aria-label','Fermer le tableau de bord');
     head.append(title,close);root.append(head);
-    const tip=document.createElement('p');tip.textContent='Choisissez les expressions que vous souhaitez masquer sur les pages compatibles.';root.append(tip);
+    const tip=document.createElement('p');tip.textContent='Ajoutez une fiche puis choisissez « Variantes » pour indiquer surnoms, pseudonymes ou autres orthographes. Ces choix restent locaux.';root.append(tip);
     const status=document.createElement('label');Object.assign(status.style,{display:'flex',alignItems:'center',gap:'9px',margin:'12px 0'});
     const toggle=document.createElement('input');toggle.type='checkbox';toggle.checked=userWordsActive;
     status.append(toggle,document.createTextNode('Masquer mes mots-clés'));root.append(status);
@@ -467,20 +495,28 @@
     function redraw(){
       list.replaceChildren();
       if(!userWords.length){const empty=document.createElement('p');empty.textContent='Aucun mot-clé ajouté pour le moment.';list.append(empty)}
-      userWords.forEach(word=>{
-        const line=document.createElement('div');Object.assign(line.style,{display:'flex',gap:'8px',alignItems:'center',justifyContent:'space-between',padding:'8px',margin:'5px 0',borderRadius:'8px',background:'#243043'});
-        const name=document.createElement('span');name.textContent=word;name.style.overflowWrap='anywhere';
-        const remove=button('Retirer',()=>{userWords=userWords.filter(w=>w!==word);saveWords();redraw()});remove.setAttribute('aria-label','Retirer '+word);
-        line.append(name,remove);list.append(line);
+      profiles.forEach(profile=>{
+        const line=document.createElement('div');Object.assign(line.style,{display:'flex',gap:'7px',alignItems:'center',justifyContent:'space-between',padding:'8px',margin:'5px 0',borderRadius:'8px',background:'#243043',flexWrap:'wrap'});
+        const name=document.createElement('span');name.textContent=profile.label+(profile.aliases.length?' · '+profile.aliases.length+' variante(s)':'');name.style.overflowWrap='anywhere';
+        const edit=button('Variantes',()=>{
+          const answer=prompt('Autres noms ou pseudonymes pour « '+profile.label+' » (un par ligne) :',profile.aliases.join('\n'));
+          if(answer===null)return;
+          profile.aliases=cleanWords(answer).filter(x=>x.toLocaleLowerCase('fr')!==profile.label.toLocaleLowerCase('fr')).slice(0,10);
+          saveProfiles();redraw();
+        });edit.setAttribute('aria-label','Modifier les variantes de '+profile.label);
+        const remove=button('Retirer',()=>{profiles=profiles.filter(p=>p!==profile);saveProfiles();redraw()});remove.setAttribute('aria-label','Retirer '+profile.label);
+        line.append(name,edit,remove);list.append(line);
       });
     }
-    function saveWords(){GM_setValue(WORDS_KEY,userWords.join('\n'));GM_setValue(WORDS_ACTIVE_KEY,userWordsActive);revealOnce=false;apply()}
-    const entry=document.createElement('input');entry.type='text';entry.maxLength=70;entry.placeholder='Ajouter un nom ou une expression';entry.setAttribute('aria-label','Nouvelle expression');
+    function saveWords(){saveProfiles()}
+    const entry=document.createElement('input');entry.type='text';entry.maxLength=70;entry.placeholder='Ajouter une fiche (nom ou sujet)';entry.setAttribute('aria-label','Nouvelle expression');
     Object.assign(entry.style,{width:'100%',padding:'10px',marginTop:'12px',boxSizing:'border-box',borderRadius:'8px',border:'1px solid #6b8196',background:'#0a1423',color:'#fff'});
     const add=button('Ajouter à ma liste',()=>{
       const values=cleanWords(entry.value);
       if(!values.length){entry.setCustomValidity('Saisissez au moins 3 caractères');entry.reportValidity();return}
-      entry.setCustomValidity('');userWords=cleanWords([...userWords,...values].join('\n'));entry.value='';saveWords();redraw();
+      entry.setCustomValidity('');
+      for(const label of values){if(!profiles.some(p=>p.label.toLocaleLowerCase('fr')===label.toLocaleLowerCase('fr'))&&profiles.length<60)profiles.push({label,aliases:[]})}
+      entry.value='';saveWords();redraw();
     });
     entry.addEventListener('input',()=>entry.setCustomValidity(''));
     entry.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();add.click()}});
