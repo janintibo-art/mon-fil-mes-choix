@@ -121,21 +121,44 @@
 @media(max-width:700px){#ia-guidage .paper{grid-template-columns:1fr!important;padding:22px!important}}
 .topnav{flex-wrap:wrap;justify-content:flex-end}.brand img{width:31px;height:31px;object-fit:contain;border-radius:8px}
 </style>
+<link rel="stylesheet" href="./assets/v8-theme.css">
 </head>
-<body>
-<header class="topbar"><div class="shell topbar-inner"><a class="brand" href="#haut"><img src="./assets/icone_antifa.png" alt="Drapeaux rouge et noir"> MON FIL, MES CHOIX</a><nav class="topnav" aria-label="Navigation principale"><a href="#pourquoi">Pourquoi</a><a href="#tampermonkey">Tampermonkey</a><a href="./dns.html">Applications DNS</a>
-        <a href="./ia.html">Guide IA</a><a href="#annuaire">La liste</a><a href="#methodologie">Méthode</a></nav></div></header>
+<body class="v8 v8-home">
+<header class="v8-header"><div class="v8-wrap v8-header-inner">
+  <a class="v8-brand" href="./" aria-label="Mon fil, mes choix — Accueil"><img src="./assets/icone_antifa.png" alt="" width="42" height="42"><span>Mon fil, <strong>mes choix</strong></span></a>
+  <nav class="v8-nav" aria-label="Navigation principale"><a href="./">Accueil</a><a href="./#annuaire">La liste</a><a href="./#tampermonkey">Tampermonkey</a><a href="./dns.html">Applications</a><a href="./ia.html">Guide IA</a></nav>
+  <a class="v8-header-cta" href="./#applications">Télécharger <span aria-hidden="true">↗</span></a>
+  <details class="v8-mobile-nav"><summary aria-label="Ouvrir le menu de navigation"><span></span><span></span><span></span></summary><nav aria-label="Navigation mobile"><a href="./">Accueil</a><a href="./#annuaire">Liste de filtrage</a><a href="./#tampermonkey">Tampermonkey</a><a href="./dns.html">APK et EXE</a><a href="./ia.html">Guide IA</a></nav></details>
+</div></header>
 <main id="haut">
-  <section class="hero"><div class="shell hero-in">
-    <div class="eyebrow">Répertoire indépendant • Version du 29 octobre 2026</div>
-    <h1>Reprendre la main<br>sur le Web.</h1>
-    <p class="hero-lead">Une liste de 303 entrées et un filtre Tampermonkey pour masquer localement des résultats, vidéos, publications et sites que vous ne souhaitez plus voir — pas seulement sur Facebook.</p>
-    <div class="hero-meta"><span class="tag"><span class="dot"></span><span id="hero-count">303</span> entrées recensées</span><span class="tag">9 grandes catégories</span><span class="tag">Aucun blocage de compte sur les plateformes</span></div>
-    <div class="hero-actions"><a class="btn btn-primary" href="#tampermonkey">Installer le filtre Web <span aria-hidden="true">↗</span></a><a class="btn btn-ghost" href="#applications">Télécharger APK + EXE</a>
-          <a class="btn btn-ghost" href="./ia.html">Utiliser l’IA pour filtrer</a><a class="btn btn-ghost" href="#annuaire">Explorer les 303 entrées</a></div>
-  </div></section>
+  <section class="hero v8-hero"><div class="shell hero-in v8-hero-grid">
+  <div class="v8-hero-copy"><div class="eyebrow">OUTILS LIBRES · CONTRÔLE PERSONNEL DU WEB</div>
+    <h1>Mon fil,<br><em>mes choix.</em></h1>
+    <p class="hero-lead">Des outils pour choisir ce que vous voyez sur Internet. Explorez une liste publique de <strong>303 entrées à vérifier selon leur statut</strong>, filtrez votre navigateur et gérez vos propres domaines sur Android ou Windows.</p>
+    <div class="hero-actions v8-hero-actions"><a class="btn btn-primary" href="https://github.com/janintibo-art/mon-fil-mes-choix/releases/latest/download/MonFilMesChoix_DNS.apk" rel="noopener noreferrer" aria-label="Télécharger l'application Android APK">↓ APK Android</a><a class="btn btn-ghost" href="https://github.com/janintibo-art/mon-fil-mes-choix/releases/latest/download/MonFilMesChoix_DNS.exe" rel="noopener noreferrer" aria-label="Télécharger le logiciel Windows EXE">↓ EXE Windows</a><a class="btn btn-outline-white" href="#annuaire">Explorer la liste →</a></div>
+    <div class="v8-hero-foot"><span>✓ Fonctionnement local</span><span>✓ Listes personnalisables</span><span>✓ Réversible</span></div>
+  </div>
+  <div class="v8-hero-visual" aria-label="Aperçu illustratif des outils de filtrage"><div class="v8-flag-glow"></div>
+    <div class="v8-monitor"><div class="v8-window-head"><span class="v8-window-dots"><i></i><i></i><i></i></span><span>Mon fil, mes choix</span><span class="v8-window-cross">✣</span></div>
+      <div class="v8-window-content"><div class="v8-window-title"><img src="./assets/icone_antifa.png" alt="" width="74" height="74"><div><strong>Votre navigation.<br>Vos règles.</strong><small>Trois filtres complémentaires</small></div></div>
+        <div class="v8-visual-rule"><span class="v8-visual-square">01</span><div><strong>Liste consultable</strong><small><span id="hero-count">303</span> entrées • 9 catégories</small></div><span class="v8-visual-arrow">↗</span></div>
+        <div class="v8-visual-rule"><span class="v8-visual-square">02</span><div><strong>Filtre navigateur</strong><small>Masquage local avec Tampermonkey</small></div><span class="v8-visual-arrow">↗</span></div>
+        <div class="v8-visual-rule"><span class="v8-visual-square">03</span><div><strong>Filtre de domaines</strong><small>Android DNS et Windows hosts</small></div><span class="v8-visual-arrow">↗</span></div>
+      </div>
+    </div>
+    <div class="v8-float-note"><span class="v8-tiny-dot"></span> Aperçu de l'écosystème · aucune activation automatique</div>
+  </div>
+</div></section>
   <div class="shell">
-    <section id="pourquoi" class="intro-grid" aria-label="Présentation et objectifs">
+    <section class="v8-feature-section" aria-label="Découvrir les outils"><div class="v8-section-top"><span class="kicker">À CHAQUE USAGE, SON OUTIL</span><h2>Tout pour personnaliser votre Web.</h2><p>Un même projet, trois méthodes différentes. Choisissez celles qui correspondent à vos besoins.</p></div>
+ <div class="v8-feature-grid">
+  <a class="v8-feature-card card-red" href="#annuaire"><span class="v8-feature-icon" aria-hidden="true">☷</span><span class="v8-feature-caption">RÉPERTOIRE</span><strong>La liste documentée</strong><span>303 entrées consultables, avec recherche, catégories et sources lorsqu'elles sont disponibles.</span><span class="v8-feature-link">Explorer la liste <b>↗</b></span></a>
+  <a class="v8-feature-card card-violet" href="#tampermonkey"><span class="v8-feature-icon" aria-hidden="true">✳</span><span class="v8-feature-caption">NAVIGATEUR</span><strong>Le filtre Tampermonkey</strong><span>Masquez localement certains résultats ou publications, sans supprimer les contenus à la source.</span><span class="v8-feature-link">Voir le tutoriel <b>↗</b></span></a>
+  <a class="v8-feature-card card-green" href="./dns.html#android"><span class="v8-feature-icon" aria-hidden="true">▣</span><span class="v8-feature-caption">ANDROID · APK</span><strong>L'application Android</strong><span>Filtre DNS local pour une liste de domaines choisie. Réglages personnalisables et arrêt possible.</span><span class="v8-feature-link">Voir Android <b>↗</b></span></a>
+  <a class="v8-feature-card card-blue" href="./dns.html#windows"><span class="v8-feature-icon" aria-hidden="true">▦</span><span class="v8-feature-caption">WINDOWS · EXE</span><strong>L'application Windows</strong><span>Gestion réversible du fichier hosts pour les domaines sélectionnés, sans toucher aux autres sites.</span><span class="v8-feature-link">Voir Windows <b>↗</b></span></a>
+ </div>
+</section>
+<section id="pourquoi" class="intro-grid" aria-label="Présentation et objectifs">
       <article class="paper intro-card"><span class="kicker">La démarche</span><h2>Pourquoi cette liste ?</h2>
         <p>Les moteurs de recherche, les réseaux sociaux et de nombreux sites recommandent des contenus que nous n’avons pas demandé à suivre. Cette liste est née d’une volonté simple : <strong>reprendre le contrôle de sa navigation</strong> et réduire l’exposition aux contenus que l’on ne souhaite pas retrouver chaque jour.</p>
         <p>Elle rassemble des pages de médias, des organisations et des personnalités publiques, notamment dans des courants politiques ou éditoriaux que l'auteur préfère ne pas suivre. Pour certains contenus, il s'agit également d'éviter des propos perçus comme racistes, xénophobes ou discriminatoires.</p>
