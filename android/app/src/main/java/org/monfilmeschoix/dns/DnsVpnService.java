@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.net.VpnService;
+import android.content.Context;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import java.io.FileInputStream;
@@ -23,6 +24,15 @@ import java.util.concurrent.Executors;
 public final class DnsVpnService extends VpnService {
     static final String START="org.monfilmeschoix.START", STOP="org.monfilmeschoix.STOP", RELOAD="org.monfilmeschoix.RELOAD";
     static volatile boolean ACTIVE = false;
+    // START_NOT_STICKY: never silently restart a VPN after a crash/reboot.
+    private static final String PREFS = "vpn_runtime";
+    private static final String ERROR = "last_error";
+    static String lastError(Context ctx) {
+        return ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(ERROR, "");
+    }
+    private void rememberError(String message) {
+        getSharedPreferences(PREFS, MODE_PRIVATE).edit().putString(ERROR, message).apply();
+    }
     private volatile boolean running;
     private ParcelFileDescriptor tun;
     private Thread tunnelThread;
@@ -43,8 +53,10 @@ public final class DnsVpnService extends VpnService {
             if(running) denied = ExtraBlocks.all(this, DomainRules.get(this));
             return running ? START_STICKY : START_NOT_STICKY;
         }
-        if(running) return START_STICKY;
+        if(running) return START_NOT_STICKY;
+        if (command == null || !START.equals(command.getAction())) return START_NOT_STICKY;
         try {
+            rememberError("");
             NotificationManager nm = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
             nm.createNotificationChannel(new NotificationChannel("dns_filter","Filtre DNS actif",NotificationManager.IMPORTANCE_LOW));
             Intent open = new Intent(this, MainActivity.class);
@@ -66,15 +78,22 @@ public final class DnsVpnService extends VpnService {
                 .setMtu(1500).addAddress("10.111.0.1",30)
                 .addDnsServer("10.111.0.2").addRoute("10.111.0.2",32);
             tun = builder.establish();
-            if(tun == null) {stopSelf();return START_NOT_STICKY;}
+            if(tun == null) {
+                rememberError("Android a refusé la création du tunnel VPN.");
+                shutdownTunnel(); stopSelf(); return START_NOT_STICKY;
+            }
             output = new FileOutputStream(tun.getFileDescriptor());
             workers = Executors.newFixedThreadPool(4);
             running = true;
             ACTIVE = true;
             tunnelThread = new Thread(this::runTunnel,"dns-tunnel");
             tunnelThread.start();
-            return START_STICKY;
-        } catch(Exception error) {android.util.Log.e("MFMC-DNS","Unable to start",error);stopSelf();return START_NOT_STICKY;}
+            return START_NOT_STICKY;
+        } catch(Exception error) {
+            android.util.Log.e("MFMC-DNS","Unable to start",error);
+            rememberError("Le VPN n'a pas pu démarrer. Vérifiez l'autorisation VPN et la connexion.");
+            shutdownTunnel(); stopSelf(); return START_NOT_STICKY;
+        }
     }
     private void runTunnel() {
         try(FileInputStream input = new FileInputStream(tun.getFileDescriptor())) {
@@ -86,8 +105,19 @@ public final class DnsVpnService extends VpnService {
                     if(workers != null) workers.execute(()->processFrame(frame));
                 }
             }
-        } catch(Exception e) { if(running) android.util.Log.e("MFMC-DNS","Read failed",e); }
-        if(running) stopSelf();
+        } catch(Exception e) {
+            if(running) {
+                android.util.Log.e("MFMC-DNS","Read failed",e);
+                rememberError("Le tunnel DNS s'est interrompu. Le filtre a été arrêté par sécurité.");
+            }
+        } finally {
+            // Failure-safe: an unexpected tunnel exit must release the VPN route.
+            // shutdownTunnel closes the file descriptor to unblock pending reads.
+            if (running) {
+                shutdownTunnel();
+                stopSelf();
+            }
+        }
     }
     private void processFrame(byte[] frame) {
         if(!running || frame.length < 28 || (frame[0]>>4 & 0x0f)!=4) return;
@@ -179,18 +209,25 @@ public final class DnsVpnService extends VpnService {
         int udpCheck=checksum(sum);put16(out,26,udpCheck==0?0xffff:udpCheck);
         return out;
     }
-    private void shutdownTunnel() {
+    private synchronized void shutdownTunnel() {
         running = false;
         ACTIVE = false;
         if (workers != null) { workers.shutdownNow(); workers = null; }
-        try { if (tun != null) tun.close(); } catch (Exception ignored) {}
-        tun = null;
-        output = null;
+        synchronized (writeLock) {
+            try { if (tun != null) tun.close(); } catch (Exception ignored) {}
+            tun = null;
+            output = null;
+        }
         stopForeground(STOP_FOREGROUND_REMOVE);
     }
     @Override public void onDestroy() {
         shutdownTunnel();
         super.onDestroy();
     }
-    @Override public void onRevoke(){stopSelf();}
+    @Override public void onRevoke(){
+        rememberError("Autorisation VPN révoquée par Android.");
+        shutdownTunnel();
+        stopSelf();
+        super.onRevoke();
+    }
 }

@@ -3,6 +3,7 @@ package org.monfilmeschoix.dns;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.provider.Settings;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -121,12 +122,23 @@ public class MainActivity extends Activity {
         Button stop = button("Désactiver le filtre", CARD_ALT, FG, true);
         page.addView(stop, lp(-1,dp(49),0,0,0,16));
         stop.setOnClickListener(v -> {
-            // Stop the actual Android service, even if its DNS tunnel is blocked.
+            // First ask the VPN to tear down its tunnel; then ask Android to stop it.
+            Intent action = new Intent(this, DnsVpnService.class).setAction(DnsVpnService.STOP);
+            try { startService(action); } catch (Exception ignored) { }
             stopService(new Intent(this, DnsVpnService.class));
-            state.setText("○ Protection désactivée");
+            state.setText("◌ Arrêt en cours…");
             state.setTextColor(MUTED);
-            detail.setText("Arrêt demandé à Android. Si le VPN reste actif, désactivez-le dans les paramètres VPN.");
+            detail.setText("Vérification de l'arrêt du VPN…");
             handler.postDelayed(this::refreshStatus, 900);
+            handler.postDelayed(this::refreshStatus, 1800);
+        });
+        Button androidVpn = button("⚙ Réglages VPN Android (secours)", CARD_ALT, FG, true);
+        page.addView(androidVpn, lp(-1,dp(49),0,0,0,16));
+        androidVpn.setOnClickListener(v -> {
+            try { startActivity(new Intent(Settings.ACTION_VPN_SETTINGS)); }
+            catch (Exception error) {
+                Toast.makeText(this, "Ouvrez Paramètres → Connexions → VPN", Toast.LENGTH_LONG).show();
+            }
         });
 
         // Group and entry management; all 303 are selected by default.
@@ -390,6 +402,7 @@ public class MainActivity extends Activity {
         state.setTextColor(MUTED);
         detail.setText("Vérifiez l'indication VPN dans Android et la notification.");
         handler.postDelayed(this::refreshStatus, 900);
+        handler.postDelayed(this::refreshStatus, 1900);
     }
 
     private void refreshStatus() {
@@ -397,7 +410,9 @@ public class MainActivity extends Activity {
         boolean on = DnsVpnService.ACTIVE;
         state.setText(on ? "● Protection active" : "○ Protection désactivée");
         state.setTextColor(on ? GREEN : MUTED);
-        detail.setText(on ? "Service DNS local en cours d'exécution." : "Filtre arrêté. Activez-le quand vous le souhaitez.");
+        String error = DnsVpnService.lastError(this);
+        detail.setText(on ? "Service DNS local en cours d'exécution. Arrêt possible ici ou depuis la notification."
+                : (error.isEmpty() ? "Filtre arrêté. Activez-le quand vous le souhaitez." : error));
     }
 
     @Override protected void onResume() {super.onResume();handler.postDelayed(this::refreshStatus, 200);}
