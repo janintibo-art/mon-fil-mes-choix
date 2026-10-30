@@ -75,6 +75,12 @@ final class SelectionRules {
         for(int id:excluded)values.put(id);
         context.getSharedPreferences(PREF,Context.MODE_PRIVATE).edit().putString(KEY,values.toString()).apply();
     }
+    void replaceExcluded(Set<Integer> selectedOff) {
+        HashSet<Integer> valid=new HashSet<>();
+        for(Entry e:entries)valid.add(e.id);
+        if(!valid.containsAll(selectedOff))throw new IllegalArgumentException("Identifiants inconnus");
+        excluded.clear();excluded.addAll(selectedOff);save();
+    }
     Set<String> domains(){
         LinkedHashSet<String> result=new LinkedHashSet<>();
         for(Entry e:entries) if(isSelected(e.id) && !e.domain.isEmpty()) result.add(e.domain);

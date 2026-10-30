@@ -12,7 +12,7 @@ import re
 import subprocess
 import sys
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 from collections import OrderedDict
 from tkinter import ttk
 import threading
@@ -28,6 +28,25 @@ HOSTS = Path(os.environ.get("SystemRoot", r"C:\Windows")) / "System32" / "driver
 SELECTION_FILE = DATA_DIR / "selection_v14.json"
 DEFAULT_FILTERS = Path(getattr(sys, "_MEIPASS", Path(__file__).parent)) / "selection_v14.json"
 AD_PREFS = DATA_DIR / "publicites_options.json"
+
+PROFILE_FORMAT = "mon-fil-mes-choix-preferences"
+PROFILE_VERSION = 1
+
+
+def validate_profile(obj, valid_ids):
+    if not isinstance(obj, dict) or obj.get("format") != PROFILE_FORMAT or obj.get("version") != PROFILE_VERSION:
+        raise ValueError("Ce fichier n’est pas une sauvegarde compatible Mon fil, mes choix.")
+    values = obj.get("excluded_ids")
+    domains = obj.get("custom_domains")
+    if not isinstance(values, list) or len(values) > 303 or any(type(x) is not int or x not in valid_ids for x in values):
+        raise ValueError("La sélection du fichier est invalide.")
+    if not isinstance(domains, list) or len(domains) > 1000 or any(not isinstance(x,str) for x in domains):
+        raise ValueError("Les domaines du fichier sont invalides.")
+    text = "\n".join(domains)
+    clean, invalid = normalize(text)
+    if invalid or len(clean) != len(set(domains)):
+        raise ValueError("Le fichier contient des domaines invalides ou en double.")
+    return set(values), clean
 
 
 def catalog():
@@ -235,6 +254,7 @@ class GUI:
         self._build_header()
         self._build_overview()
         self._build_selection()
+        self._build_transfer()
         self._build_rules()
         self._build_ads()
         self._build_help()
@@ -354,6 +374,47 @@ class GUI:
         self._button(row, "GÉRER LES GROUPES", self.manage_groups, self.RED).pack(side="left", padx=(0, 8))
         self._button(row, "TOUT COCHER", lambda: self.change_all(True), self.CARD2).pack(side="left", padx=(0, 8))
         self._button(row, "TOUT DÉCOCHER", lambda: self.change_all(False), self.CARD2).pack(side="left")
+
+    def _build_transfer(self):
+        panel = self._card(self.content)
+        panel.pack(fill="x", pady=(0, 18))
+        self._label(panel, "Retrouver mes choix sur un autre appareil", 17, self.TEXT, True).pack(anchor="w")
+        self._label(panel, "Sauvegardez vos cases cochées et vos domaines personnels, ou récupérez ceux d’un autre appareil. Les listes publicitaires restent sur chaque appareil.", 10, self.MUTED, wraplength=640).pack(anchor="w", pady=(5, 12))
+        row = tk.Frame(panel, bg=self.CARD)
+        row.pack(fill="x")
+        self._button(row, "SAUVEGARDER MES CHOIX", self.export_profile, self.RED).pack(side="left", padx=(0, 10))
+        self._button(row, "RÉCUPÉRER MES CHOIX", self.import_profile, self.CARD2).pack(side="left")
+
+    def export_profile(self):
+        path = filedialog.asksaveasfilename(title="Sauvegarder mes choix", defaultextension=".json", initialfile="mes-choix.json", filetypes=[("Fichier de sauvegarde", "*.json")])
+        if not path: return
+        try:
+            manual, invalid = normalize(self.editor.get("1.0", "end"))
+            if invalid: raise ValueError("Corrigez les domaines invalides avant de sauvegarder.")
+            obj = {"format": PROFILE_FORMAT, "version": PROFILE_VERSION,
+                   "excluded_ids": sorted(self.excluded), "custom_domains": manual}
+            Path(path).write_text(json.dumps(obj, ensure_ascii=False, indent=2), encoding="utf-8")
+            messagebox.showinfo("C’est enregistré", "Vos choix ont bien été sauvegardés. Vous pouvez envoyer ce fichier sur votre autre appareil.")
+        except (OSError, ValueError) as exc:
+            messagebox.showerror("Sauvegarde impossible", str(exc))
+
+    def import_profile(self):
+        path = filedialog.askopenfilename(title="Récupérer mes choix", filetypes=[("Fichier de sauvegarde", "*.json")])
+        if not path: return
+        try:
+            if Path(path).stat().st_size > 100000: raise ValueError("Ce fichier est trop volumineux.")
+            excluded, manual = validate_profile(json.loads(Path(path).read_text(encoding="utf-8")), {x["id"] for x in self.entries})
+        except (OSError, ValueError, UnicodeError) as exc:
+            messagebox.showerror("Fichier non reconnu", str(exc)); return
+        if not messagebox.askyesno("Remplacer mes choix ?", f"Cette sauvegarde contient {303-len(excluded)} choix sélectionnés et {len(manual)} domaines personnels.\n\nRemplacer vos choix actuels ? Le filtre Windows ne sera pas activé automatiquement."):
+            return
+        self.excluded = excluded
+        selection_save(self.excluded)
+        self.editor.delete("1.0", "end")
+        self.editor.insert("1.0", "\n".join(manual))
+        self.save()
+        self._label_selection_count(); self._update_count()
+        messagebox.showinfo("Choix récupérés", "Vos choix sont prêts. Si la protection est active, appliquez les nouvelles règles avec le bouton Activer.")
 
     def _selection_changed(self):
         selection_save(self.excluded)

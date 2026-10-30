@@ -271,6 +271,18 @@
       <div class="warn"><strong>Limite :</strong> Tampermonkey masque des éléments déjà présents dans la page, il n’intercepte pas toutes les publicités ni les connexions réseau. Sur YouTube et d’autres plateformes, les publicités intégrées au lecteur ne seront pas nécessairement filtrées. Un domaine personnalisé ne bloque pas à lui seul tout un site.</div>
     </section>
 
+    <section class="panel" id="sauvegarde-choix" style="padding:24px;margin:28px 0">
+      <h2 style="font-size:28px;margin:0 0 10px">Retrouver mes choix sur un autre appareil</h2>
+      <p>Vous avez choisi les groupes qui vous conviennent ? Pas besoin de tout recommencer sur le téléphone ou l’ordinateur.</p>
+      <ol style="padding-left:22px;color:#e5edf6">
+        <li>Sur le premier appareil, choisissez <strong>« Sauvegarder mes choix »</strong>.</li>
+        <li>Envoyez le fichier <strong>mes-choix.json</strong> à votre autre appareil, par exemple avec un câble ou un partage de fichiers.</li>
+        <li>Sur l’autre appareil, choisissez <strong>« Récupérer mes choix »</strong>, ouvrez ce fichier et confirmez.</li>
+      </ol>
+      <p>Dans Tampermonkey, ces deux actions sont dans le menu du script. Sur Android et Windows, ce sont deux boutons dans l’application.</p>
+      <div class="warn" style="margin-top:15px"><strong>À savoir :</strong> le fichier transporte les noms sélectionnés et vos domaines personnels. Les listes antipublicités téléchargées ne sont pas transférées. La récupération demande confirmation et n’active jamais une protection arrêtée.</div>
+    </section>
+
     <section class="checklist">
       <article class="panel check-card"><h3>Tout fonctionne si…</h3><ul><li>L’extension Tampermonkey est visible dans le navigateur.</li><li>Le script « Mon fil, mes choix » apparaît dans son tableau de bord.</li><li>Le menu du script s’ouvre sur une page Web.</li><li>Le rechargement de la page active le masquage local.</li></ul></article>
       <article class="panel check-card"><h3>À retenir</h3><ul><li>Le filtrage est local : il ne change rien sur les sites eux-mêmes.</li><li>Tous les sites ne sont pas compatibles de la même façon.</li><li>Certains mots trop courts ou trop génériques ne sont pas bloqués pour éviter les erreurs.</li><li>Vous pouvez désactiver le script quand vous voulez.</li></ul></article>

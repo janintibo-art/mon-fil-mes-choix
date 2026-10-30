@@ -3,6 +3,11 @@ package org.monfilmeschoix.dns;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import android.provider.Settings;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -41,6 +46,7 @@ public class MainActivity extends Activity {
     private static final int RED = 0xffed233e;
     private static final int GREEN = 0xff47daa2;
     private EditText domains;
+    private static final int SAVE_CHOICES=63, LOAD_CHOICES=64;
     private TextView state, detail, counter, selectionCounter;
     private SelectionRules selection;
     private final ExecutorService downloads = Executors.newSingleThreadExecutor();
@@ -163,6 +169,28 @@ public class MainActivity extends Activity {
         choose.addView(text("Important : seuls les domaines identifiés (9 au départ) peuvent être filtrés par DNS. " +
                 "Les autres noms restent sélectionnés dans le catalogue, sans blocage réseau tant qu'aucun domaine vérifié ne leur est associé.",
                 12, MUTED, false), lp(-1,-2,0,12,0,0));
+
+        LinearLayout transfer=panel(CARD,19,LINE);
+        page.addView(transfer,lp(-1,-2,0,0,0,12));
+        transfer.addView(text("Retrouver mes choix",20,FG,true));
+        transfer.addView(text("Deux boutons pour conserver vos réglages ou les retrouver sur un autre appareil. Vos listes publicitaires téléchargées restent sur cet appareil.",13,MUTED,false),lp(-1,-2,0,5,0,10));
+        Button backup=button("Sauvegarder mes choix",RED,Color.WHITE,false);
+        Button restore=button("Récupérer mes choix",CARD_ALT,FG,true);
+        transfer.addView(backup,lp(-1,dp(50),0,0,0,8));
+        transfer.addView(restore,lp(-1,dp(50),0,0,0,0));
+        backup.setOnClickListener(v->{
+            Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("application/json");
+            intent.putExtra(Intent.EXTRA_TITLE,"mes-choix.json");
+            startActivityForResult(intent,SAVE_CHOICES);
+        });
+        restore.setOnClickListener(v->{
+            Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("*/*");
+            startActivityForResult(intent,LOAD_CHOICES);
+        });
 
         // Domain list — user remains in control of additional rules.
         LinearLayout rules = panel(CARD, 19, LINE);
@@ -417,8 +445,51 @@ public class MainActivity extends Activity {
 
     @Override protected void onResume() {super.onResume();handler.postDelayed(this::refreshStatus, 200);}
     @Override protected void onDestroy() {handler.removeCallbacksAndMessages(null);downloads.shutdownNow();super.onDestroy();}
+    private void transferFile(int request, Uri uri){
+        try{
+            if(request==SAVE_CHOICES){
+                String content=ChoiceTransfer.exportJson(selection,domains.getText().toString());
+                try(OutputStream out=getContentResolver().openOutputStream(uri)){
+                    if(out==null)throw new IllegalStateException("Impossible d’écrire le fichier");
+                    out.write(content.getBytes(StandardCharsets.UTF_8));
+                }
+                new AlertDialog.Builder(this).setTitle("Vos choix sont sauvegardés")
+                    .setMessage("Le fichier mes-choix.json est prêt. Vous pourrez le récupérer sur votre autre appareil.")
+                    .setPositiveButton("OK",null).show();
+                return;
+            }
+            ByteArrayOutputStream buffer=new ByteArrayOutputStream();
+            try(InputStream in=getContentResolver().openInputStream(uri)){
+                if(in==null)throw new IllegalStateException("Impossible de lire le fichier");
+                byte[] part=new byte[4096];int n;
+                while((n=in.read(part))!=-1){
+                    if(buffer.size()+n>100000)throw new IllegalArgumentException("Fichier trop volumineux");
+                    buffer.write(part,0,n);
+                }
+            }
+            ChoiceTransfer.Data chosen=ChoiceTransfer.parse(buffer.toString("UTF-8"),selection);
+            new AlertDialog.Builder(this).setTitle("Remplacer vos choix ?")
+                .setMessage((303-chosen.excluded.size())+" choix sélectionnés et "+chosen.domains.size()+
+                    " domaines personnels.\n\nVos choix actuels seront remplacés, mais la protection ne démarrera pas automatiquement.")
+                .setNegativeButton("Annuler",null)
+                .setPositiveButton("Récupérer",(dialog,which)->{
+                    selection.replaceExcluded(chosen.excluded);
+                    domains.setText(String.join("\n",chosen.domains));
+                    saveDomains(false);updateSelectionCount();applyActiveRules();
+                    new AlertDialog.Builder(this).setTitle("Vos choix sont récupérés")
+                        .setMessage("Tout est prêt. Vous pouvez utiliser votre protection.")
+                        .setPositiveButton("OK",null).show();
+                }).show();
+        }catch(Exception error){
+            new AlertDialog.Builder(this).setTitle("Le transfert n’a pas fonctionné")
+                .setMessage("Le fichier n’a pas été utilisé : "+error.getMessage())
+                .setPositiveButton("OK",null).show();
+        }
+    }
+
     @Override protected void onActivityResult(int request, int result, Intent data) {
         super.onActivityResult(request, result, data);
+        if ((request == SAVE_CHOICES || request == LOAD_CHOICES) && result == RESULT_OK && data != null && data.getData()!=null) {transferFile(request,data.getData());return;}
         if (request == 7 && result == RESULT_OK) startVpn();
         else if (request == 7 && detail != null) detail.setText("Autorisation VPN refusée.");
     }
