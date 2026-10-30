@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Mon fil, mes choix — filtre Web personnel
 // @namespace    https://github.com/janintibo-art/mon-fil-mes-choix
-// @version      3.6.0
+// @version      3.7.0
 // @updateURL    https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
 // @downloadURL  https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
-// @description  V30 : fiches et variantes, sauvegarde complète Android/Windows et filtrage réversible.
+// @description  V31 : filtrage Google amélioré (fiches, images, résultats) et préférences multi-appareils.
 // @author       Communauté Mon fil, mes choix
 // @match        *://*/*
 // @run-at       document-idle
@@ -371,6 +371,38 @@
     let a=heading.closest('a');
     return a?.parentElement?.parentElement||a||heading;
   }
+  // v31 : Google expose souvent les personnalités dans une fiche latérale,
+  // hors des cartes classiques. On ne masque jamais la barre de recherche.
+  function scanGooglePanels(){
+    if(!(host==='google.com'||host.endsWith('.google.com')||host.startsWith('google.')))return;
+    const query=new URLSearchParams(location.search).get('q')||'';
+    const compact=normalize(query).replace(/ /g,'');
+    let chosen=matchName(query);
+    if(!chosen && compact.length>=5 && userWordsActive){
+      for(const p of profiles){
+        if([p.label,...p.aliases].some(w=>normalize(w).replace(/ /g,'')===compact)){
+          chosen=p.label;break;
+        }
+      }
+    }
+    // Si la requête elle-même correspond à un choix, masquer uniquement
+    // les zones de résultats (pas l'interface Google ni notre tableau de bord).
+    if(chosen){
+      for(const sel of ['#search','#rso','#rhs','.kp-wholepage','#kp-wp-tab-overview','#islmp']){
+        for(const el of document.querySelectorAll(sel))hide(el,chosen);
+      }
+      return;
+    }
+    // Recherche ordinaire : masquer uniquement les fiches latérales concernées.
+    for(const sel of ['#rhs','.kp-wholepage','#kp-wp-tab-overview']){
+      for(const el of document.querySelectorAll(sel)){
+        if(hidden.has(el))continue;
+        const txt=(el.innerText||el.textContent||'').slice(0,10000);
+        const found=matchName(txt.slice(0,2300));
+        if(found)hide(el,found);
+      }
+    }
+  }
   function scan(force=false){
     if(!enabled||revealOnce||!document.body||working)return;
     working=true;
@@ -378,6 +410,7 @@
       if(domainsEnabled&&!revealDomainOnce){const d=domainRule(host);if(d){domainScreen(d);return}}
       style();
       scanAds();
+      scanGooglePanels();
       // Search cards and social posts; never hide broad page wrappers or editable forms.
       const cards=document.querySelectorAll(selectors);
       let n=0;
