@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mon fil, mes choix — filtre Web personnel
 // @namespace    https://github.com/janintibo-art/mon-fil-mes-choix
-// @version      3.2.0
+// @version      3.3.0
 // @updateURL    https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
 // @downloadURL  https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
 // @description  303 entrées en 9 groupes + filtre publicitaire facultatif et domaines personnels.
@@ -28,6 +28,12 @@
   const host=location.hostname.toLowerCase().replace(/^www\./,'');
   const skip=['localhost','127.0.0.1','janintibo-art.github.io'];
   if(skip.some(s=>host===s||host.endsWith('.'+s)))return;
+  // Expressions personnelles facultatives, sauvegardées localement par Tampermonkey.
+  const WORDS_KEY='mfm_keywords_v26';
+  const WORDS_ACTIVE_KEY='mfm_keywords_active_v26';
+  const cleanWords=raw=>[...new Set(String(raw).split(/[\n;,]+/u).map(w=>w.trim().replace(/\s+/gu,' ')).filter(w=>w.length>=3&&w.length<=70))].slice(0,60);
+  let userWords=cleanWords(GM_getValue(WORDS_KEY,''));
+  let userWordsActive=Boolean(GM_getValue(WORDS_ACTIVE_KEY,true));
   let enabled=Boolean(GM_getValue(KEY+'enabled',true));
   let domainsEnabled=Boolean(GM_getValue(KEY+'domains',true));
   let adsEnabled=Boolean(GM_getValue(KEY+'adsEnabled',false));
@@ -141,6 +147,12 @@
     if(!txt)return '';
     const original=String(txt).slice(0,2300);
     const n=' '+normalize(original)+' ';
+    if(userWordsActive){
+      for(const word of userWords){
+        const normalized=normalize(word);
+        if(normalized&&n.includes(' '+normalized+' '))return word;
+      }
+    }
     for(const r of terms){
       if(!n.includes(' '+r.term+' '))continue;
       // Common word: require its original publisher capitalization.
@@ -242,6 +254,46 @@
     overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove()});
     overlay.addEventListener('keydown',e=>{if(e.key==='Escape')overlay.remove()});
     close.focus();updateSummary();
+  }
+  function openWordsPanel(){
+    if(document.getElementById('mfm-settings-overlay'))return;
+    style();
+    const overlay=document.createElement('div');overlay.id='mfm-settings-overlay';
+    const dialog=document.createElement('section');dialog.className='mfm-dialog';
+    dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');dialog.setAttribute('aria-label','Mes mots-clés');
+    const header=document.createElement('div');header.className='mfm-header';
+    const heading=document.createElement('div');
+    const eyebrow=document.createElement('div');eyebrow.textContent='MON FIL, MES CHOIX';eyebrow.style.color='#ff93a6';
+    const title=document.createElement('h2');title.textContent='Mes mots-clés';heading.append(eyebrow,title);
+    const close=button('✕',()=>overlay.remove());close.setAttribute('aria-label','Fermer');
+    header.append(heading,close);dialog.append(header);
+    const help=document.createElement('p');
+    help.textContent='Ajoutez les noms ou expressions que vous souhaitez masquer sur les pages compatibles. Une expression par ligne. Tout est enregistré uniquement dans ce navigateur.';
+    dialog.append(help);
+    const label=document.createElement('label');label.textContent='Expressions à masquer';
+    label.style.display='block';label.style.fontWeight='700';label.style.marginBottom='8px';
+    const area=document.createElement('textarea');area.value=userWords.join('\n');area.rows=7;
+    area.setAttribute('aria-label','Une expression par ligne');area.placeholder='Une expression par ligne';
+    Object.assign(area.style,{display:'block',width:'100%',minHeight:'150px',padding:'12px',borderRadius:'10px',background:'#0a1423',color:'#fff',border:'1px solid #52637a',font:'15px/1.5 system-ui',resize:'vertical'});
+    dialog.append(label,area);
+    const toggleLabel=document.createElement('label');
+    Object.assign(toggleLabel.style,{display:'flex',alignItems:'center',gap:'10px',marginTop:'14px',marginBottom:'10px'});
+    const toggle=document.createElement('input');toggle.type='checkbox';toggle.checked=userWordsActive;
+    toggleLabel.append(toggle,document.createTextNode('Activer le filtrage de mes mots-clés'));dialog.append(toggleLabel);
+    const info=document.createElement('p');info.className='mfm-note';
+    info.textContent='Jusqu’à 60 expressions (3 à 70 caractères). Le filtre peut aussi masquer des articles critiques. Il ne lit pas le texte contenu dans les images et ne fonctionne pas dans les applications natives.';
+    dialog.append(info);
+    const actions=document.createElement('div');actions.className='mfm-actions';
+    actions.append(button('Enregistrer',()=>{
+      userWords=cleanWords(area.value);userWordsActive=toggle.checked;
+      GM_setValue(WORDS_KEY,userWords.join('\n'));
+      GM_setValue(WORDS_ACTIVE_KEY,userWordsActive);
+      revealOnce=false;apply();overlay.remove();
+    },'mfm-primary'),button('Annuler',()=>overlay.remove()));
+    dialog.append(actions);overlay.appendChild(dialog);document.body.appendChild(overlay);
+    overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove()});
+    overlay.addEventListener('keydown',e=>{if(e.key==='Escape')overlay.remove()});
+    area.focus();
   }
   function button(text,click,cls=''){
     const b=document.createElement('button');b.type='button';b.textContent=text;
@@ -374,6 +426,7 @@
     input.click();
   }
   function menu(){
+    GM_registerMenuCommand('✍️ Mes mots-clés ('+userWords.length+')',openWordsPanel);
     GM_registerMenuCommand('⚙️ Gérer les groupes ('+GROUPS.length+')',openSettings);
     GM_registerMenuCommand('🚫 Publicités et autres blocages',adsPanel);
     GM_registerMenuCommand('💾 Sauvegarder mes choix',exportChoices);
