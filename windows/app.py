@@ -28,6 +28,7 @@ HOSTS = Path(os.environ.get("SystemRoot", r"C:\Windows")) / "System32" / "driver
 SELECTION_FILE = DATA_DIR / "selection_v14.json"
 DEFAULT_FILTERS = Path(getattr(sys, "_MEIPASS", Path(__file__).parent)) / "selection_v14.json"
 AD_PREFS = DATA_DIR / "publicites_options.json"
+ALLOW_FILE = DATA_DIR / "domaines_autorises.txt"
 
 PROFILE_FORMAT = "mon-fil-mes-choix-preferences"
 PROFILE_VERSION = 1
@@ -91,9 +92,18 @@ def save_ads_flags(flags):
     tmp.replace(AD_PREFS)
 
 
+def allowed_domains():
+    try:
+        return set(normalize(ALLOW_FILE.read_text(encoding="utf-8"))[0])
+    except OSError:
+        return set()
+
+
 def all_filter_domains(manual, entries, excluded, flags, data_dir=DATA_DIR):
-    return sorted(set(manual) | set(selection_domains(entries, excluded)) |
-                  blocklists.enabled_domains(data_dir, flags))
+    blocked = set(manual) | set(selection_domains(entries, excluded)) | blocklists.enabled_domains(data_dir, flags)
+    allowed = allowed_domains()
+    # hosts matches exact hostnames, so exceptions can safely remove exact names.
+    return sorted(blocked - allowed)
 
 
 def group_catalog(entries):
@@ -257,6 +267,7 @@ class GUI:
         self._build_transfer()
         self._build_rules()
         self._build_ads()
+        self._build_allowlist()
         self._build_help()
         self.refresh()
 
@@ -635,6 +646,27 @@ class GUI:
         self.save(show_message=False)
         self._update_count()
         messagebox.showinfo("Domaine ajouté", "Domaine enregistré. Cliquez Activer / Réappliquer pour l’appliquer.")
+
+    def _build_allowlist(self):
+        panel=self._card(self.content)
+        panel.pack(fill="x",pady=(0,18))
+        self._label(panel,"Toujours autoriser un domaine",17,self.TEXT,True).pack(anchor="w")
+        self._label(panel,"Option facultative : retire ce domaine de nos règles hosts à la prochaine activation. Windows ne fournit pas ici d'historique des sites bloqués.",10,self.MUTED,wraplength=620).pack(anchor="w",pady=(5,10))
+        self.allow_editor=tk.Text(panel,height=4,bg=self.CARD2,fg=self.TEXT,insertbackground=self.TEXT,
+                                  font=("Consolas",11),relief="flat",padx=10,pady=8)
+        self.allow_editor.pack(fill="x")
+        try:self.allow_editor.insert("1.0",ALLOW_FILE.read_text(encoding="utf-8"))
+        except OSError:pass
+        def save_allow():
+            names,invalid=normalize(self.allow_editor.get("1.0","end"))
+            if invalid:
+                messagebox.showerror("Domaine invalide","Vérifiez : "+", ".join(invalid[:6]));return
+            if not messagebox.askyesno("Autoriser ces domaines ?", "Enregistrer "+str(len(names))+" exception(s) ? Les règles hosts seront réappliquées lorsque vous cliquerez sur Activer / Réappliquer."):return
+            DATA_DIR.mkdir(parents=True,exist_ok=True)
+            ALLOW_FILE.write_text("\n".join(names),encoding="utf-8")
+            self._update_count()
+            messagebox.showinfo("Exceptions sauvegardées","Vos domaines autorisés sont enregistrés. Cliquez sur Activer / Réappliquer pour les appliquer.")
+        self._button(panel,"ENREGISTRER MES EXCEPTIONS",save_allow,self.CARD2).pack(anchor="w",pady=(11,0))
 
     def _build_help(self):
         self.help_section = self._card(self.content)

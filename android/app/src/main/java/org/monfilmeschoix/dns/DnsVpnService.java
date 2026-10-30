@@ -136,7 +136,10 @@ public final class DnsVpnService extends VpnService {
         String host=questionDomain(question);
         if(host==null)return;
         byte[] answer;
-        if(DomainRules.blocked(host,denied)) answer=errorResponse(question,3);
+        if(!BlockHistory.isAllowed(this,host) && DomainRules.blocked(host,denied)) {
+            BlockHistory.record(this,host);
+            answer=errorResponse(question,3);
+        }
         else answer=queryUpstream(question);
         if(answer==null)answer=errorResponse(question,2);
         if(answer==null)return;

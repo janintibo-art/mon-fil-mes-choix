@@ -234,10 +234,69 @@ public class MainActivity extends Activity {
                 13, MUTED, false), lp(-1,-2,0,15,0,0));
 
         addExtras(page);
+        addHistoryControls(page);
         page.addView(text("MON FIL, MES CHOIX  •  FILTRAGE LOCAL ET RÉVERSIBLE", 10, MUTED, true),
                 lp(-1,-2,0,6,0,0));
         setContentView(scroll);
         refreshStatus();
+    }
+
+    private void addHistoryControls(LinearLayout page) {
+        LinearLayout panel=panel(CARD,19,LINE);
+        page.addView(panel,lp(-1,-2,0,0,0,14));
+        panel.addView(text("Comprendre mes blocages",20,FG,true));
+        panel.addView(text("Facultatif. L'historique reste sur ce téléphone, conserve au maximum 100 blocages et peut être effacé. Aucune requête autorisée n'est enregistrée.",13,MUTED,false));
+        CheckBox logging=new CheckBox(this);
+        logging.setText("Enregistrer les domaines bloqués");
+        logging.setTextColor(FG);logging.setChecked(BlockHistory.enabled(this));
+        panel.addView(logging,lp(-1,-2,0,10,0,8));
+        logging.setOnCheckedChangeListener((button,on)->BlockHistory.setEnabled(this,on));
+        Button view=button("Voir les blocages récents",CARD_ALT,FG,true);
+        panel.addView(view,lp(-1,dp(48),0,0,0,8));
+        view.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Blocages sur ce téléphone")
+            .setMessage(BlockHistory.report(this)).setPositiveButton("Fermer",null)
+            .setNeutralButton("Effacer l'historique",(d,w)->{
+                new AlertDialog.Builder(this).setTitle("Effacer l'historique ?")
+                    .setMessage("Cette action efface les événements enregistrés, pas vos filtres.")
+                    .setNegativeButton("Annuler",null)
+                    .setPositiveButton("Effacer",(d2,w2)->BlockHistory.clear(this)).show();
+            }).show());
+        panel.addView(text("Toujours autoriser un domaine",17,FG,true),lp(-1,-2,0,8,0,4));
+        panel.addView(text("Par exemple : exemple.fr. Même s'il figure dans une liste téléchargée, ce domaine ne sera plus bloqué par le VPN.",12,MUTED,false));
+        EditText input=new EditText(this);
+        input.setSingleLine(true);input.setTextColor(FG);input.setHintTextColor(MUTED);
+        input.setHint("exemple.fr");input.setBackground(shape(0xff10161e,14,LINE));
+        input.setPadding(dp(12),0,dp(12),0);
+        panel.addView(input,new LinearLayout.LayoutParams(-1,dp(50)));
+        Button add=button("Autoriser ce domaine",RED,FG,true);
+        panel.addView(add,lp(-1,dp(46),0,8,0,8));
+        add.setOnClickListener(v->{
+            String host=input.getText().toString().trim().toLowerCase(java.util.Locale.ROOT);
+            if(DomainRules.parse(host).size()!=1 || !DomainRules.parse(host).contains(host)) {
+                Toast.makeText(this,"Saisissez seulement un domaine valide",Toast.LENGTH_LONG).show();return;
+            }
+            new AlertDialog.Builder(this).setTitle("Autoriser "+host+" ?")
+                .setMessage("Ce domaine ne sera plus bloqué par le filtre Android. Vous pourrez annuler ce choix.")
+                .setNegativeButton("Annuler",null)
+                .setPositiveButton("Autoriser",(d,w)->{
+                    BlockHistory.addException(this,host);input.setText("");
+                    Toast.makeText(this,"Domaine autorisé",Toast.LENGTH_SHORT).show();
+                }).show();
+        });
+        Button manage=button("Voir / retirer mes exceptions",CARD_ALT,FG,true);
+        panel.addView(manage,lp(-1,dp(46),0,0,0,0));
+        manage.setOnClickListener(v->{
+            java.util.ArrayList<String> items=new java.util.ArrayList<>(BlockHistory.exceptions(this));
+            if(items.isEmpty()){Toast.makeText(this,"Aucune exception enregistrée",Toast.LENGTH_SHORT).show();return;}
+            new AlertDialog.Builder(this).setTitle("Domaines autorisés")
+                .setItems(items.toArray(new String[0]),(dialog,index)->{
+                    String domain=items.get(index);
+                    new AlertDialog.Builder(this).setTitle("Retirer l'exception ?")
+                        .setMessage(domain+" pourra de nouveau être filtré.")
+                        .setNegativeButton("Annuler",null)
+                        .setPositiveButton("Retirer",(d,w)->BlockHistory.removeException(this,domain)).show();
+                }).setNegativeButton("Fermer",null).show();
+        });
     }
 
     private void addExtras(LinearLayout page) {
