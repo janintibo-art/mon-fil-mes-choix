@@ -147,6 +147,11 @@ public class MainActivity extends Activity {
             }
         });
 
+        // V24: simple recovery assistant visible even with advanced settings folded away.
+        Button rescue = button("Un site ne fonctionne plus ?", RED, FG, false);
+        page.addView(rescue, lp(-1, dp(52), 0, 0, 0, 12));
+        rescue.setOnClickListener(v -> showRecoveryAssistant());
+
         // V23: quick, read-only diagnostics. Never changes VPN or user rules.
         Button diagnostic = button("Vérifier ma protection", CARD_ALT, FG, true);
         page.addView(diagnostic, lp(-1, dp(49), 0, 0, 0, 13));
@@ -509,6 +514,63 @@ public class MainActivity extends Activity {
         detail.setText("Vérifiez l'indication VPN dans Android et la notification.");
         handler.postDelayed(this::refreshStatus, 900);
         handler.postDelayed(this::refreshStatus, 1900);
+    }
+
+    private void showRecoveryAssistant() {
+        String[] choices = {
+            "1 · Arrêter la protection pour tester",
+            "2 · Toujours autoriser un domaine",
+            "3 · Vérifier ma protection",
+            "4 · Ouvrir les réglages VPN Android"
+        };
+        new AlertDialog.Builder(this).setTitle("Un site ne fonctionne plus ?")
+            .setMessage("Choisissez une solution. Vos listes et vos choix seront conservés.")
+            .setItems(choices, (dialog, choice) -> {
+                if (choice == 0) {
+                    new AlertDialog.Builder(this).setTitle("Arrêter temporairement ?")
+                        .setMessage("La protection sera arrêtée pour vous permettre de tester le site. Vous pourrez la réactiver avec le bouton habituel.")
+                        .setNegativeButton("Annuler", null)
+                        .setPositiveButton("Arrêter pour tester", (d, w) -> {
+                            try { startService(new Intent(this, DnsVpnService.class).setAction(DnsVpnService.STOP)); }
+                            catch (Exception ignored) { }
+                            stopService(new Intent(this, DnsVpnService.class));
+                            handler.postDelayed(this::refreshStatus, 700);
+                            Toast.makeText(this, "Protection arrêtée : réessayez le site", Toast.LENGTH_LONG).show();
+                        }).show();
+                } else if (choice == 1) showRecoveryDomain();
+                else if (choice == 2) showDiagnostic();
+                else {
+                    try { startActivity(new Intent(Settings.ACTION_VPN_SETTINGS)); }
+                    catch (Exception error) { Toast.makeText(this, "Ouvrez les paramètres VPN d'Android", Toast.LENGTH_LONG).show(); }
+                }
+            }).setNegativeButton("Fermer", null).show();
+    }
+
+    private void showRecoveryDomain() {
+        EditText input = new EditText(this);
+        input.setSingleLine(true);input.setHint("exemple.fr");
+        input.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_URI);
+        LinearLayout wrapper = vertical();wrapper.setPadding(dp(20), 0, dp(20), 0);
+        wrapper.addView(input);
+        new AlertDialog.Builder(this).setTitle("Autoriser un site")
+            .setMessage("Entrez uniquement le domaine, sans https:// et sans /page. Exemple : exemple.fr. Un site peut utiliser plusieurs domaines.")
+            .setView(wrapper).setNegativeButton("Annuler", null)
+            .setPositiveButton("Continuer", (dialog, which) -> {
+                String domain = input.getText().toString().trim().toLowerCase(java.util.Locale.ROOT);
+                if (DomainRules.parse(domain).size() != 1 || !DomainRules.parse(domain).contains(domain)) {
+                    new AlertDialog.Builder(this).setTitle("Domaine non reconnu")
+                        .setMessage("Entrez un domaine comme exemple.fr, sans adresse complète.")
+                        .setPositiveButton("Compris", null).show();
+                    return;
+                }
+                new AlertDialog.Builder(this).setTitle("Autoriser " + domain + " ?")
+                    .setMessage("Ce domaine sera exclu du filtrage. Vous pourrez retirer cette exception dans les réglages avancés.")
+                    .setNegativeButton("Annuler", null)
+                    .setPositiveButton("Autoriser", (d, w) -> {
+                        BlockHistory.addException(this, domain);
+                        Toast.makeText(this, "Domaine autorisé. Réessayez le site.", Toast.LENGTH_LONG).show();
+                    }).show();
+            }).show();
     }
 
     private void showDiagnostic() {

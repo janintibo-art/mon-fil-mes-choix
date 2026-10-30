@@ -376,6 +376,7 @@ class GUI:
         self._button(buttons, "DÉSACTIVER", self.disable, self.CARD2).pack(side="left", fill="x", expand=True, padx=(0, 8))
         self._button(buttons, "ENREGISTRER", self.save, "#2a3949").pack(side="left", fill="x", expand=True)
         self._button(actions, "VÉRIFIER MA PROTECTION", self.show_diagnostic, self.CARD2).pack(anchor="w", pady=(12, 0))
+        self._button(actions, "UN SITE NE FONCTIONNE PLUS ?", self.recovery_assistant, self.RED).pack(anchor="w", pady=(10, 0))
         self._label(actions, "Une autorisation administrateur peut être nécessaire pour appliquer les changements.",
                     10, self.MUTED).pack(anchor="w", pady=(12, 0))
 
@@ -696,6 +697,72 @@ class GUI:
     def _update_count(self):
         valid, bad = normalize(self.editor.get("1.0", "end"))
         self.domain_count.config(text=str(len(all_filter_domains(valid,self.entries,self.excluded,self.ads))) + ("  •  erreurs à corriger" if bad else ""))
+
+    def recovery_assistant(self):
+        """Beginner-safe choices. Never change a rule without confirmation."""
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Aide : un site ne fonctionne plus")
+        dialog.geometry("540x440")
+        dialog.minsize(480, 390)
+        dialog.configure(bg=self.BG)
+        dialog.transient(self.root)
+        dialog.grab_set()
+        body = tk.Frame(dialog, bg=self.BG, padx=23, pady=20)
+        body.pack(fill="both", expand=True)
+        self._label(body, "Un site ne fonctionne plus ?", 20, self.TEXT, True).pack(anchor="w")
+        self._label(body, "Choisissez ce que vous souhaitez faire. Vos listes seront conservées.",
+                    11, self.MUTED, wraplength=480).pack(anchor="w", pady=(8, 17))
+
+        def stop_for_test():
+            dialog.destroy()
+            if messagebox.askyesno("Tester sans protection", "Arrêter la protection pour tester le site ? Vos réglages seront conservés et vous pourrez la réactiver ensuite."):
+                self.disable()
+
+        def allow_domain():
+            dialog.destroy()
+            self.recovery_allow_domain()
+
+        self._button(body, "1  ARRÊTER POUR TESTER", stop_for_test, self.RED).pack(fill="x", pady=5)
+        self._button(body, "2  AUTORISER UN DOMAINE", allow_domain, self.CARD2).pack(fill="x", pady=5)
+        self._button(body, "3  VÉRIFIER MA PROTECTION", lambda: self.show_diagnostic(), self.CARD2).pack(fill="x", pady=5)
+        self._button(body, "FERMER", dialog.destroy, self.SIDE).pack(fill="x", pady=(14, 0))
+
+    def recovery_allow_domain(self):
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Autoriser un domaine")
+        dialog.geometry("530x330")
+        dialog.configure(bg=self.BG)
+        dialog.transient(self.root)
+        dialog.grab_set()
+        body = tk.Frame(dialog, bg=self.BG, padx=22, pady=18)
+        body.pack(fill="both", expand=True)
+        self._label(body, "Quel domaine voulez-vous autoriser ?", 16, self.TEXT, True).pack(anchor="w")
+        self._label(body, "Exemple : exemple.fr (pas une adresse https:// complète).",
+                    10, self.MUTED).pack(anchor="w", pady=(5, 14))
+        field = tk.Entry(body, bg=self.CARD2, fg=self.TEXT, insertbackground=self.TEXT,
+                         font=("Segoe UI", 12), relief="flat")
+        field.pack(fill="x", ipady=11)
+        field.focus_set()
+        def confirm():
+            raw = field.get().strip()
+            parsed, bad = normalize(raw)
+            if bad or len(parsed) != 1 or parsed[0] != raw.lower():
+                messagebox.showwarning("Domaine non reconnu", "Entrez seulement un domaine, par exemple exemple.fr.", parent=dialog)
+                return
+            domain = parsed[0]
+            if not messagebox.askyesno("Autoriser ce domaine ?", "Autoriser " + domain + " ? Vous pourrez annuler ce choix depuis les exceptions.", parent=dialog):
+                return
+            allow = allowed_domains()
+            allow.add(domain)
+            DATA_DIR.mkdir(parents=True, exist_ok=True)
+            ALLOW_FILE.write_text("\n".join(sorted(allow)) + "\n", encoding="utf-8")
+            self.allow_editor.delete("1.0", "end")
+            self.allow_editor.insert("1.0", "\n".join(sorted(allow)))
+            dialog.destroy()
+            if messagebox.askyesno("Exception enregistrée", "Votre exception est sauvegardée. Réappliquer la protection maintenant ?"):
+                self.enable()
+        self._button(body, "AUTORISER CE DOMAINE", confirm, self.RED).pack(fill="x", pady=(16, 8))
+        self._button(body, "ANNULER", dialog.destroy, self.CARD2).pack(fill="x")
 
     def show_diagnostic(self):
         """Read-only checks. Does not modify the Windows hosts file."""
