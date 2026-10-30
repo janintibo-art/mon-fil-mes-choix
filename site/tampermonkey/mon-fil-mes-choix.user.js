@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mon fil, mes choix — filtre Web personnel
 // @namespace    https://github.com/janintibo-art/mon-fil-mes-choix
-// @version      3.3.0
+// @version      3.4.0
 // @updateURL    https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
 // @downloadURL  https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
 // @description  303 entrées en 9 groupes + filtre publicitaire facultatif et domaines personnels.
@@ -47,7 +47,7 @@
   let adHiddenCount=0;
   function adDomainMatch(domain){return [...AD_HOSTS,...customDomains].some(d=>domain===d||domain.endsWith('.'+d))}
   function adCandidate(el){
-    if(!el || el.closest('#mfm-settings-overlay,#mfm-domain-screen,#mfm-ads-overlay,form,[contenteditable="true"]'))return false;
+    if(!el || el.closest('#mfm-settings-overlay,#mfm-domain-screen,#mfm-ads-overlay,#mfm-invisibility-dashboard,#mfm-invisibility-launcher,form,[contenteditable="true"]'))return false;
     const tag=el.tagName.toLowerCase();
     if(tag==='iframe'){
       try{return adDomainMatch(new URL(el.getAttribute('src')||'',location.href).hostname.toLowerCase())}catch{return false}
@@ -426,6 +426,7 @@
     input.click();
   }
   function menu(){
+    GM_registerMenuCommand('👁️ Tableau de bord Invisibilité',openDashboard);
     GM_registerMenuCommand('✍️ Mes mots-clés ('+userWords.length+')',openWordsPanel);
     GM_registerMenuCommand('⚙️ Gérer les groupes ('+GROUPS.length+')',openSettings);
     GM_registerMenuCommand('🚫 Publicités et autres blocages',adsPanel);
@@ -446,7 +447,58 @@
       alert(`Mon fil, mes choix\n${RULES.length} entrées réparties en ${GROUPS.length} groupes.\n${active.length} groupes actifs (${active.reduce((s,g)=>s+g.count,0)} entrées).\n${hiddenCount} éléments masqués sur cette page.\nAucun compte n’est bloqué côté plateforme.`)
     });
   }
-  style();menu();scan();
+  // Petit raccourci discret, sans notification ni compteur de contenus masqués.
+  function openDashboard(){
+    if(!document.body)return;
+    const existing=document.getElementById('mfm-invisibility-dashboard');
+    if(existing){existing.remove();return}
+    const root=document.createElement('section');root.id='mfm-invisibility-dashboard';
+    root.setAttribute('role','dialog');root.setAttribute('aria-label','Tableau de bord Invisibilité');
+    Object.assign(root.style,{position:'fixed',right:'14px',bottom:'66px',zIndex:'2147483644',width:'min(370px,calc(100vw - 28px))',maxHeight:'min(75vh,650px)',overflowY:'auto',background:'#101827',color:'#fff',border:'1px solid #586478',borderRadius:'17px',padding:'18px',boxShadow:'0 15px 50px #0009',font:'14px/1.45 system-ui'});
+    const head=document.createElement('div');Object.assign(head.style,{display:'flex',justifyContent:'space-between',alignItems:'center'});
+    const title=document.createElement('strong');title.textContent='Mon fil · Invisibilité';title.style.fontSize='17px';
+    const close=button('✕',()=>root.remove());close.setAttribute('aria-label','Fermer le tableau de bord');
+    head.append(title,close);root.append(head);
+    const tip=document.createElement('p');tip.textContent='Choisissez les expressions que vous souhaitez masquer sur les pages compatibles.';root.append(tip);
+    const status=document.createElement('label');Object.assign(status.style,{display:'flex',alignItems:'center',gap:'9px',margin:'12px 0'});
+    const toggle=document.createElement('input');toggle.type='checkbox';toggle.checked=userWordsActive;
+    status.append(toggle,document.createTextNode('Masquer mes mots-clés'));root.append(status);
+    const list=document.createElement('div');list.setAttribute('aria-live','polite');root.append(list);
+    function redraw(){
+      list.replaceChildren();
+      if(!userWords.length){const empty=document.createElement('p');empty.textContent='Aucun mot-clé ajouté pour le moment.';list.append(empty)}
+      userWords.forEach(word=>{
+        const line=document.createElement('div');Object.assign(line.style,{display:'flex',gap:'8px',alignItems:'center',justifyContent:'space-between',padding:'8px',margin:'5px 0',borderRadius:'8px',background:'#243043'});
+        const name=document.createElement('span');name.textContent=word;name.style.overflowWrap='anywhere';
+        const remove=button('Retirer',()=>{userWords=userWords.filter(w=>w!==word);saveWords();redraw()});remove.setAttribute('aria-label','Retirer '+word);
+        line.append(name,remove);list.append(line);
+      });
+    }
+    function saveWords(){GM_setValue(WORDS_KEY,userWords.join('\n'));GM_setValue(WORDS_ACTIVE_KEY,userWordsActive);revealOnce=false;apply()}
+    const entry=document.createElement('input');entry.type='text';entry.maxLength=70;entry.placeholder='Ajouter un nom ou une expression';entry.setAttribute('aria-label','Nouvelle expression');
+    Object.assign(entry.style,{width:'100%',padding:'10px',marginTop:'12px',boxSizing:'border-box',borderRadius:'8px',border:'1px solid #6b8196',background:'#0a1423',color:'#fff'});
+    const add=button('Ajouter à ma liste',()=>{
+      const values=cleanWords(entry.value);
+      if(!values.length){entry.setCustomValidity('Saisissez au moins 3 caractères');entry.reportValidity();return}
+      entry.setCustomValidity('');userWords=cleanWords([...userWords,...values].join('\n'));entry.value='';saveWords();redraw();
+    });
+    entry.addEventListener('input',()=>entry.setCustomValidity(''));
+    entry.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();add.click()}});
+    root.append(entry,add);
+    toggle.addEventListener('change',()=>{userWordsActive=toggle.checked;saveWords()});
+    const line=document.createElement('div');Object.assign(line.style,{display:'flex',gap:'7px',flexWrap:'wrap',marginTop:'13px'});
+    line.append(button('Tout réafficher ici',()=>{revealOnce=true;revealDomainOnce=true;restore();root.remove()}),button('Réglages avancés',()=>{root.remove();openWordsPanel()}));root.append(line);
+    const note=document.createElement('p');note.style.opacity='.75';note.style.fontSize='12px';note.textContent='Le masquage dépend du site. Il peut aussi cacher une critique contenant le nom choisi. Vos choix restent locaux.';root.append(note);
+    redraw();document.body.append(root);entry.focus();
+  }
+  function addLauncher(){
+    if(!document.body||document.getElementById('mfm-invisibility-launcher'))return;
+    const launcher=button('◉ Mes choix',openDashboard);launcher.id='mfm-invisibility-launcher';
+    launcher.setAttribute('aria-label','Ouvrir le tableau de bord Invisibilité');
+    Object.assign(launcher.style,{position:'fixed',right:'14px',bottom:'12px',zIndex:'2147483644',background:'#d82746',color:'#fff',padding:'10px 13px',border:'1px solid #fff5',borderRadius:'30px',font:'bold 13px system-ui',boxShadow:'0 6px 24px #0007'});
+    document.body.append(launcher);
+  }
+  style();menu();scan();addLauncher();
   const observer=new MutationObserver(records=>{
     if(records.every(r=>r.type==='attributes'&&r.attributeName?.startsWith('data-mfm-')))return;
     schedule();
