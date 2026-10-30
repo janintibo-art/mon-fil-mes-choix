@@ -1,0 +1,10 @@
+*.bak
+.DS_Store
+__pycache__/
+android/.gradle/
+android/**/build/
+windows/build/
+windows/dist/
+*.spec
+*.pyc
+.idea/

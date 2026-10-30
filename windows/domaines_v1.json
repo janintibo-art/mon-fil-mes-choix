@@ -1,0 +1,38 @@
+[
+  {
+    "host": "cnews.fr",
+    "label": "CNews"
+  },
+  {
+    "host": "europe1.fr",
+    "label": "Europe 1"
+  },
+  {
+    "host": "lejdd.fr",
+    "label": "Le Journal du Dimanche"
+  },
+  {
+    "host": "valeursactuelles.com",
+    "label": "Valeurs actuelles"
+  },
+  {
+    "host": "fdesouche.com",
+    "label": "Fdesouche"
+  },
+  {
+    "host": "bvoltaire.fr",
+    "label": "Boulevard Voltaire"
+  },
+  {
+    "host": "tvl.fr",
+    "label": "TV Libertés"
+  },
+  {
+    "host": "kontrekulture.com",
+    "label": "Kontre Kulture"
+  },
+  {
+    "host": "causeur.fr",
+    "label": "Causeur"
+  }
+]

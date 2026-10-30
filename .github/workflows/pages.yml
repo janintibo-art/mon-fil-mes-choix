@@ -1,0 +1,45 @@
+name: Publier Mon fil, mes choix
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Récupérer le site
+        uses: actions/checkout@v4
+      - name: Contrôler la syntaxe JavaScript
+        run: node --check site/tampermonkey/mon-fil-mes-choix.user.js
+      - name: Vérifier les 303 entrées du répertoire
+        run: python3 -c "import json; data=json.load(open('site/liste_v8.json',encoding='utf-8')); assert len(data)==303, len(data)"
+      - name: Vérifier les pages et les ressources publiques
+        run: |
+          python3 - <<'PYTEST'
+          from pathlib import Path
+          p=Path('site')
+          for name in ['index.html','dns.html','ia.html','assets/icone_antifa.png','assets/favicon.png','tampermonkey/mon-fil-mes-choix.user.js','liste_v8.csv','liste_v8.json','domaines_v1.json']:
+              assert (p/name).exists(), name
+          assert 'Guide IA' in (p/'index.html').read_text(encoding='utf-8')
+          assert 'Copier cette demande' in (p/'ia.html').read_text(encoding='utf-8')
+          print('Site : fichiers présents et liens internes principaux vérifiés')
+          PYTEST
+      - name: Configurer Pages
+        uses: actions/configure-pages@v5
+      - name: Préparer le site statique
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./site
+      - name: Publier sur GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
