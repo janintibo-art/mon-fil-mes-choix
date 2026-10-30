@@ -22,6 +22,7 @@ import java.util.concurrent.Executors;
 /** VPN with one /32 route to its own synthetic DNS server. Does not route web traffic. */
 public final class DnsVpnService extends VpnService {
     static final String START="org.monfilmeschoix.START", STOP="org.monfilmeschoix.STOP";
+    static volatile boolean ACTIVE = false;
     private volatile boolean running;
     private ParcelFileDescriptor tun;
     private Thread tunnelThread;
@@ -55,6 +56,7 @@ public final class DnsVpnService extends VpnService {
             output = new FileOutputStream(tun.getFileDescriptor());
             workers = Executors.newFixedThreadPool(4);
             running = true;
+            ACTIVE = true;
             tunnelThread = new Thread(this::runTunnel,"dns-tunnel");
             tunnelThread.start();
             return START_STICKY;
@@ -165,6 +167,7 @@ public final class DnsVpnService extends VpnService {
     }
     @Override public void onDestroy() {
         running=false;
+        ACTIVE = false;
         if(workers!=null){workers.shutdownNow();workers=null;}
         try{if(tun!=null)tun.close();}catch(Exception ignored){}
         tun=null;output=null;
