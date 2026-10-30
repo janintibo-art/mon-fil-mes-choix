@@ -20,6 +20,8 @@ import android.widget.CheckBox;
 import android.app.AlertDialog;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -40,6 +42,9 @@ public class MainActivity extends Activity {
     private EditText domains;
     private TextView state, detail, counter, selectionCounter;
     private SelectionRules selection;
+    private final ExecutorService downloads = Executors.newSingleThreadExecutor();
+    private TextView adStatus;
+    private CheckBox[] adChecks = new CheckBox[ExtraBlocks.KEYS.length];
     private final android.os.Handler handler = new android.os.Handler(android.os.Looper.getMainLooper());
 
     @Override public void onCreate(Bundle saved) {
@@ -102,7 +107,7 @@ public class MainActivity extends Activity {
         page.addView(start, lp(-1,dp(54),0,2,0,9));
         start.setOnClickListener(v -> {
             if (!saveDomains(false)) return;
-            if (selection.effectiveDomains(domains.getText().toString()).isEmpty()) {
+            if (ExtraBlocks.all(this,domains.getText().toString()).isEmpty()) {
                 Toast.makeText(this, "Ajoutez un domaine avant d'activer", Toast.LENGTH_LONG).show();
                 return;
             }
@@ -166,7 +171,7 @@ public class MainActivity extends Activity {
         domains.addTextChangedListener(new TextWatcher(){
             public void beforeTextChanged(CharSequence s,int start,int count,int after){}
             public void onTextChanged(CharSequence s,int start,int before,int count){
-                if (counter != null) counter.setText(String.valueOf(selection.effectiveDomains(s.toString()).size()));
+                if (counter != null) counter.setText(String.valueOf(totalDomainCount(s.toString())));
             }
             public void afterTextChanged(Editable e){}
         });
@@ -185,16 +190,113 @@ public class MainActivity extends Activity {
         help.addView(text("Ce filtre DNS masque des domaines, pas des personnes sur un réseau social. Il ne s'agit pas d'un VPN d'anonymisation. Certains navigateurs avec DNS chiffré et le DNS privé peuvent contourner le filtrage. Un autre VPN peut être incompatible.",
                 13, MUTED, false), lp(-1,-2,0,15,0,0));
 
+        addExtras(page);
         page.addView(text("MON FIL, MES CHOIX  •  FILTRAGE LOCAL ET RÉVERSIBLE", 10, MUTED, true),
                 lp(-1,-2,0,6,0,0));
         setContentView(scroll);
         refreshStatus();
     }
 
+    private void addExtras(LinearLayout page) {
+        LinearLayout extras=panel(CARD,19,LINE);
+        page.addView(extras,lp(-1,-2,0,0,0,14));
+        extras.addView(text("Publicités et autres blocages",20,FG,true));
+        extras.addView(text("OPTION FACULTATIVE · Désactivée au départ. Choisissez une source, puis téléchargez sa liste. " +
+            "Les données sont stockées sur le téléphone. Maximum 10 000 domaines par source pour préserver les performances.",
+            13,MUTED,false),lp(-1,-2,0,6,0,12));
+        adStatus=text("",13,GREEN,true);extras.addView(adStatus,lp(-1,-2,0,0,0,9));
+        for(int i=0;i<ExtraBlocks.KEYS.length;i++){
+            final int index=i;
+            LinearLayout row=panel(CARD_ALT,13,LINE);
+            extras.addView(row,lp(-1,-2,0,0,0,9));
+            CheckBox check=new CheckBox(this);
+            check.setText(ExtraBlocks.LABELS[i]);check.setTextColor(FG);check.setTextSize(14);
+            check.setButtonTintList(android.content.res.ColorStateList.valueOf(RED));
+            check.setChecked(ExtraBlocks.enabled(this,i));adChecks[i]=check;
+            row.addView(check);
+            check.setOnCheckedChangeListener((b,on)->{
+                if(on && ExtraBlocks.cached(this,index).isEmpty()){
+                    b.setChecked(false);
+                    Toast.makeText(this,"Téléchargez d'abord cette liste",Toast.LENGTH_SHORT).show();return;
+                }
+                ExtraBlocks.setEnabled(this,index,on);applyActiveRules();updateSelectionCount();updateAdStatus();
+            });
+            Button download=button("Télécharger / Actualiser la liste",CARD,FG,true);
+            row.addView(download,lp(-1,dp(45),0,6,0,0));
+            row.addView(text("Source : "+ExtraBlocks.URLS[i],11,MUTED,false));
+            download.setOnClickListener(v->{
+                new AlertDialog.Builder(this).setTitle("Télécharger une liste externe ?")
+                    .setMessage(ExtraBlocks.URLS[index]+"\n\nCe téléchargement HTTPS est facultatif. Il peut masquer certains sites utiles.")
+                    .setNegativeButton("Annuler",null)
+                    .setPositiveButton("Télécharger",(dialog,which)->{
+                        download.setEnabled(false);download.setText("Téléchargement en cours…");
+                        downloads.execute(()->{
+                            try{
+                                ExtraBlocks.Result result=ExtraBlocks.download(getApplicationContext(),index);
+                                runOnUiThread(()->{
+                                    download.setEnabled(true);download.setText("Télécharger / Actualiser la liste");
+                                    updateSelectionCount();updateAdStatus();
+                                    new AlertDialog.Builder(this).setTitle("Liste téléchargée")
+                                        .setMessage(result.count+" domaines enregistrés."+
+                                            (result.limited?" Limite de 10 000 atteinte.":"")+
+                                            "\nCochez cette liste pour l'activer. Les règles sont utilisées si le VPN DNS est activé.")
+                                        .setPositiveButton("OK",null).show();
+                                });
+                            }catch(Exception error){
+                                runOnUiThread(()->{
+                                    download.setEnabled(true);download.setText("Télécharger / Actualiser la liste");
+                                    new AlertDialog.Builder(this).setTitle("Téléchargement impossible")
+                                        .setMessage(String.valueOf(error.getMessage()))
+                                        .setPositiveButton("OK",null).show();
+                                });
+                            }
+                        });
+                    }).show();
+            });
+        }
+        extras.addView(text("Ajouter un domaine personnalisé",17,FG,true),lp(-1,-2,0,10,0,2));
+        extras.addView(text("Un domaine précis, par exemple ads.exemple.fr. Les mots-clés, profils et publications ne sont pas filtrables par DNS.",
+            12,MUTED,false),lp(-1,-2,0,3,0,7));
+        EditText custom=new EditText(this);
+        custom.setSingleLine(true);custom.setTextColor(FG);custom.setHintTextColor(MUTED);
+        custom.setTextSize(15);custom.setHint("pub.exemple.fr");custom.setBackground(shape(0xff10161e,14,LINE));
+        custom.setPadding(dp(12),0,dp(12),0);
+        extras.addView(custom,new LinearLayout.LayoutParams(-1,dp(52)));
+        Button add=button("AJOUTER À MES BLOCAGES",RED,Color.WHITE,true);
+        extras.addView(add,lp(-1,dp(48),0,9,0,0));
+        add.setOnClickListener(v->{
+            String value=custom.getText().toString().trim();
+            Set<String> valid=DomainRules.parse(value);
+            if(valid.size()!=1 || !valid.iterator().next().equalsIgnoreCase(value)){
+                Toast.makeText(this,"Entrez un domaine valide (sans https:// ni /)",Toast.LENGTH_LONG).show();return;
+            }
+            Set<String> existing=selection.manualDomains(domains.getText().toString());
+            existing.addAll(valid);
+            domains.setText(String.join("\n",existing));
+            saveDomains(false);custom.setText("");hideKeyboard();
+            updateSelectionCount();
+            Toast.makeText(this,"Domaine ajouté et enregistré",Toast.LENGTH_SHORT).show();
+        });
+        extras.addView(text("Les domaines personnalisés restent aussi modifiables dans l’éditeur principal. " +
+            "Vous pouvez désactiver les listes publicitaires sans supprimer vos autres blocages.",
+            12,MUTED,false),lp(-1,-2,0,10,0,0));
+        updateAdStatus();
+    }
+    private void updateAdStatus(){
+        if(adStatus == null)return;
+        int count=ExtraBlocks.active(this).size();
+        adStatus.setText(count+" domaines publicitaires activés"+(count==0?" · option inactive":""));
+    }
+
+    private int totalDomainCount(String manual){
+        java.util.HashSet<String> set=new java.util.HashSet<>(selection.effectiveDomains(manual));
+        set.addAll(ExtraBlocks.active(this));return set.size();
+    }
+
     private void updateSelectionCount() {
         if(selectionCounter != null)selectionCounter.setText(selection.countSelected()+" / 303 entrées sélectionnées  •  "
                 +selection.domains().size()+" domaine(s) associés");
-        if(counter != null && domains != null)counter.setText(String.valueOf(selection.effectiveDomains(domains.getText().toString()).size()));
+        if(counter != null && domains != null)counter.setText(String.valueOf(totalDomainCount(domains.getText().toString())));
     }
 
     private void applyActiveRules() {
@@ -296,7 +398,7 @@ public class MainActivity extends Activity {
     }
 
     @Override protected void onResume() {super.onResume();handler.postDelayed(this::refreshStatus, 200);}
-    @Override protected void onDestroy() {handler.removeCallbacksAndMessages(null);super.onDestroy();}
+    @Override protected void onDestroy() {handler.removeCallbacksAndMessages(null);downloads.shutdownNow();super.onDestroy();}
     @Override protected void onActivityResult(int request, int result, Intent data) {
         super.onActivityResult(request, result, data);
         if (request == 7 && result == RESULT_OK) startVpn();

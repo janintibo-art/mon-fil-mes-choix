@@ -1,4 +1,4 @@
-# Mon fil, mes choix — V4 complète
+# Mon fil, mes choix — V15
 
 Projet communautaire indépendant pour **personnaliser localement sa navigation**, avec un annuaire de 303 entrées et trois modes de filtrage complémentaires. Les contenus et comptes présentés dans le répertoire constituent une **liste de préférences** : ils ne constituent pas en soi une accusation d’illégalité ou de racisme.
 
@@ -7,7 +7,7 @@ Projet communautaire indépendant pour **personnaliser localement sa navigation*
 | Chemin | Fonction |
 |---|---|
 | `site/index.html` | Site public : présentation, liste consultable, moteur de recherche, filtres, liens documentaires, tutoriel Tampermonkey |
-| `site/ia.html` | Nouveau guide IA : vérification, préparation de domaines, demandes à copier, installation et dépannages |
+| `site/ia.html` | Ancien lien redirigé vers l’accueil (rubrique retirée en V15) |
 | `site/dns.html` | Tutoriel de fonctionnement des applications Android et Windows, limites et téléchargement via Actions |
 | `site/liste_v8.json` et `.csv` | 303 entrées, neuf groupes, statuts `requested`, `review`, `consider` |
 | `site/domaines_v1.json` | 9 domaines utilisables par les applications DNS ; liste ajustable |
@@ -56,3 +56,12 @@ Le script Tampermonkey fait du filtrage textuel sujet à de faux positifs et peu
 - Les domaines personnels supplémentaires se gèrent séparément ; dans une ancienne installation, les neuf domaines par défaut passent sous la responsabilité de la sélection par groupes.
 - Android applique les choix au VPN DNS en cours via une commande RELOAD ; Windows nécessite de cliquer sur ACTIVER / RÉAPPLIQUER (autorisation administrateur).
 - Le guide Tampermonkey inclut une procédure mobile avec illustrations annotées, distinctes de véritables captures d'écran système.
+
+
+## V15 — listes publicitaires facultatives et domaines personnels
+- Android et Windows : ajout en bas des interfaces d'une rubrique « Publicités et autres blocages ».
+- Téléchargement HTTPS manuel des listes AdAway et StevenBlack, chacune limitée à 10 000 domaines pour préserver les performances. Les sources ne sont pas activées avant consentement.
+- Ajout d'un nom de domaine personnalisé : un nom de domaine DNS n'est pas un mot-clé ni un profil sur une plateforme.
+- Les règles des groupes et les règles personnelles existantes sont conservées ; la suppression des règles hosts reste réversible.
+- Rubrique IA retirée du site et anciennes URL redirigées vers l'accueil.
+- La protection reste limitée à la résolution de domaines (DNS Android, hosts Windows).

@@ -30,8 +30,9 @@ jobs:
           p=Path('site')
           for name in ['index.html','dns.html','ia.html','assets/icone_antifa.png','assets/favicon.png','tampermonkey/mon-fil-mes-choix.user.js','liste_v8.csv','liste_v8.json','domaines_v1.json']:
               assert (p/name).exists(), name
-          assert 'Guide IA' in (p/'index.html').read_text(encoding='utf-8')
-          assert 'Copier cette demande' in (p/'ia.html').read_text(encoding='utf-8')
+          assert 'Guide Tampermonkey' in (p/'index.html').read_text(encoding='utf-8')
+          assert 'ia-guidage' not in (p/'index.html').read_text(encoding='utf-8')
+          assert 'id="pub"' in (p/'dns.html').read_text(encoding='utf-8')
           print('Site : fichiers présents et liens internes principaux vérifiés')
           PYTEST
       - name: Configurer Pages

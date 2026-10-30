@@ -44,7 +44,11 @@ final class DomainRules {
     }
     static boolean blocked(String host, Set<String> domains) {
         String name = host.toLowerCase(java.util.Locale.ROOT);
-        for (String d : domains) if (name.equals(d) || name.endsWith("." + d)) return true;
+        if (domains == null || domains.isEmpty()) return false;
+        if (domains.contains(name)) return true;
+        for (int i = name.indexOf('.'); i >= 0; i = name.indexOf('.', i + 1)) {
+            if (domains.contains(name.substring(i + 1))) return true;
+        }
         return false;
     }
 }

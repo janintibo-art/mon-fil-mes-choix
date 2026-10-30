@@ -14,6 +14,9 @@ import sys
 import tkinter as tk
 from tkinter import messagebox
 from collections import OrderedDict
+from tkinter import ttk
+import threading
+import blocklists
 
 APP = "Mon fil, mes choix • Filtre DNS"
 OPEN = "# DEBUT MON_FIL_MES_CHOIX_DNS — zone gérée par l'application"
@@ -24,6 +27,7 @@ CUSTOM = DATA_DIR / "domaines.txt"
 HOSTS = Path(os.environ.get("SystemRoot", r"C:\Windows")) / "System32" / "drivers" / "etc" / "hosts"
 SELECTION_FILE = DATA_DIR / "selection_v14.json"
 DEFAULT_FILTERS = Path(getattr(sys, "_MEIPASS", Path(__file__).parent)) / "selection_v14.json"
+AD_PREFS = DATA_DIR / "publicites_options.json"
 
 
 def catalog():
@@ -51,6 +55,26 @@ def selection_save(excluded):
 
 def selection_domains(entries, excluded):
     return sorted({x["domain"] for x in entries if x["id"] not in excluded and x["domain"]})
+
+
+def ads_flags():
+    try:
+        obj = json.loads(AD_PREFS.read_text(encoding="utf-8"))
+        return {source: bool(obj.get(source, False)) for source in blocklists.SOURCES}
+    except (OSError, ValueError, TypeError):
+        return {source: False for source in blocklists.SOURCES}
+
+
+def save_ads_flags(flags):
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    tmp = AD_PREFS.with_suffix('.tmp')
+    tmp.write_text(json.dumps(flags, ensure_ascii=False), encoding='utf-8')
+    tmp.replace(AD_PREFS)
+
+
+def all_filter_domains(manual, entries, excluded, flags, data_dir=DATA_DIR):
+    return sorted(set(manual) | set(selection_domains(entries, excluded)) |
+                  blocklists.enabled_domains(data_dir, flags))
 
 
 def group_catalog(entries):
@@ -207,10 +231,12 @@ class GUI:
         self.entries = catalog()
         self.groups = group_catalog(self.entries)
         self.excluded = selection_load()
+        self.ads = ads_flags()
         self._build_header()
         self._build_overview()
         self._build_selection()
         self._build_rules()
+        self._build_ads()
         self._build_help()
         self.refresh()
 
@@ -266,7 +292,7 @@ class GUI:
         self._label(self.sidebar, "RÉGLAGES LOCAUX", 9, self.MUTED, True).pack(anchor="w", pady=(30, 8))
         self._label(self.sidebar, "• Aucun compte requis\n• Aucune télémétrie ajoutée\n• Réversible à tout moment",
                     10, self.MUTED).pack(anchor="w")
-        self._label(self.sidebar, "V14  •  MON FIL, MES CHOIX", 9, self.MUTED).pack(side="bottom", anchor="w", pady=(15, 0))
+        self._label(self.sidebar, "V15  •  MON FIL, MES CHOIX", 9, self.MUTED).pack(side="bottom", anchor="w", pady=(15, 0))
 
     def _scroll_to(self, section):
         widget = getattr(self, section + "_section")
@@ -298,10 +324,10 @@ class GUI:
                     10, self.MUTED).pack(anchor="w")
         stat_card = self._card(row)
         stat_card.pack(side="left", fill="both", expand=True)
-        self._label(stat_card, "DOMAINES DNS SÉLECTIONNÉS", 10, self.MUTED, True).pack(anchor="w")
+        self._label(stat_card, "DOMAINES BLOQUABLES", 10, self.MUTED, True).pack(anchor="w")
         self.domain_count = self._label(stat_card, "0", 23, self.TEXT, True)
         self.domain_count.pack(anchor="w", pady=(9, 4))
-        self._label(stat_card, "303 noms sont sélectionnés par défaut : seuls les 9 domaines connus sont filtrables.",
+        self._label(stat_card, "9 domaines initiaux + listes publicitaires facultatives.",
                     10, self.MUTED).pack(anchor="w")
         actions = self._card(self.overview_section)
         actions.pack(fill="x", pady=(10, 0))
@@ -458,6 +484,97 @@ class GUI:
         self._label(self.rules_section, "Enregistrez, puis cliquez sur Activer / Réappliquer pour mettre les règles Windows à jour.",
                     10, self.MUTED).pack(anchor="w", pady=(10, 0))
 
+    def _build_ads(self):
+        """Optional advertising sources and user-added domains, at bottom of dashboard."""
+        self.ads_section = self._card(self.content)
+        self.ads_section.pack(fill="x", pady=(0, 18))
+        self._label(self.ads_section, "Publicités et autres blocages (facultatif)", 18, self.TEXT, True).pack(anchor="w")
+        self._label(self.ads_section,
+                    "Téléchargement manuel des listes : aucun téléchargement automatique, aucun filtrage publicitaire activé par défaut.",
+                    10, self.MUTED, wraplength=640).pack(anchor="w", pady=(4, 12))
+        self.ads_status = self._label(self.ads_section, "", 10, self.GREEN)
+        self.ads_status.pack(anchor="w", pady=(0, 9))
+        self.ads_vars = {}
+        for source,(label,url) in blocklists.SOURCES.items():
+            row = tk.Frame(self.ads_section, bg=self.CARD)
+            row.pack(fill="x", pady=5)
+            variable = tk.BooleanVar(value=self.ads.get(source, False))
+            self.ads_vars[source]=variable
+            check = tk.Checkbutton(row,text=label,variable=variable,
+                    command=lambda name=source,v=variable:self._toggle_ads(name,v.get()),
+                    bg=self.CARD,fg=self.TEXT,activebackground=self.CARD,activeforeground=self.TEXT,
+                    selectcolor=self.SIDE,font=("Segoe UI",11),anchor="w")
+            check.pack(side="left",fill="x",expand=True)
+            self._button(row, "TÉLÉCHARGER / ACTUALISER", lambda name=source:self._download_ads(name),
+                         self.CARD2,small=True).pack(side="right")
+            self._label(self.ads_section, f"{len(blocklists.cached(DATA_DIR,source))} domaines téléchargés • {url}",
+                        9,self.MUTED,wraplength=650).pack(anchor="w")
+        self._label(self.ads_section,
+                    "Par sécurité, les listes sont limitées aux 10 000 premiers domaines valides par source sur Windows. "
+                    "Le filtrage hosts peut ralentir Windows avec une très grande liste. Réappliquez après un téléchargement.",
+                    10,self.MUTED,wraplength=650).pack(anchor="w",pady=(9,13))
+        self._label(self.ads_section,"Ajouter un autre domaine à bloquer",14,self.TEXT,True).pack(anchor="w")
+        self._label(self.ads_section,"Exemple : publicite.exemple.com  (un domaine, pas un mot-clé ou une page Facebook)",
+                    10,self.MUTED).pack(anchor="w",pady=(0,8))
+        entry_row=tk.Frame(self.ads_section,bg=self.CARD)
+        entry_row.pack(fill="x")
+        self.ads_custom=tk.Entry(entry_row,bg="#0e141b",fg=self.TEXT,insertbackground=self.TEXT,
+                                font=("Segoe UI",11),relief="flat")
+        self.ads_custom.pack(side="left",fill="x",expand=True,ipady=11,padx=(0,10))
+        self._button(entry_row,"AJOUTER",self._add_ads_custom,self.RED,small=True).pack(side="right")
+        self._label(self.ads_section,
+                    "Les règles personnelles se retrouvent aussi dans l’éditeur ci-dessus. Pour appliquer sur Windows, cliquez Activer / Réappliquer.",
+                    10,self.MUTED,wraplength=640).pack(anchor="w",pady=(10,0))
+        self._ads_status()
+
+    def _ads_status(self):
+        count=len(blocklists.enabled_domains(DATA_DIR,self.ads))
+        self.ads_status.configure(text=f"Publicité : {count} domaines sélectionnés • " +
+                                  ("listes activées" if any(self.ads.values()) else "option désactivée"))
+        self._update_count()
+
+    def _toggle_ads(self,source,on):
+        if on and not blocklists.cached(DATA_DIR,source):
+            messagebox.showinfo("Liste absente", "Téléchargez d’abord la liste, puis activez-la.")
+            self.ads_vars[source].set(False)
+            return
+        self.ads[source]=bool(on)
+        save_ads_flags(self.ads)
+        self._ads_status()
+
+    def _download_ads(self,source):
+        label,url=blocklists.SOURCES[source]
+        if not messagebox.askyesno("Téléchargement facultatif", f"Télécharger la liste depuis :\n{url}\n\nCela contacte le fournisseur. Continuer ?"):
+            return
+        self.ads_status.configure(text="Téléchargement en cours... (connexion HTTPS)")
+        def task():
+            try:
+                count,truncated=blocklists.fetch_source(DATA_DIR,source,normalize)
+                def success():
+                    self._ads_status()
+                    messagebox.showinfo("Liste téléchargée", f"{label} : {count} domaines stockés. " +
+                                        ("Limite de 10 000 atteinte. " if truncated else "")+
+                                        "Cochez cette liste, puis cliquez Activer / Réappliquer pour l’appliquer.")
+                self.root.after(0,success)
+            except Exception as error:
+                self.root.after(0,lambda message=str(error):messagebox.showerror("Téléchargement impossible",message))
+                self.root.after(0,self._ads_status)
+        threading.Thread(target=task,daemon=True).start()
+
+    def _add_ads_custom(self):
+        value=self.ads_custom.get().strip()
+        parsed,bad=normalize(value)
+        if bad or len(parsed)!=1:
+            messagebox.showwarning("Domaine invalide", "Entrez un domaine valide, par exemple publicite.exemple.com")
+            return
+        current,_=normalize(self.editor.get("1.0","end"))
+        if parsed[0] not in current:
+            self.editor.insert("end",("\n" if self.editor.get("1.0","end").strip() else "")+parsed[0]+"\n")
+        self.ads_custom.delete(0,"end")
+        self.save(show_message=False)
+        self._update_count()
+        messagebox.showinfo("Domaine ajouté", "Domaine enregistré. Cliquez Activer / Réappliquer pour l’appliquer.")
+
     def _build_help(self):
         self.help_section = self._card(self.content)
         self.help_section.pack(fill="x", pady=(0, 18))
@@ -477,7 +594,7 @@ class GUI:
 
     def _update_count(self):
         valid, bad = normalize(self.editor.get("1.0", "end"))
-        self.domain_count.config(text=str(len(set(valid) | set(selection_domains(self.entries,self.excluded)))) + ("  •  erreurs à corriger" if bad else ""))
+        self.domain_count.config(text=str(len(all_filter_domains(valid,self.entries,self.excluded,self.ads))) + ("  •  erreurs à corriger" if bad else ""))
 
     def refresh(self):
         enabled = active()
@@ -503,7 +620,7 @@ class GUI:
         domains = self.save(show_message=False)
         if domains is None:
             return
-        domains = sorted(set(domains) | set(selection_domains(self.entries, self.excluded)))
+        domains = all_filter_domains(domains,self.entries,self.excluded,self.ads)
         if not domains:
             messagebox.showwarning("Liste vide", "Ajoutez un domaine avant d'activer.")
             return

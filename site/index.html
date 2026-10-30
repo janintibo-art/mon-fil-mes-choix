@@ -118,7 +118,7 @@
     @media(max-width:980px){.how-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.install-band{flex-direction:column;align-items:stretch}.install-buttons{flex-direction:row;flex-wrap:wrap}}
     @media(max-width:600px){.how-grid{grid-template-columns:1fr}.how-card{min-height:0}.install-band{padding:24px 19px}.install-buttons{flex-direction:column}.install-buttons .btn{width:100%}}
   
-@media(max-width:700px){#ia-guidage .paper{grid-template-columns:1fr!important;padding:22px!important}}
+}
 .topnav{flex-wrap:wrap;justify-content:flex-end}.brand img{width:31px;height:31px;object-fit:contain;border-radius:8px}
 </style>
 <link rel="stylesheet" href="./assets/v8-theme.css">
@@ -126,9 +126,9 @@
 <body class="v8 v8-home v10-home">
 <header class="v8-header"><div class="v8-wrap v8-header-inner">
   <a class="v8-brand" href="./" aria-label="Mon fil, mes choix — Accueil"><img src="./assets/icone_antifa.png" alt="" width="42" height="42"><span>Mon fil, <strong>mes choix</strong></span></a>
-  <nav class="v8-nav" aria-label="Navigation principale"><a href="./">Accueil</a><a href="./#annuaire">La liste</a><a href="./tampermonkey.html">Guide Tampermonkey</a><a href="./dns.html">Applications</a><a href="./ia.html">Guide IA</a></nav>
+  <nav class="v8-nav" aria-label="Navigation principale"><a href="./">Accueil</a><a href="./#annuaire">La liste</a><a href="./tampermonkey.html">Guide Tampermonkey</a><a href="./dns.html">Applications</a></nav>
   <a class="v8-header-cta" href="./tampermonkey.html">Installer le filtre Web <span aria-hidden="true">↗</span></a>
-  <details class="v8-mobile-nav"><summary aria-label="Ouvrir le menu de navigation"><span></span><span></span><span></span></summary><nav aria-label="Navigation mobile"><a href="./">Accueil</a><a href="./#annuaire">Liste de filtrage</a><a href="./tampermonkey.html">Guide Tampermonkey</a><a href="./dns.html">APK et EXE</a><a href="./ia.html">Guide IA</a></nav></details>
+  <details class="v8-mobile-nav"><summary aria-label="Ouvrir le menu de navigation"><span></span><span></span><span></span></summary><nav aria-label="Navigation mobile"><a href="./">Accueil</a><a href="./#annuaire">Liste de filtrage</a><a href="./tampermonkey.html">Guide Tampermonkey</a><a href="./dns.html">APK et EXE</a></nav></details>
 </div></header>
 <main id="haut">
   <section class="hero v8-hero"><div class="shell hero-in v8-hero-grid">
@@ -163,8 +163,8 @@
     <section class="v8-feature-section" aria-label="Découvrir les outils"><div class="v8-section-top"><span class="kicker">À CHAQUE USAGE, SON OUTIL</span><h2>Tout pour personnaliser votre Web.</h2><p>Un même projet, trois méthodes différentes. Choisissez celles qui correspondent à vos besoins.</p></div>
  <div class="v8-feature-grid">
   <a class="v8-feature-card card-violet v10-featured-card" href="./tampermonkey.html"><span class="v8-feature-icon" aria-hidden="true">✳</span><span class="v8-feature-caption">NAVIGATEUR · COMMENCER ICI</span><strong>Installer Tampermonkey</strong><span>Masquez localement certains résultats ou publications avec le script, sans modifier le site d'origine.</span><span class="v8-feature-link">Tutoriel et script <b>↗</b></span></a>
-  <a class="v8-feature-card card-green" href="./dns.html#android"><span class="v8-feature-icon" aria-hidden="true">▣</span><span class="v8-feature-caption">ANDROID · APK</span><strong>L'application Android</strong><span>Filtre DNS local pour une liste de domaines choisie. Réglages personnalisables et arrêt possible.</span><span class="v8-feature-link">Voir Android <b>↗</b></span></a>
-  <a class="v8-feature-card card-blue" href="./dns.html#windows"><span class="v8-feature-icon" aria-hidden="true">▦</span><span class="v8-feature-caption">WINDOWS · EXE</span><strong>L'application Windows</strong><span>Gestion réversible du fichier hosts pour les domaines sélectionnés, sans toucher aux autres sites.</span><span class="v8-feature-link">Voir Windows <b>↗</b></span></a>
+  <a class="v8-feature-card card-green" href="./dns.html#android"><span class="v8-feature-icon" aria-hidden="true">▣</span><span class="v8-feature-caption">ANDROID · APK</span><strong>L'application Android</strong><span>Filtre DNS local avec choix par groupes, listes antipublicités facultatives et domaines personnalisés.</span><span class="v8-feature-link">Voir Android <b>↗</b></span></a>
+  <a class="v8-feature-card card-blue" href="./dns.html#windows"><span class="v8-feature-icon" aria-hidden="true">▦</span><span class="v8-feature-caption">WINDOWS · EXE</span><strong>L'application Windows</strong><span>Filtrage hosts réversible, avec listes antipublicités facultatives et domaines personnalisés.</span><span class="v8-feature-link">Voir Windows <b>↗</b></span></a>
   <a class="v8-feature-card card-red" href="#annuaire"><span class="v8-feature-icon" aria-hidden="true">☷</span><span class="v8-feature-caption">RÉPERTOIRE</span><strong>La liste documentée</strong><span>303 entrées consultables, avec recherche, catégories et sources lorsqu'elles sont disponibles.</span><span class="v8-feature-link">Explorer la liste <b>↗</b></span></a>
  </div>
 </section>
@@ -220,8 +220,6 @@
       <div class="notice-note" role="note"><strong>À savoir :</strong> le script utilise des correspondances textuelles, qui peuvent entraîner des faux positifs. Il <strong>ne peut pas garantir un filtrage universel</strong> : certains sites modifient leur structure, chargent des contenus dans des espaces protégés ou sont exclus par le navigateur. Les entrées « à examiner » sont incluses dans le mode complet ; vous pouvez revenir au mode plus restreint dans le menu Tampermonkey. Les noms très courts ou génériques ne sont pas filtrés par simple mention pour éviter les erreurs.</div>
       <p class="section-intro" style="margin-top:20px">Ressources officielles : <a href="https://www.tampermonkey.net/faq.php?locale=fr&q=Q102" target="_blank" rel="noopener noreferrer">installer un script</a> • <a href="https://www.tampermonkey.net/faq.php?ext=dhdg&locale=fr&q=Q209" target="_blank" rel="noopener noreferrer">autoriser les scripts sur Chrome</a> • <a href="https://github.com/janintibo-art/mon-fil-mes-choix" target="_blank" rel="noopener noreferrer">code source du projet après publication</a>.</p>
     </section>
-
-    <section class="section" id="ia-guidage"><div class="paper" style="display:grid;grid-template-columns:minmax(0,1.1fr) minmax(220px,.9fr);gap:26px;padding:30px;background:linear-gradient(125deg,#132337,#271b24);color:#fff;border-color:#5b3a46"><div><div class="kicker" style="color:#ffb0b5">Accompagnement pas à pas</div><h2 style="color:#fff">Se servir de l’IA pour mieux filtrer.</h2><p style="color:#d5dbe4">L’IA peut aider à vérifier les comptes publics, trouver des domaines officiels et améliorer les règles Tampermonkey. Elle ne bloque pas automatiquement les 303 personnes sur Internet : vous choisissez et validez chaque méthode.</p><a class="btn btn-primary" href="./ia.html">Découvrir le guide IA et copier les demandes</a></div><div style="display:grid;align-content:center;gap:13px;color:#ecf0f5"><div>01 · Vérifier les noms et leurs liens publics</div><div>02 · Transformer votre sélection en règles adaptées</div><div>03 · Installer, tester puis corriger les faux positifs</div><p style="font-size:12px;color:#c7cbd1">La liste de 303 entrées est consultable juste en dessous.</p></div></div></section>
 <section class="section" id="annuaire">
       <div class="section-header"><div><span class="kicker">Répertoire consultable</span><h2>Explorer les noms et les pages</h2></div><div class="buttons"><button class="btn btn-light" type="button" id="expand">Tout ouvrir</button><button class="btn btn-light" type="button" id="csv">Exporter CSV</button></div></div>
       <p class="section-intro">Les entrées proviennent d'une liste de travail évolutive. Les sources sont des pistes documentaires ; elles n'ont pas toutes été revérifiées individuellement. Les noms et affiliations doivent être vérifiés au cas par cas ; les correspondances de texte peuvent cacher des résultats sans lien direct.</p>

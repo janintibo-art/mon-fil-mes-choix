@@ -36,7 +36,7 @@ public final class DnsVpnService extends VpnService {
     @Override public int onStartCommand(Intent command, int flags, int id) {
         if(command != null && STOP.equals(command.getAction())) { stopSelf(); return START_NOT_STICKY; }
         if(command != null && RELOAD.equals(command.getAction())) {
-            if(running) denied = new SelectionRules(this).effectiveDomains(DomainRules.get(this));
+            if(running) denied = ExtraBlocks.all(this, DomainRules.get(this));
             return running ? START_STICKY : START_NOT_STICKY;
         }
         if(running) return START_STICKY;
@@ -51,7 +51,7 @@ public final class DnsVpnService extends VpnService {
                 .setContentText("Filtrage DNS actif • ouvrir pour désactiver")
                 .setContentIntent(pi).setOngoing(true).build();
             startForeground(15,notice);
-            denied = new SelectionRules(this).effectiveDomains(DomainRules.get(this));
+            denied = ExtraBlocks.all(this, DomainRules.get(this));
             Builder builder = new Builder().setSession("Mon fil, mes choix DNS")
                 .setMtu(1500).addAddress("10.111.0.1",30)
                 .addDnsServer("10.111.0.2").addRoute("10.111.0.2",32);
