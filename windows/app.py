@@ -323,7 +323,7 @@ class GUI:
         self._label(self.sidebar, "RÉGLAGES LOCAUX", 9, self.MUTED, True).pack(anchor="w", pady=(30, 8))
         self._label(self.sidebar, "• Aucun compte requis\n• Aucune télémétrie ajoutée\n• Réversible à tout moment",
                     10, self.MUTED).pack(anchor="w")
-        self._label(self.sidebar, "V15  •  MON FIL, MES CHOIX", 9, self.MUTED).pack(side="bottom", anchor="w", pady=(15, 0))
+        self._label(self.sidebar, "V22  •  MON FIL, MES CHOIX", 9, self.MUTED).pack(side="bottom", anchor="w", pady=(15, 0))
 
     def _scroll_to(self, section):
         widget = getattr(self, section + "_section")
@@ -362,6 +362,13 @@ class GUI:
                     10, self.MUTED).pack(anchor="w")
         actions = self._card(self.overview_section)
         actions.pack(fill="x", pady=(10, 0))
+        self._label(actions, "Pour commencer", 17, self.TEXT, True).pack(anchor="w", pady=(0, 6))
+        self._label(actions,
+                    "1. Vos choix sont déjà préparés.\n"
+                    "2. Activez la protection avec le bouton ci-dessous.\n"
+                    "3. Vous pouvez l'arrêter à tout moment.\n"
+                    "Les réglages détaillés se trouvent plus bas sur cette page.",
+                    11, self.MUTED).pack(anchor="w", pady=(0, 12))
         self._label(actions, "Actions rapides", 15, self.TEXT, True).pack(anchor="w", pady=(0, 11))
         buttons = tk.Frame(actions, bg=self.CARD)
         buttons.pack(fill="x")

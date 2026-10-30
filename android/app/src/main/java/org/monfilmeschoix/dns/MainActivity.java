@@ -83,7 +83,7 @@ public class MainActivity extends Activity {
         brandText.addView(text("MON FIL, MES CHOIX", 19, FG, true));
         brandText.addView(text("FILTRE DNS  /  ANDROID", 11, 0xffffa7b4, true), lp(-1,-2,0,5,0,0));
         hero.addView(text("Votre navigation, vos règles.", 23, FG, true), lp(-1,-2,0,19,0,5));
-        hero.addView(text("Choisissez les domaines à filtrer. Vos règles restent sur cet appareil ; les requêtes autorisées utilisent des DNS publics.", 14, 0xffd9dfe8, false));
+        hero.addView(text("La liste est déjà préparée. Pour commencer, appuyez sur « Activer la protection ». Vous pourrez tout arrêter à tout moment.", 14, 0xffd9dfe8, false));
 
         // Display actual service state; never invent analytics or fake counters.
         LinearLayout status = panel(CARD, 19, LINE);
@@ -147,9 +147,23 @@ public class MainActivity extends Activity {
             }
         });
 
+        // V22: beginner mode. Keep every advanced control available, without overwhelming first-time users.
+        LinearLayout advanced = vertical();
+        Button toggleAdvanced = button("Afficher mes réglages et options  ▾", CARD_ALT, FG, true);
+        page.addView(toggleAdvanced, lp(-1,dp(54),0,0,0,13));
+        advanced.setVisibility(View.GONE);
+        page.addView(advanced, lp(-1,-2,0,0,0,6));
+        TextView simpleHelp = text("1. La sélection est prête.\n2. Touchez « Activer la protection ».\n3. Pour arrêter, touchez « Désactiver le filtre ».\n4. Les options restent accessibles avec « Afficher mes réglages ». ", 13, MUTED, false);
+        page.addView(simpleHelp, lp(-1,-2,0,0,0,12));
+        toggleAdvanced.setOnClickListener(v -> {
+            boolean show = advanced.getVisibility() != View.VISIBLE;
+            advanced.setVisibility(show ? View.VISIBLE : View.GONE);
+            toggleAdvanced.setText(show ? "Masquer les réglages avancés  ▴" : "Afficher mes réglages et options  ▾");
+        });
+
         // Group and entry management; all 303 are selected by default.
         LinearLayout choose = panel(CARD, 19, LINE);
-        page.addView(choose, lp(-1,-2,0,0,0,12));
+        advanced.addView(choose, lp(-1,-2,0,0,0,12));
         choose.addView(text("Gérer les 303 entrées", 20, FG, true));
         choose.addView(text("9 groupes activés par défaut. Cochez ou décochez des groupes ou des noms, comme dans Tampermonkey.",
                 13, MUTED, false), lp(-1,-2,0,4,0,11));
@@ -171,7 +185,7 @@ public class MainActivity extends Activity {
                 12, MUTED, false), lp(-1,-2,0,12,0,0));
 
         LinearLayout transfer=panel(CARD,19,LINE);
-        page.addView(transfer,lp(-1,-2,0,0,0,12));
+        advanced.addView(transfer,lp(-1,-2,0,0,0,12));
         transfer.addView(text("Retrouver mes choix",20,FG,true));
         transfer.addView(text("Deux boutons pour conserver vos réglages ou les retrouver sur un autre appareil. Vos listes publicitaires téléchargées restent sur cet appareil.",13,MUTED,false),lp(-1,-2,0,5,0,10));
         Button backup=button("Sauvegarder mes choix",RED,Color.WHITE,false);
@@ -194,7 +208,7 @@ public class MainActivity extends Activity {
 
         // Domain list — user remains in control of additional rules.
         LinearLayout rules = panel(CARD, 19, LINE);
-        page.addView(rules, lp(-1,-2,0,0,0,12));
+        advanced.addView(rules, lp(-1,-2,0,0,0,12));
         rules.addView(text("Domaines personnels supplémentaires", 20, FG, true));
         rules.addView(text("Facultatif : les domaines associés aux groupes sont ajoutés automatiquement.",
                 13, MUTED, false), lp(-1,-2,0,4,0,12));
@@ -226,15 +240,15 @@ public class MainActivity extends Activity {
                 12, MUTED, false), lp(-1,-2,0,11,0,0));
 
         LinearLayout help = panel(CARD, 19, LINE);
-        page.addView(help, lp(-1,-2,0,0,0,12));
+        advanced.addView(help, lp(-1,-2,0,0,0,12));
         help.addView(text("Comment ça marche ?", 19, FG, true));
         help.addView(text("01  Les 303 entrées sont précochées.\n02  Choisissez vos groupes et noms, puis les domaines personnels éventuels.\n03  Autorisez le VPN DNS local Android et activez-le.\n04  Modifiez ou désactivez le filtre à tout moment.",
                 14, FG, false), lp(-1,-2,0,11,0,0));
         help.addView(text("Ce filtre DNS masque des domaines, pas des personnes sur un réseau social. Il ne s'agit pas d'un VPN d'anonymisation. Certains navigateurs avec DNS chiffré et le DNS privé peuvent contourner le filtrage. Un autre VPN peut être incompatible.",
                 13, MUTED, false), lp(-1,-2,0,15,0,0));
 
-        addExtras(page);
-        addHistoryControls(page);
+        addExtras(advanced);
+        addHistoryControls(advanced);
         page.addView(text("MON FIL, MES CHOIX  •  FILTRAGE LOCAL ET RÉVERSIBLE", 10, MUTED, true),
                 lp(-1,-2,0,6,0,0));
         setContentView(scroll);
