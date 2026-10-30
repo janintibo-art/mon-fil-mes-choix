@@ -516,7 +516,7 @@ class GUI:
         head = tk.Frame(dlg, bg=self.BG, padx=18, pady=13)
         head.pack(fill="x")
         self._label(head, group, 17, self.TEXT, True, wraplength=610).pack(anchor="w")
-        self._label(head, "Les entrées sans domaine vérifié ne créent aucune règle hosts.", 10, self.MUTED).pack(anchor="w")
+        self._label(head, "Sans domaine DNS : aucune règle hosts. Pour les noms et mots-clés, installez le module navigateur depuis le site.", 10, self.MUTED).pack(anchor="w")
         container = tk.Frame(dlg, bg=self.BG)
         container.pack(fill="both", expand=True)
         canvas = tk.Canvas(container, bg=self.BG, highlightthickness=0)
@@ -535,7 +535,7 @@ class GUI:
             callback()
         for entry in self.groups[group]:
             sel = tk.BooleanVar(value=entry["id"] not in self.excluded)
-            label = entry["name"] + ("  •  " + entry["domain"] if entry["domain"] else "  •  sans domaine")
+            label = entry["name"] + ("  •  " + entry["domain"] if entry["domain"] else "  •  sans domaine DNS (navigateur seulement)")
             tk.Checkbutton(inner, text=label, variable=sel, command=lambda i=entry["id"],v=sel: toggle(i,v),
                            bg=self.BG, fg=self.TEXT, activebackground=self.BG, activeforeground=self.TEXT,
                            selectcolor=self.SIDE, font=("Segoe UI", 10), wraplength=560,
