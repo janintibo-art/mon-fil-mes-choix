@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Mon fil, mes choix — filtre Web personnel
 // @namespace    https://github.com/janintibo-art/mon-fil-mes-choix
-// @version      4.2.0
+// @version      4.3.0
 // @updateURL    https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
 // @downloadURL  https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
-// @description  V38 : détection de traceurs, refus prudent de cookies et bilan local.
+// @description  V39 : archivage facultatif des fichiers vidéo HTML5 directs.
 // @author       Communauté Mon fil, mes choix
 // @match        *://*/*
 // @run-at       document-idle
@@ -643,6 +643,53 @@
       }catch(error){alert('Impossible de récupérer ce fichier : '+error.message)}
     });input.click();
   }
+
+  // V39 - Archivage volontaire des fichiers vidéo directement accessibles.
+  const VIDEO_ARCHIVE_KEY=KEY+'video_archive_v39';
+  let videoArchiveEnabled=Boolean(GM_getValue(VIDEO_ARCHIVE_KEY,false));
+  function videoArchiveUrl(video){
+    const raw=video.currentSrc||video.src||video.querySelector('source[src]')?.src||'';
+    if(!raw)return '';
+    try{
+      const u=new URL(raw,location.href);
+      if(!['http:','https:'].includes(u.protocol))return '';
+      if(!/\.(mp4|webm|ogg|ogv|mov|m4v)(?:$|[?#])/i.test(u.href))return '';
+      return u.href;
+    }catch{return '';}
+  }
+  function archiveCurrentVideo(){
+    const videos=[...document.querySelectorAll('video')];
+    const video=videos.find(v=>!v.paused)||videos.find(v=>v.getBoundingClientRect().width>100)||videos[0];
+    if(!video){alert('Aucune vidéo HTML5 détectée sur cette page.');return;}
+    const url=videoArchiveUrl(video);
+    if(!url){
+      alert('Cette vidéo ne présente pas de fichier directement téléchargeable (.mp4, .webm, etc.). Les flux segmentés, DRM et lecteurs protégés ne sont pas pris en charge.');
+      return;
+    }
+    const a=document.createElement('a');a.href=url;
+    a.download='archive-video-'+new Date().toISOString().slice(0,10)+'.'+(url.match(/\.(mp4|webm|ogg|ogv|mov|m4v)(?:$|[?#])/i)?.[1]||'mp4');
+    a.rel='noopener noreferrer';document.body.appendChild(a);a.click();a.remove();
+    alert('Téléchargement demandé au navigateur. Selon le site, le fichier peut être ouvert plutôt que téléchargé. Vérifiez les droits et les conditions d’utilisation.');
+  }
+  function toggleVideoArchive(){
+    videoArchiveEnabled=!videoArchiveEnabled;
+    GM_setValue(VIDEO_ARCHIVE_KEY,videoArchiveEnabled);
+    syncVideoArchiveButton();
+  }
+  function syncVideoArchiveButton(){
+    const existing=document.getElementById('mfm-video-archive-v39');
+    if(!videoArchiveEnabled||!document.body||!document.querySelector('video')){
+      existing?.remove();return;
+    }
+    if(existing)return;
+    const b=button('⬇ Archiver vidéo',archiveCurrentVideo);
+    b.id='mfm-video-archive-v39';
+    Object.assign(b.style,{position:'fixed',right:'14px',bottom:'112px',zIndex:'2147483642',
+      background:'#17283d',color:'#fff',padding:'10px 13px',borderRadius:'24px',
+      border:'1px solid #8393a6',boxShadow:'0 4px 18px #0008',font:'bold 13px system-ui'});
+    document.body.appendChild(b);
+  }
+
   function menu(){
     GM_registerMenuCommand('👁️ Tableau de bord Invisibilité',openDashboard);
     GM_registerMenuCommand('✍️ Mes mots-clés ('+userWords.length+')',openWordsPanel);
@@ -651,6 +698,7 @@
     GM_registerMenuCommand((searchFree?'✅':'⬜')+' Recherche libre : masquer annonces',toggleSearchFree);
     GM_registerMenuCommand('⚙️ Personnalisation Google',()=>window.open('https://www.google.com/search-personalization','_blank','noopener'));
     GM_registerMenuCommand('🔎 Comparer les moteurs',openCompare);
+    GM_registerMenuCommand((videoArchiveEnabled?'✅':'⬜')+' Bouton archiver vidéo',toggleVideoArchive);
     GM_registerMenuCommand('🛡️ Mouchards et cookies (v38)',privacyPanel);
     GM_registerMenuCommand('💾 Sauvegarder mes choix',exportChoices);
     GM_registerMenuCommand('📂 Récupérer mes choix',importChoices);
@@ -783,7 +831,7 @@
     Object.assign(launcher.style,{position:'fixed',right:'14px',bottom:'12px',zIndex:'2147483644',background:'#d82746',color:'#fff',padding:'10px 13px',border:'1px solid #fff5',borderRadius:'30px',font:'bold 13px system-ui',boxShadow:'0 6px 24px #0007'});
     document.body.append(launcher);
   }
-  style();menu();scan();addLauncher();
+  style();menu();scan();addLauncher();syncVideoArchiveButton();
   const observer=new MutationObserver(records=>{
     if(records.every(r=>r.type==='attributes'&&r.attributeName?.startsWith('data-mfm-')))return;
     for(const r of records){
@@ -793,6 +841,7 @@
       if(card)card.removeAttribute('data-mfm-scanned');
     }
     schedule();
+    if(videoArchiveEnabled)syncVideoArchiveButton();
   });
   observer.observe(document.documentElement,{childList:true,subtree:true,attributes:false});
   setInterval(()=>{if(enabled&&!revealOnce)scan()},8000);
