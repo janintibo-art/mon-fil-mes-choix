@@ -137,7 +137,7 @@
         </div>
       </div>
       <aside class="panel quick" aria-label="Résumé rapide des étapes">
-        <h2>Résumé en 5 étapes + options</h2>
+        <h2>En bref : installer en 5 étapes</h2>
         <p>Suivez toujours cet ordre. Si une étape ne marche pas, passez à la partie dépannage plus bas.</p>
         <ol>
           <li>Installer l’extension Tampermonkey dans le navigateur.</li>
@@ -195,12 +195,7 @@
   </div>
 </section>
 <!-- /GUIDE-REFONTE-V35 -->
-
-    <section class="prep" aria-label="Avant de commencer">
-      <article class="panel prep-card"><h3>Ce qu’il vous faut</h3><p>Un navigateur compatible avec Tampermonkey sur ordinateur. Sur téléphone, la compatibilité dépend du navigateur utilisé.</p></article>
-      <article class="panel prep-card"><h3>À quoi sert le script</h3><p>Le script masque localement des résultats, cartes ou publications sur certains sites compatibles. Il ne supprime rien à la source.</p></article>
-      <article class="panel prep-card"><h3>Important</h3><p>Si un site change de structure, il peut falloir mettre le script à jour. Vous pouvez aussi désactiver le filtre à tout moment.</p></article>
-    </section>
+<!-- GUIDE-EPURE-V37 : une seule présentation générale et un guide Samsung -->
 
     <section class="manual-box" id="installation-samsung" aria-labelledby="phone-title">
       <span class="eyebrow">Guide spécial téléphone</span>
@@ -219,144 +214,6 @@
     </section>
 
 
-    <h2 class="section-title">Le guide détaillé</h2>
-    <p class="section-lead">Chaque étape ci-dessous montre ce que vous devez faire et ce que vous devriez voir à l’écran. Les captures sont illustratives, pour vous aider à vous repérer plus facilement.</p>
-
-    <section class="panel step" id="etape-1">
-      <div>
-        <div class="step-num">01</div>
-        <h3>Installer l’extension officielle</h3>
-        <p>Commencez toujours par l’extension officielle Tampermonkey. Sans elle, le script ne pourra pas s’installer ni fonctionner.</p>
-        <ul>
-          <li><strong>Ouvrez</strong> le site officiel <a href="https://www.tampermonkey.net/" target="_blank" rel="noopener noreferrer">tampermonkey.net</a>.</li>
-          <li><strong>Choisissez</strong> votre navigateur (Chrome, Edge, Firefox ou un autre navigateur compatible).</li>
-          <li><strong>Validez</strong> l’installation si le navigateur affiche une fenêtre de confirmation.</li>
-        </ul>
-      </div>
-      <figure class="capture"><img src="./assets/guides/tm-step1.svg" alt="Capture d’écran illustrative de la page officielle Tampermonkey avec le bouton d’installation"><figcaption>Capture 1 · Le site officiel Tampermonkey avec le bouton d’ajout au navigateur.</figcaption></figure>
-    </section>
-
-    <section class="panel step" id="etape-2">
-      <div>
-        <div class="step-num">02</div>
-        <h3>Autoriser les scripts utilisateur</h3>
-        <p>Certains navigateurs demandent une autorisation supplémentaire pour que les scripts utilisateur fonctionnent correctement.</p>
-        <ul>
-          <li><strong>Ouvrez</strong> la gestion de l’extension Tampermonkey.</li>
-          <li><strong>Cherchez</strong> l’option « Autoriser les scripts utilisateur ».</li>
-          <li><strong>Activez-la</strong> si elle est visible. Sur certains navigateurs, activez aussi le mode développeur.</li>
-        </ul>
-      </div>
-      <figure class="capture"><img src="./assets/guides/tm-step2.svg" alt="Capture d’écran illustrative des réglages de Tampermonkey avec l’option Autoriser les scripts utilisateur activée"><figcaption>Capture 2 · L’option à activer si votre navigateur la demande.</figcaption></figure>
-    </section>
-
-    <section class="panel step" id="etape-3">
-      <div>
-        <div class="step-num">03</div>
-        <h3>Installer le script Mon fil, mes choix</h3>
-        <p>Une fois l’extension prête, ouvrez notre script. Tampermonkey affichera normalement une page d’installation. <strong>Sur téléphone, si vous voyez « New Userscript » comme sur votre capture, utilisez plutôt le bouton de copie ci-dessous.</strong></p>
-        <p style="margin-top:12px"><button class="btn btn-primary mfm-copy-button" type="button" data-copy-script>📋 Copier le script</button></p>
-        <p id="mfm-copy-status" role="status" aria-live="polite" style="font-size:14px;color:#a9edca">Appuyez pour copier le code complet. Il ne faut pas copier seulement le lien.</p>
-        <div id="mfm-copy-manual" class="mfm-manual" hidden>
-          <p><strong>Si la copie automatique est bloquée :</strong> sélectionnez le texte ci-dessous et choisissez « Copier » dans le menu du téléphone.</p>
-          <textarea id="mfm-copy-code" readonly spellcheck="false" aria-label="Code complet du script à sélectionner et copier"></textarea>
-          <button class="btn btn-dark" type="button" id="mfm-copy-select">Tout sélectionner</button>
-        </div>
-        <div class="mfm-install-note">
-          <strong>Sur votre téléphone Samsung :</strong>
-          <ol>
-            <li>Dans Tampermonkey, appuyez sur <strong>« New Userscript » → « Éditer »</strong>.</li>
-            <li>Dans l’éditeur, <strong>sélectionnez tout le code par défaut et supprimez-le</strong>.</li>
-            <li>Faites un appui long, puis <strong>« Coller »</strong> le script complet copié.</li>
-            <li><strong>Enregistrez</strong> dans l’éditeur Tampermonkey, puis rechargez Google.</li>
-            <li>Le script doit s’appeler <strong>« Mon fil, mes choix — filtre Web personnel »</strong>, pas « New Userscript ».</li>
-          </ol>
-        </div>
-        <ul>
-          <li><strong>Cliquez</strong> sur ce lien : <a href="./tampermonkey/mon-fil-mes-choix.user.js">installer notre script</a>.</li>
-          <li><strong>Vérifiez</strong> que le nom du script affiché contient bien « Mon fil, mes choix ».</li>
-          <li><strong>Appuyez</strong> sur « Installer ».</li>
-          <li><strong>Si rien ne se passe</strong>, ouvrez le tableau de bord Tampermonkey, créez un script, collez le contenu du fichier, puis enregistrez.</li>
-        </ul>
-      </div>
-      <figure class="capture"><img src="./assets/guides/tm-step3.svg" alt="Capture d’écran illustrative de la page d’installation du script utilisateur avec le bouton Installer"><figcaption>Capture 3 · L’écran d’installation du script dans Tampermonkey.</figcaption></figure>
-    </section>
-
-    <section class="panel step" id="etape-4">
-      <div>
-        <div class="step-num">04</div>
-        <h3>Tester le menu et choisir un mode</h3>
-        <p>Après installation, ouvrez une page Web puis le menu Tampermonkey. Le script doit apparaître comme activé.</p>
-        <ul>
-          <li><strong>Repérez</strong> le script « Mon fil, mes choix » dans le menu.</li>
-          <li><strong>Essayez</strong> les modes proposés : liste complète, blocages demandés seulement, afficher tout, désactiver.</li>
-          <li><strong>Rechargez</strong> la page Web si vous venez tout juste d’installer ou de modifier le script.</li>
-        </ul>
-      </div>
-      <figure class="capture"><img src="./assets/guides/tm-step4.svg" alt="Capture d’écran illustrative du menu Tampermonkey montrant le script activé et plusieurs actions disponibles"><figcaption>Capture 4 · Le script apparaît activé dans le menu Tampermonkey.</figcaption></figure>
-    </section>
-
-
-    <section class="panel step" id="groupes">
-      <div>
-        <div class="step-num">05</div>
-        <h3>Choisir les groupes que vous voulez masquer</h3>
-        <p>La V12 contient <strong>les 303 entrées</strong> de la liste, réparties en <strong>9 groupes indépendants</strong>. Tous les groupes sont actifs lors de la première installation.</p>
-        <ul>
-          <li>Ouvrez le menu de l’extension Tampermonkey sur une page Web ordinaire, par exemple une recherche Google.</li>
-          <li>Choisissez <strong>« ⚙️ Gérer les groupes (9) »</strong> dans le menu du script.</li>
-          <li>Cochez ou décochez les groupes souhaités. Le changement est <strong>immédiatement enregistré</strong>.</li>
-          <li>Utilisez <strong>« Tout activer »</strong> ou <strong>« Tout désactiver »</strong> si vous préférez commencer de zéro.</li>
-          <li>Fermez le panneau, puis rechargez la page si des résultats restent visibles.</li>
-        </ul>
-        <p><strong>Exemple :</strong> si vous désactivez le groupe « Médias et groupes de presse », CNews ne sera plus masqué par notre script. Pour le masquer, réactivez ce groupe.</p>
-      </div>
-      <figure class="capture"><img src="./assets/guides/tm-step5.png" alt="Capture illustrative du panneau Gérer les groupes : neuf interrupteurs et boutons Tout activer et Tout désactiver"><figcaption>Capture 5 · Le panneau réel de sélection des groupes, sur une page de démonstration.</figcaption></figure>
-    </section>
-
-
-    <section class="panel" id="publicites-tampermonkey" style="padding:24px;margin:28px 0">
-      <div class="eyebrow">NOUVEAU · OPTION FACULTATIVE</div>
-      <h2 style="font-size:clamp(25px,4vw,38px);margin:14px 0">Publicités et domaines personnels</h2>
-      <p>En plus des neuf groupes, vous pouvez demander au script de <strong>masquer certains emplacements publicitaires</strong> sur les pages compatibles. Cette option est <strong>désactivée par défaut</strong>.</p>
-      <ol>
-        <li>Ouvrez une page web, puis le menu <strong>Tampermonkey</strong>.</li>
-        <li>Sélectionnez <strong>« 🚫 Publicités et autres blocages »</strong>.</li>
-        <li>Activez <strong>« Masquer les éléments publicitaires reconnus »</strong>.</li>
-        <li>Si vous le souhaitez, ajoutez des domaines publicitaires personnels, un par ligne, puis appuyez sur <strong>Enregistrer</strong>.</li>
-        <li>Rechargez la page et vérifiez qu’aucun contenu utile n’a disparu.</li>
-      </ol>
-      <p>Le script contient quelques domaines publicitaires courants et reconnaît certains emplacements « sponsorisés ». Il ne télécharge pas automatiquement AdAway ou StevenBlack : ces listes volumineuses restent proposées dans l’APK et l’EXE, où elles servent au filtrage réseau.</p>
-      <div class="warn"><strong>Limite :</strong> Tampermonkey masque des éléments déjà présents dans la page, il n’intercepte pas toutes les publicités ni les connexions réseau. Sur YouTube et d’autres plateformes, les publicités intégrées au lecteur ne seront pas nécessairement filtrées. Un domaine personnalisé ne bloque pas à lui seul tout un site.</div>
-    </section>
-
-    <section class="panel" id="sauvegarde-choix" style="padding:24px;margin:28px 0">
-      <h2 style="font-size:28px;margin:0 0 10px">Retrouver mes choix sur un autre appareil</h2>
-      <p>Vous avez choisi les groupes qui vous conviennent ? Pas besoin de tout recommencer sur le téléphone ou l’ordinateur.</p>
-      <ol style="padding-left:22px;color:#e5edf6">
-        <li>Sur le premier appareil, choisissez <strong>« Sauvegarder mes choix »</strong>.</li>
-        <li>Envoyez le fichier <strong>mes-choix.json</strong> à votre autre appareil, par exemple avec un câble ou un partage de fichiers.</li>
-        <li>Sur l’autre appareil, choisissez <strong>« Récupérer mes choix »</strong>, ouvrez ce fichier et confirmez.</li>
-      </ol>
-      <p>Dans Tampermonkey, ces deux actions sont dans le menu du script. Sur Android et Windows, ce sont deux boutons dans l’application.</p>
-      <div class="warn" style="margin-top:15px"><strong>À savoir :</strong> le fichier transporte les noms sélectionnés et vos domaines personnels. Les listes antipublicités téléchargées ne sont pas transférées. La récupération demande confirmation et n’active jamais une protection arrêtée.</div>
-    </section>
-
-    <section class="checklist">
-      <article class="panel check-card"><h3>Tout fonctionne si…</h3><ul><li>L’extension Tampermonkey est visible dans le navigateur.</li><li>Le script « Mon fil, mes choix » apparaît dans son tableau de bord.</li><li>Le menu du script s’ouvre sur une page Web.</li><li>Le rechargement de la page active le masquage local.</li></ul></article>
-      <article class="panel check-card"><h3>À retenir</h3><ul><li>Le filtrage est local : il ne change rien sur les sites eux-mêmes.</li><li>Tous les sites ne sont pas compatibles de la même façon.</li><li>Certains mots trop courts ou trop génériques ne sont pas bloqués pour éviter les erreurs.</li><li>Vous pouvez désactiver le script quand vous voulez.</li></ul></article>
-    </section>
-
-    <div class="warn"><strong>Attention :</strong> un script Tampermonkey peut parfois provoquer des faux positifs. Si une page masque trop de choses, utilisez « Afficher tout sur cette page » ou désactivez temporairement le script pour vérifier.</div>
-
-    <h2 class="section-title" id="depannage">Dépannage rapide</h2>
-    <div class="faq">
-      <details open><summary>Je clique sur le script, mais rien ne s’installe.</summary><p>Vérifiez d’abord que l’extension Tampermonkey est bien installée. Ensuite, retournez sur le lien du script. Si le navigateur l’ouvre comme un simple texte, copiez le contenu dans « Tableau de bord → Créer un script », puis enregistrez.</p></details>
-      <details><summary>Je ne trouve pas l’option « Autoriser les scripts utilisateur ».</summary><p>Selon le navigateur, cette option peut ne pas être visible. Si elle n’apparaît pas, vérifiez le mode développeur ou consultez la documentation officielle de Tampermonkey pour votre navigateur.</p></details>
-      <details><summary>Le script est installé, mais rien ne change sur la page.</summary><p>Rechargez la page Web. Ouvrez ensuite le menu Tampermonkey pour vérifier que le script est activé sur cette page. Certains sites peuvent aussi être moins compatibles que d’autres.</p></details>
-      <details><summary>Je veux revenir en arrière.</summary><p>Vous pouvez désactiver le script depuis le menu Tampermonkey, ou le supprimer complètement depuis le tableau de bord de l’extension.</p></details>
-    </div>
-
     <section class="panel" style="padding:24px;margin-top:26px">
       <h2 style="margin:0 0 10px;font-size:28px">Liens utiles</h2>
       <div class="hero-actions" style="margin-bottom:0">
@@ -368,7 +225,7 @@
     </section>
   </main>
   <footer>
-    <div class="shell">Guide détaillé Tampermonkey — Mon fil, mes choix · Pour un filtrage local, réversible et plus compréhensible.</div>
+    <div class="shell">Tampermonkey : le guide essentiel — Mon fil, mes choix · Pour un filtrage local, réversible et plus compréhensible.</div>
   </footer>
 
 <script>
