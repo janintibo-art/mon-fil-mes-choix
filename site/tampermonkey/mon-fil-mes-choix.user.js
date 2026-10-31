@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Mon fil, mes choix — filtre Web personnel
 // @namespace    https://github.com/janintibo-art/mon-fil-mes-choix
-// @version      4.0.0
+// @version      4.1.0
 // @updateURL    https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
 // @downloadURL  https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
-// @description  V34 : mode Recherche libre facultatif, masquage local des annonces identifiables.
+// @description  V35 : comparateur volontaire Google, Bing, DuckDuckGo, Qwant et Startpage.
 // @author       Communauté Mon fil, mes choix
 // @match        *://*/*
 // @run-at       document-idle
@@ -548,6 +548,7 @@
     GM_registerMenuCommand('🚫 Publicités et autres blocages',adsPanel);
     GM_registerMenuCommand((searchFree?'✅':'⬜')+' Recherche libre : masquer annonces',toggleSearchFree);
     GM_registerMenuCommand('⚙️ Personnalisation Google',()=>window.open('https://www.google.com/search-personalization','_blank','noopener'));
+    GM_registerMenuCommand('🔎 Comparer les moteurs',openCompare);
     GM_registerMenuCommand('💾 Sauvegarder mes choix',exportChoices);
     GM_registerMenuCommand('📂 Récupérer mes choix',importChoices);
     GM_registerMenuCommand(enabled?'⏸ Désactiver le filtre':'▶ Activer le filtre',()=>{
@@ -566,6 +567,56 @@
     });
   }
   // Petit raccourci discret, sans notification ni compteur de contenus masqués.
+  // V35 : comparateur volontaire. La requête n'est transmise qu'au moteur ouvert.
+  function openCompare(){
+    document.getElementById('mfm-compare-overlay')?.remove();
+    const overlay=document.createElement('div');
+    overlay.id='mfm-compare-overlay';
+    Object.assign(overlay.style,{position:'fixed',inset:'0',background:'rgba(4,10,20,.83)',zIndex:'2147483647',display:'grid',placeItems:'center',padding:'16px'});
+    const panel=document.createElement('section');
+    Object.assign(panel.style,{width:'min(490px,100%)',maxHeight:'90vh',overflow:'auto',background:'#101827',color:'#fff',padding:'22px',borderRadius:'18px',font:'15px/1.5 system-ui'});
+    const title=document.createElement('h2');title.textContent='🔎 Comparer les moteurs';
+    title.style.margin='0 0 12px';
+    const hint=document.createElement('p');hint.textContent='Ouvrez la même recherche dans plusieurs moteurs. Chaque clic envoie votre requête uniquement au moteur choisi. Aucun résultat ne garantit une neutralité totale.';
+    const input=document.createElement('input');
+    input.type='search';input.maxLength=250;
+    input.placeholder='Votre recherche';
+    Object.assign(input.style,{width:'100%',padding:'12px',borderRadius:'9px',boxSizing:'border-box',background:'#fff',color:'#111'});
+    // Préremplissage uniquement sur la page d'un moteur reconnu.
+    if(/^(?:www\.)?(?:google\.[a-z.]+|bing\.com|duckduckgo\.com|qwant\.com|startpage\.com)$/.test(location.hostname)){
+      const params=new URLSearchParams(location.search);
+      input.value=(params.get('q')||params.get('query')||'').slice(0,250);
+    }
+    const links=document.createElement('div');
+    Object.assign(links.style,{display:'grid',gap:'10px',marginTop:'14px'});
+    const engines=[
+      ['Google','https://www.google.com/search?q='],
+      ['Bing','https://www.bing.com/search?q='],
+      ['DuckDuckGo','https://duckduckgo.com/?q='],
+      ['Qwant','https://www.qwant.com/?q='],
+      ['Startpage','https://www.startpage.com/sp/search?query=']
+    ];
+    for(const [name,base] of engines){
+      const btn=button('Rechercher sur '+name,()=>{
+        const q=input.value.trim();
+        if(!q){input.focus();return;}
+        window.open(base+encodeURIComponent(q),'_blank','noopener,noreferrer');
+      });
+      Object.assign(btn.style,{padding:'10px',borderRadius:'10px',background:'#243d55',color:'#fff',border:'1px solid #546a7a',cursor:'pointer'});
+      links.append(btn);
+    }
+    const note=document.createElement('p');
+    note.style.fontSize='12px';note.style.opacity='.8';
+    note.textContent='Les moteurs peuvent personnaliser leurs réponses et afficher des annonces. Ce comparateur n’agrège pas leurs résultats et ne contourne pas leur classement.';
+    const close=button('Fermer',()=>overlay.remove());
+    close.style.marginTop='10px';
+    panel.append(title,hint,input,links,note,close);
+    overlay.append(panel);document.body.append(overlay);
+    overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove()});
+    overlay.addEventListener('keydown',e=>{if(e.key==='Escape')overlay.remove()});
+    input.focus();
+  }
+
   function openDashboard(){
     if(!document.body)return;
     const existing=document.getElementById('mfm-invisibility-dashboard');
@@ -579,6 +630,7 @@
     head.append(title,close);root.append(head);
     const searchBtn=button(searchFree?'✅ Recherche libre activée':'⬜ Recherche libre désactivée',()=>{toggleSearchFree();searchBtn.textContent=searchFree?'✅ Recherche libre activée':'⬜ Recherche libre désactivée';});
     root.append(searchBtn);
+    root.append(button('🔎 Comparer les moteurs',openCompare));
     const helpSearch=document.createElement('p');helpSearch.style.fontSize='12px';helpSearch.textContent='Masque les annonces sponsorisées reconnaissables. Ne modifie pas le classement naturel du moteur.';root.append(helpSearch);
     const tip=document.createElement('p');tip.textContent='Ajoutez une fiche puis choisissez « Variantes » pour indiquer surnoms, pseudonymes ou autres orthographes. Ces choix restent locaux.';root.append(tip);
     const status=document.createElement('label');Object.assign(status.style,{display:'flex',alignItems:'center',gap:'9px',margin:'12px 0'});
