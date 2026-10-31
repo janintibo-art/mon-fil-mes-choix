@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Mon fil, mes choix — filtre Web personnel
 // @namespace    https://github.com/janintibo-art/mon-fil-mes-choix
-// @version      3.9.0
+// @version      4.0.0
 // @updateURL    https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
 // @downloadURL  https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
-// @description  V33 : filtrage Google contextuel, fiches et galeries, sans page blanche inutile.
+// @description  V34 : mode Recherche libre facultatif, masquage local des annonces identifiables.
 // @author       Communauté Mon fil, mes choix
 // @match        *://*/*
 // @run-at       document-idle
@@ -80,6 +80,33 @@
     }
     return AD_SELECTORS.some(sel=>el.matches?.(sel));
   }
+
+  // v34 : Recherche libre. Filtrage visuel uniquement, classement naturel inchangé.
+  const SEARCH_FREE_KEY=KEY+'search_free_v34';
+  let searchFree=Boolean(GM_getValue(SEARCH_FREE_KEY,false));
+  function scanSponsoredResults(){
+    if(!enabled||!searchFree||revealOnce)return;
+    const google=host==='google.com'||host.endsWith('.google.com')||host.startsWith('google.');
+    const bing=host==='bing.com'||host.endsWith('.bing.com');
+    const ddg=host==='duckduckgo.com'||host.endsWith('.duckduckgo.com');
+    if(!google&&!bing&&!ddg)return;
+    const sels=google?['#tads','#bottomads','#tadsb','[data-text-ad]','[data-google-av-adk]','#search [data-ad-slot]']:
+      bing?['#b_results .b_ad','#b_results li.b_ad']:
+      ['li[data-layout="ad"]','[data-testid="result-sponsored"]','[data-testid="ad-result"]'];
+    for(const selector of sels){
+      for(const el of document.querySelectorAll(selector)){
+        if(el===document.body||el===document.documentElement)continue;
+        hide(el,'Annonce sponsorisée');
+      }
+    }
+  }
+  function toggleSearchFree(){
+    searchFree=!searchFree;
+    GM_setValue(SEARCH_FREE_KEY,searchFree);
+    restore();apply();
+    alert('Recherche libre '+(searchFree?'activée':'désactivée')+'. Les annonces reconnaissables seront '+(searchFree?'masquées.':'affichées.')+' Le classement naturel reste inchangé.');
+  }
+
   function scanAds(){
     if(!adsEnabled||!enabled||revealOnce)return;
     let n=0;
@@ -424,6 +451,7 @@
       if(domainsEnabled&&!revealDomainOnce){const d=domainRule(host);if(d){domainScreen(d);return}}
       style();
       scanAds();
+      scanSponsoredResults();
       scanGooglePanels();
       // Search cards and social posts; never hide broad page wrappers or editable forms.
       const cards=document.querySelectorAll(selectors);
@@ -518,6 +546,8 @@
     GM_registerMenuCommand('✍️ Mes mots-clés ('+userWords.length+')',openWordsPanel);
     GM_registerMenuCommand('⚙️ Gérer les groupes ('+GROUPS.length+')',openSettings);
     GM_registerMenuCommand('🚫 Publicités et autres blocages',adsPanel);
+    GM_registerMenuCommand((searchFree?'✅':'⬜')+' Recherche libre : masquer annonces',toggleSearchFree);
+    GM_registerMenuCommand('⚙️ Personnalisation Google',()=>window.open('https://www.google.com/search-personalization','_blank','noopener'));
     GM_registerMenuCommand('💾 Sauvegarder mes choix',exportChoices);
     GM_registerMenuCommand('📂 Récupérer mes choix',importChoices);
     GM_registerMenuCommand(enabled?'⏸ Désactiver le filtre':'▶ Activer le filtre',()=>{
@@ -547,6 +577,9 @@
     const title=document.createElement('strong');title.textContent='Mon fil · Invisibilité';title.style.fontSize='17px';
     const close=button('✕',()=>root.remove());close.setAttribute('aria-label','Fermer le tableau de bord');
     head.append(title,close);root.append(head);
+    const searchBtn=button(searchFree?'✅ Recherche libre activée':'⬜ Recherche libre désactivée',()=>{toggleSearchFree();searchBtn.textContent=searchFree?'✅ Recherche libre activée':'⬜ Recherche libre désactivée';});
+    root.append(searchBtn);
+    const helpSearch=document.createElement('p');helpSearch.style.fontSize='12px';helpSearch.textContent='Masque les annonces sponsorisées reconnaissables. Ne modifie pas le classement naturel du moteur.';root.append(helpSearch);
     const tip=document.createElement('p');tip.textContent='Ajoutez une fiche puis choisissez « Variantes » pour indiquer surnoms, pseudonymes ou autres orthographes. Ces choix restent locaux.';root.append(tip);
     const status=document.createElement('label');Object.assign(status.style,{display:'flex',alignItems:'center',gap:'9px',margin:'12px 0'});
     const toggle=document.createElement('input');toggle.type='checkbox';toggle.checked=userWordsActive;
