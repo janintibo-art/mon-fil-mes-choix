@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Mon fil, mes choix — filtre Web personnel
 // @namespace    https://github.com/janintibo-art/mon-fil-mes-choix
-// @version      4.4.0
+// @version      4.5.0
 // @updateURL    https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
 // @downloadURL  https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
-// @description  V40 : archivage indépendant, fichier JSON descriptif et vidéo directe facultative.
+// @description  V41 : recherche internationale et choix de langue/région, sans effacer les cookies.
 // @author       Communauté Mon fil, mes choix
 // @match        *://*/*
 // @run-at       document-idle
@@ -733,6 +733,7 @@
     GM_registerMenuCommand((searchFree?'✅':'⬜')+' Recherche libre : masquer annonces',toggleSearchFree);
     GM_registerMenuCommand('⚙️ Personnalisation Google',()=>window.open('https://www.google.com/search-personalization','_blank','noopener'));
     GM_registerMenuCommand('🔎 Comparer les moteurs',openCompare);
+    GM_registerMenuCommand('🌍 Recherche internationale',openInternationalSearch);
     GM_registerMenuCommand((videoArchiveEnabled?'✅':'⬜')+' Bouton archiver vidéo',toggleVideoArchive);
     GM_registerMenuCommand('📁 Enregistrer une fiche archive',archiveWithRecord);
     GM_registerMenuCommand('🛡️ Mouchards et cookies (v38)',privacyPanel);
@@ -755,6 +756,48 @@
   }
   // Petit raccourci discret, sans notification ni compteur de contenus masqués.
   // V35 : comparateur volontaire. La requête n'est transmise qu'au moteur ouvert.
+
+  // V41 - Explorer d'autres langues et régions à la demande, sans modifier les cookies.
+  function openInternationalSearch(){
+    document.getElementById('mfm-international-overlay')?.remove();
+    const overlay=document.createElement('div');overlay.id='mfm-international-overlay';
+    Object.assign(overlay.style,{position:'fixed',inset:0,zIndex:2147483647,background:'rgba(4,9,19,.87)',display:'grid',placeItems:'center',padding:'16px'});
+    const panel=document.createElement('section');
+    Object.assign(panel.style,{width:'min(510px,100%)',maxHeight:'90vh',overflow:'auto',borderRadius:'18px',background:'#121c2d',color:'#fff',padding:'20px',font:'14px/1.5 system-ui'});
+    const title=document.createElement('h2');title.textContent='🌍 Recherche internationale';
+    const explanation=document.createElement('p');explanation.textContent='Explorez des résultats associés à différentes langues et régions. Les moteurs conservent leurs propres algorithmes et peuvent personnaliser les résultats.';
+    const input=document.createElement('input');input.type='search';input.maxLength=240;
+    input.placeholder='Votre recherche';input.setAttribute('aria-label','Votre recherche');
+    Object.assign(input.style,{boxSizing:'border-box',width:'100%',padding:'12px',borderRadius:'8px',color:'#111',background:'#fff'});
+    const current=new URLSearchParams(location.search);
+    if(/(^|\.)google\.[a-z.]+$|(^|\.)bing\.com$|(^|\.)duckduckgo\.com$/i.test(host))
+      input.value=(current.get('q')||'').slice(0,240);
+    const regions=[
+      ['🌐 Google sans région imposée','https://www.google.com/search?hl=en&gl=us&pws=0&q='],
+      ['🇫🇷 Français / France','https://www.google.com/search?hl=fr&gl=fr&pws=0&q='],
+      ['🇬🇧 Anglais / Royaume-Uni','https://www.google.com/search?hl=en&gl=gb&pws=0&q='],
+      ['🇪🇸 Espagnol / Espagne','https://www.google.com/search?hl=es&gl=es&pws=0&q='],
+      ['🇩🇪 Allemand / Allemagne','https://www.google.com/search?hl=de&gl=de&pws=0&q='],
+      ['🇧🇷 Portugais / Brésil','https://www.google.com/search?hl=pt&gl=br&pws=0&q='],
+      ['🌍 DuckDuckGo, toutes régions','https://duckduckgo.com/?kl=wt-wt&q=']
+    ];
+    const list=document.createElement('div');list.style.cssText='display:grid;gap:8px;margin:14px 0';
+    for(const [name,base] of regions){
+      const b=button(name,()=>{
+        const q=input.value.trim();if(!q){input.focus();return}
+        window.open(base+encodeURIComponent(q),'_blank','noopener,noreferrer');
+      });
+      b.style.cssText='padding:10px;border-radius:9px;background:#243e58;color:#fff;border:1px solid #59728c;text-align:left';
+      list.appendChild(b);
+    }
+    const note=document.createElement('p');note.style.fontSize='12px';
+    note.textContent='Les paramètres de langue/région orientent les résultats sans garantir une recherche neutre. Pour réduire la personnalisation liée aux cookies, utilisez aussi un profil privé ou les réglages du moteur.';
+    const close=button('Fermer',()=>overlay.remove());
+    panel.append(title,explanation,input,list,note,close);overlay.append(panel);document.body.append(overlay);
+    overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove()});
+    overlay.addEventListener('keydown',e=>{if(e.key==='Escape')overlay.remove()});input.focus();
+  }
+
   function openCompare(){
     document.getElementById('mfm-compare-overlay')?.remove();
     const overlay=document.createElement('div');
@@ -818,6 +861,7 @@
     const searchBtn=button(searchFree?'✅ Recherche libre activée':'⬜ Recherche libre désactivée',()=>{toggleSearchFree();searchBtn.textContent=searchFree?'✅ Recherche libre activée':'⬜ Recherche libre désactivée';});
     root.append(searchBtn);
     root.append(button('🔎 Comparer les moteurs',openCompare));
+    root.append(button('🌍 Recherche internationale',openInternationalSearch));
     const helpSearch=document.createElement('p');helpSearch.style.fontSize='12px';helpSearch.textContent='Masque les annonces sponsorisées reconnaissables. Ne modifie pas le classement naturel du moteur.';root.append(helpSearch);
     root.append(button('🛡️ Mouchards et cookies',privacyPanel));
     const tip=document.createElement('p');tip.textContent='Ajoutez une fiche puis choisissez « Variantes » pour indiquer surnoms, pseudonymes ou autres orthographes. Ces choix restent locaux.';root.append(tip);
