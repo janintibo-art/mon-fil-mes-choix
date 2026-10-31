@@ -90,6 +90,18 @@
     .manual-step figcaption{font-size:12px;color:#aab9cb;padding:11px 18px 16px}
     @media(max-width:780px){.manual-step-list{grid-template-columns:1fr}.manual-box{padding:15px}}
   </style>
+
+<style id="mfm35-style">
+.mfm35{padding:55px 0;background:linear-gradient(135deg,#101b29,#1b2033);color:#f3f5fb}
+.mfm35-inner{max-width:1120px;margin:auto;padding:0 22px}.mfm35-eyebrow{color:#ff9bb3;font-size:12px;font-weight:800;letter-spacing:.15em}
+.mfm35 h2{font-size:clamp(27px,4vw,48px);line-height:1.12;max-width:850px;margin:12px 0 20px}.mfm35 h3{margin:38px 0 16px;font-size:24px}.mfm35 h4{font-size:18px;margin:8px 0}.mfm35 p{line-height:1.7}
+.mfm35-lead{font-size:18px;max-width:880px;color:#d6e2ec}.mfm35 a{color:#9eecff}
+.mfm35-choices{display:flex;gap:12px;flex-wrap:wrap;margin:28px 0}.mfm35-choices a{border:1px solid #728197;border-radius:12px;padding:12px 16px;text-decoration:none;font-weight:750;color:white}.mfm35-choices a.mfm35-primary{background:#da294a;border-color:#da294a}
+.mfm35-stats,.mfm35-grid,.mfm35-photos{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}.mfm35-stats>div,.mfm35-grid>article{background:#182839;border:1px solid #355064;border-radius:16px;padding:19px}.mfm35-stats strong{display:block;font-size:22px;color:#fff}.mfm35-stats span{font-size:13px;color:#c0d0db}.mfm35-num{font-size:12px;font-weight:900;color:#ff8aa4}
+.mfm35-photos figure{margin:0;background:#fff;border-radius:14px;overflow:hidden;color:#1b2b36}.mfm35-photos img{width:100%;height:245px;object-fit:contain;background:#10141c}.mfm35-photos figcaption{padding:12px 14px;font-size:13px}
+.mfm35 details{border:1px solid #3b5269;background:#162637;border-radius:10px;margin:8px 0;padding:14px}.mfm35 summary{font-weight:750;cursor:pointer}.mfm35-privacy{border-top:1px solid #4e5d6b;padding-top:20px;color:#d5e1eb}
+</style>
+
 </head>
 <body>
   <div class="topbar">
@@ -137,6 +149,53 @@
     </div>
   </header>
   <main class="shell">
+
+<!-- GUIDE-REFONTE-V35 -->
+<section id="nouveau-guide" class="mfm35">
+  <div class="mfm35-inner">
+    <p class="mfm35-eyebrow">LE GUIDE POUR TOUT LE MONDE · VERSION 4.1.0</p>
+    <h2>Une installation de quelques étapes. Un Web vraiment à vos choix.</h2>
+    <p class="mfm35-lead">Marre de retrouver toujours les mêmes noms, sujets ou annonces ? Avec Tampermonkey, vous décidez de ce qui doit disparaître <strong>de votre propre écran</strong>. Vous ne supprimez rien chez les autres. Et vous pouvez tout réafficher à volonté.</p>
+    <div class="mfm35-choices"><a href="#mfm35-parcours" class="mfm35-primary">🚀 Je commence de zéro</a><a href="#mfm35-fonctions">🔧 J'ai déjà installé le filtre</a><a href="./dns.html">📱 Je préfère l'APK ou l'EXE</a></div>
+    <div class="mfm35-stats"><div><strong>9 groupes</strong><span>à activer ou désactiver</span></div><div><strong>303 entrées</strong><span>personnalisables</span></div><div><strong>Sans compte</strong><span>préférences locales</span></div><div><strong>Réversible</strong><span>un bouton suffit</span></div></div>
+    <h3 id="mfm35-parcours">Démarrer sans connaissances techniques</h3>
+    <p>Vous n'avez pas besoin de savoir programmer. <strong>Les images ci-dessous sont de vraies photos de tests sur Windows</strong> : leur aspect peut varier selon le navigateur et la version de l'extension.</p>
+    <div class="mfm35-grid">
+      <article><span class="mfm35-num">01</span><h4>Installer Tampermonkey</h4><p>Ouvrez <a href="https://www.tampermonkey.net/" target="_blank" rel="noopener noreferrer">le site officiel</a> depuis un navigateur compatible, puis installez l'extension. Sur Android, choisissez un navigateur qui prend effectivement en charge les extensions et Tampermonkey : ce n'est pas possible dans tous les navigateurs mobiles.</p></article>
+      <article><span class="mfm35-num">02</span><h4>Installer notre script</h4><p>Cliquez sur <a href="./tampermonkey/mon-fil-mes-choix.user.js">Installer « Mon fil, mes choix »</a>. Si Tampermonkey propose l'installation, validez. Sinon, utilisez le bouton « Copier le script complet » plus bas et collez-le dans <em>Créer un nouveau script</em>, puis enregistrez.</p></article>
+      <article><span class="mfm35-num">03</span><h4>Vérifier l'activation</h4><p>Sur une page Web ordinaire, ouvrez l'icône Tampermonkey. Vérifiez que « Mon fil, mes choix — filtre Web personnel » est activé. Si vous lisez « Tampermonkey n'a pas accès à cette page », essayez un site Web normal puis vérifiez les autorisations de l'extension.</p></article>
+      <article><span class="mfm35-num">04</span><h4>Choisir vos règles</h4><p>Ouvrez <strong>◉ Mes choix</strong> en bas de la page, ou « Tableau de bord Invisibilité » dans Tampermonkey. Saisissez un mot ou une expression, cliquez sur « Ajouter à ma liste », puis utilisez « Variantes » pour les autres orthographes.</p></article>
+      <article><span class="mfm35-num">05</span><h4>Voir le résultat</h4><p>Actualisez votre page. Le script tente de cacher les résultats, publications et cartes concernés. Une recherche exactement égale à une expression bloquée peut masquer toute sa zone de résultats Google, en laissant la barre de recherche accessible.</p></article>
+      <article><span class="mfm35-num">06</span><h4>Garder le contrôle</h4><p>En cas de blocage excessif, sélectionnez « Tout réafficher ici » ou désactivez le filtre. Les paramètres restent modifiables à tout moment ; aucune décision n'est définitive.</p></article>
+    </div>
+    <h3>À quoi cela ressemble réellement ?</h3>
+    <div class="mfm35-photos">
+      <figure><img loading="lazy" src="./assets/guides/tm-menu-reel-v35.jpg" alt="Photo réelle du menu Tampermonkey Windows affichant neuf groupes, mots-clés et sauvegardes"><figcaption>1. Le menu Tampermonkey et ses commandes.</figcaption></figure>
+      <figure><img loading="lazy" src="./assets/guides/tm-tableau-reel-v35.jpg" alt="Photo réelle du tableau de bord Invisibilité et d'une expression personnelle"><figcaption>2. Le tableau de bord, avec les expressions et leurs variantes.</figcaption></figure>
+      <figure><img loading="lazy" src="./assets/guides/tm-resultat-reel-v35.jpg" alt="Photo réelle d'une recherche Google dont les résultats ont été masqués"><figcaption>3. Une recherche filtrée : le moteur reste utilisable.</figcaption></figure>
+    </div>
+    <h3 id="mfm35-fonctions">Toutes les fonctions, simplement</h3>
+    <div class="mfm35-grid">
+      <article><h4>👁️ Invisibilité</h4><p>Cache les cartes et résultats identifiés, même sur certains fils qui se chargent progressivement. Ce n'est pas un blocage de compte chez les plateformes.</p></article>
+      <article><h4>✍️ Mots-clés et variantes</h4><p>Ajoutez des noms, sujets et pseudonymes personnels. Les variantes servent à reconnaître plusieurs orthographes d'un même terme.</p></article>
+      <article><h4>⚙️ Neuf groupes</h4><p>Activez ou désactivez des ensembles complets, sans devoir modifier le code. Certaines règles peuvent masquer également des articles qui critiquent le sujet.</p></article>
+      <article><h4>🚫 Publicités et domaines</h4><p>Masquage cosmétique facultatif de certains emplacements publicitaires ; possibilité d'ajouter des domaines. Cela ne bloque pas toutes les requêtes réseau.</p></article>
+      <article><h4>🔎 Recherche libre · v34</h4><p>Option désactivée par défaut : tente de masquer les annonces sponsorisées reconnues sur certains moteurs. Elle ne modifie ni les enchères publicitaires ni le classement naturel.</p></article>
+      <article><h4>🌍 Comparer les moteurs · v35</h4><p>Ouvrez une recherche dans Google, Bing, DuckDuckGo, Qwant ou Startpage. Un clic ouvre le moteur choisi ; aucun comparatif automatique des résultats n'est actuellement calculé.</p></article>
+      <article><h4>💾 Sauvegarde Android ↔ Windows</h4><p>« Sauvegarder mes choix » produit un fichier JSON. Transférez-le puis choisissez « Récupérer mes choix » sur l'autre appareil. C'est un transfert manuel, pas une synchronisation cloud.</p></article>
+      <article><h4>↩️ Réafficher ou désactiver</h4><p>Vous pouvez revoir temporairement le contenu, désactiver des groupes ou couper le filtre. Tout est local et réversible.</p></article>
+    </div>
+    <h3>Problèmes fréquents : solutions faciles</h3>
+    <details><summary>Je ne vois pas le menu sur Windows.</summary><p>Ouvrez une page Web classique, puis cliquez sur l'icône Tampermonkey. Contrôlez l'interrupteur du script et les autorisations d'accès aux sites. Les pages internes du navigateur ne permettent généralement pas l'exécution des scripts.</p></details>
+    <details><summary>J'ai ajouté un mot, mais il apparaît toujours.</summary><p>Vérifiez « Masquer mes mots-clés », rechargez la page et ajoutez éventuellement une variante. Certains blocs des moteurs et réseaux ne sont pas détectables. Dans Tampermonkey, vérifiez que le script est à jour.</p></details>
+    <details><summary>Une page semble vide : ai-je cassé quelque chose ?</summary><p>Non : si la recherche correspond exactement à une expression que vous avez bloquée, les résultats Google peuvent être masqués. Essayez « Tout réafficher ici » ou désactivez cette règle pour rétablir l'affichage.</p></details>
+    <details><summary>Mes réglages Android n'apparaissent pas sur Windows.</summary><p>Les réglages ne se synchronisent pas automatiquement. Exportez un fichier JSON depuis le menu Tampermonkey sur le premier appareil, puis importez-le depuis le second.</p></details>
+    <details><summary>Pourquoi Tampermonkey demande-t-il plus d'étapes que l'APK ou l'EXE ?</summary><p>L'APK et l'EXE sont des applications à installer. Tampermonkey est une extension qui charge un script dans un navigateur : il faut d'abord autoriser l'extension, puis installer le script. En échange, vous personnalisez très finement les contenus visibles directement sur les pages compatibles.</p></details>
+    <p class="mfm35-privacy"><strong>À savoir :</strong> ce filtre n'est pas un moteur de recherche neutre, ni un outil garantissant l'absence de publicité. Il modifie localement l'affichage, pas les sites originaux. Un mot-clé peut cacher un contenu pertinent ou critique. Vos choix restent sur votre appareil, sauf si vous exportez volontairement votre sauvegarde.</p>
+  </div>
+</section>
+<!-- /GUIDE-REFONTE-V35 -->
+
     <section class="prep" aria-label="Avant de commencer">
       <article class="panel prep-card"><h3>Ce qu’il vous faut</h3><p>Un navigateur compatible avec Tampermonkey sur ordinateur. Sur téléphone, la compatibilité dépend du navigateur utilisé.</p></article>
       <article class="panel prep-card"><h3>À quoi sert le script</h3><p>Le script masque localement des résultats, cartes ou publications sur certains sites compatibles. Il ne supprime rien à la source.</p></article>

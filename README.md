@@ -102,3 +102,20 @@ Le script n’exige pas d’identifiants de réseaux sociaux et n’envoie pas v
 - Possibilité d’ajouter des domaines publicitaires personnels dans ce panneau.
 - Guide Tampermonkey et page Applications mis à jour.
 - README réécrit ; aucune réintroduction du guide IA dans les menus.
+
+
+## Parcours débutant Tampermonkey — guide actualisé v35
+
+La page `site/tampermonkey.html` dispose d'un nouveau guide complet :
+installation de l'extension et du script, contrôle de l'activation,
+ajout de mots-clés et de variantes, neuf groupes, sauvegardes entre appareils,
+Recherche libre v34, comparateur de moteurs v35, restauration et dépannage.
+
+Les captures Windows sont issues de tests réels et non de maquettes ;
+elles peuvent différer selon la version du navigateur. Le guide explique
+également les limites du masquage : il n'efface rien à la source, ne garantit
+pas de neutralité algorithmique et peut créer des faux positifs.
+
+**Motivation :** le script demande quelques étapes de plus qu'un APK ou un EXE,
+mais offre une personnalisation fine des pages dans le navigateur. Les préférences
+restent locales, sauf export volontaire d'un fichier de sauvegarde.
