@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Mon fil, mes choix — filtre Web personnel
 // @namespace    https://github.com/janintibo-art/mon-fil-mes-choix
-// @version      4.1.0
+// @version      4.2.0
 // @updateURL    https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
 // @downloadURL  https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
-// @description  V35 : comparateur volontaire Google, Bing, DuckDuckGo, Qwant et Startpage.
+// @description  V38 : détection de traceurs, refus prudent de cookies et bilan local.
 // @author       Communauté Mon fil, mes choix
 // @match        *://*/*
 // @run-at       document-idle
@@ -444,6 +444,106 @@
       }
     }
   }
+
+  // V38 : contrôle local des éléments de suivi et des bandeaux de consentement.
+  // Ne constitue PAS un blocage des requêtes réseau.
+  const PRIVACY_KEY=KEY+'privacy_v38_';
+  let trackerMode=Boolean(GM_getValue(PRIVACY_KEY+'trackers',false));
+  let cookieMode=Boolean(GM_getValue(PRIVACY_KEY+'cookies',false));
+  const privacyCount={detected:0,removed:0,rejected:0,attempts:0};
+  const privacySeen=new WeakSet();
+  const cookieSeen=new WeakSet();
+  const trackingHosts=['google-analytics.com','googletagmanager.com','doubleclick.net',
+    'facebook.net','connect.facebook.net','hotjar.com','clarity.ms',
+    'scorecardresearch.com','pixel.quantserve.com','bat.bing.com'];
+  function isTracker(u){
+    try {
+      const h=new URL(u,location.href).hostname.toLowerCase();
+      return trackingHosts.some(d=>h===d||h.endsWith('.'+d));
+    }catch{return false;}
+  }
+  function scanPrivacy(){
+    if(!enabled||revealOnce||!trackerMode)return;
+    let n=0;
+    for(const el of document.querySelectorAll('script[src],iframe[src],img[src]')){
+      if(++n>2500)break;
+      const url=el.getAttribute('src');
+      if(!url||!isTracker(url)||privacySeen.has(el))continue;
+      privacySeen.add(el);privacyCount.detected++;
+      // Les scripts déjà exécutés ne peuvent pas être « annulés ».
+      // Supprimer seulement les éléments non essentiels visuellement ;
+      // le bilan ne prétend pas avoir empêché leur chargement.
+      if(el.matches('iframe,img') && !el.closest('form,[contenteditable="true"],#mfm-invisibility-dashboard')){
+        el.remove();privacyCount.removed++;
+      }
+    }
+    updatePrivacyNote();
+  }
+  function scanCookies(){
+    if(!enabled||revealOnce||!cookieMode)return;
+    const bannerSelectors=[
+      '#onetrust-banner-sdk','#onetrust-consent-sdk',
+      '[id*="cookie-banner"]','[class*="cookie-banner"]',
+      '[id*="cookie-consent"]','[class*="cookie-consent"]',
+      '[aria-label*="cookie" i]','[aria-label*="consent" i]',
+      '[id*="didomi"]','[id*="sp_message"]'
+    ];
+    let n=0;
+    for(const banner of document.querySelectorAll(bannerSelectors.join(','))){
+      if(++n>100)break;
+      if(cookieSeen.has(banner)||banner.closest('#mfm-invisibility-dashboard,#mfm-settings-overlay'))continue;
+      const buttons=banner.querySelectorAll('button,[role="button"],input[type="button"]');
+      let choice=null;
+      for(const btn of buttons){
+        const label=(btn.innerText||btn.textContent||btn.getAttribute('aria-label')||btn.value||'').trim().replace(/\s+/g,' ');
+        if(/^(tout refuser|refuser tout|refuser les cookies|refuser les cookies facultatifs|rejeter tout|rejeter les cookies|reject all|decline all|deny all|only necessary|essential only|uniquement les cookies essentiels|cookies essentiels uniquement)$/i.test(label)){
+          choice=btn;break;
+        }
+      }
+      // Pas de clic à l'aveugle sur "Continuer", "Accepter", ou "Enregistrer".
+      if(choice && privacyCount.attempts<5){
+        cookieSeen.add(banner);
+        privacyCount.attempts++;
+        choice.click();
+        privacyCount.rejected++; // Compte les clics de refus, pas une preuve de consentement enregistré.
+      }
+    }
+    updatePrivacyNote();
+  }
+  function updatePrivacyNote(){
+    if(!document.body || !(trackerMode||cookieMode))return;
+    if(!privacyCount.detected && !privacyCount.rejected)return;
+    let badge=document.getElementById('mfm-privacy-note-v38');
+    if(!badge){
+      badge=document.createElement('button');
+      badge.id='mfm-privacy-note-v38';badge.type='button';
+      badge.setAttribute('aria-label','Afficher le bilan vie privée');
+      Object.assign(badge.style,{position:'fixed',left:'12px',bottom:'14px',zIndex:'2147483642',background:'#14263a',color:'#fff',border:'1px solid #62809c',borderRadius:'14px',padding:'8px 11px',font:'12px system-ui',cursor:'pointer',boxShadow:'0 3px 14px #0005'});
+      badge.addEventListener('click',privacyReport);
+      document.body.appendChild(badge);
+    }
+    badge.textContent='🛡️ Détectés : '+privacyCount.detected+' · Clics refus : '+privacyCount.rejected;
+  }
+  function privacyReport(){
+    alert('Bilan local de cette page :\n'+
+      privacyCount.detected+' élément(s) de suivi reconnu(s).\n'+
+      privacyCount.removed+' image(s) ou iframe(s) supprimée(s) après détection.\n'+
+      privacyCount.rejected+' clic(s) sur « refuser » tentés.\n\n'+
+      'Important : le script ne peut pas confirmer le blocage réseau ni la prise en compte du refus par chaque site.');
+  }
+  function privacyPanel(){
+    const msg='Protection de la vie privée\n\n'+
+      '1 : '+(trackerMode?'Désactiver':'Activer')+' la détection des mouchards\n'+
+      '2 : '+(cookieMode?'Désactiver':'Activer')+' le refus automatique des cookies facultatifs\n'+
+      '3 : Afficher le bilan de cette page\n\n'+
+      'Entrez 1, 2 ou 3 :';
+    const answer=prompt(msg);
+    if(answer==='1'){trackerMode=!trackerMode;GM_setValue(PRIVACY_KEY+'trackers',trackerMode);scanPrivacy();}
+    else if(answer==='2'){cookieMode=!cookieMode;GM_setValue(PRIVACY_KEY+'cookies',cookieMode);scanCookies();}
+    else if(answer==='3')privacyReport();
+    if(!trackerMode&&!cookieMode)document.getElementById('mfm-privacy-note-v38')?.remove();
+  }
+
   function scan(force=false){
     if(!enabled||revealOnce||!document.body||working)return;
     working=true;
@@ -452,6 +552,8 @@
       style();
       scanAds();
       scanSponsoredResults();
+      scanPrivacy();
+      scanCookies();
       scanGooglePanels();
       // Search cards and social posts; never hide broad page wrappers or editable forms.
       const cards=document.querySelectorAll(selectors);
@@ -549,6 +651,7 @@
     GM_registerMenuCommand((searchFree?'✅':'⬜')+' Recherche libre : masquer annonces',toggleSearchFree);
     GM_registerMenuCommand('⚙️ Personnalisation Google',()=>window.open('https://www.google.com/search-personalization','_blank','noopener'));
     GM_registerMenuCommand('🔎 Comparer les moteurs',openCompare);
+    GM_registerMenuCommand('🛡️ Mouchards et cookies (v38)',privacyPanel);
     GM_registerMenuCommand('💾 Sauvegarder mes choix',exportChoices);
     GM_registerMenuCommand('📂 Récupérer mes choix',importChoices);
     GM_registerMenuCommand(enabled?'⏸ Désactiver le filtre':'▶ Activer le filtre',()=>{
@@ -632,6 +735,7 @@
     root.append(searchBtn);
     root.append(button('🔎 Comparer les moteurs',openCompare));
     const helpSearch=document.createElement('p');helpSearch.style.fontSize='12px';helpSearch.textContent='Masque les annonces sponsorisées reconnaissables. Ne modifie pas le classement naturel du moteur.';root.append(helpSearch);
+    root.append(button('🛡️ Mouchards et cookies',privacyPanel));
     const tip=document.createElement('p');tip.textContent='Ajoutez une fiche puis choisissez « Variantes » pour indiquer surnoms, pseudonymes ou autres orthographes. Ces choix restent locaux.';root.append(tip);
     const status=document.createElement('label');Object.assign(status.style,{display:'flex',alignItems:'center',gap:'9px',margin:'12px 0'});
     const toggle=document.createElement('input');toggle.type='checkbox';toggle.checked=userWordsActive;
