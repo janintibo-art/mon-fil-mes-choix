@@ -383,27 +383,49 @@
   render();
 })();
 </script>
-<script id="mfm-copy-handler-v42">
+<script id="mfm-copy-handler-v43">
 (()=>{
- const b=document.getElementById('mfm-copy-v42'),status=document.getElementById('mfm-copy-status-v42');
- if(!b)return;
- b.addEventListener('click',async()=>{
-  b.disabled=true;status.textContent='Chargement…';
-  try{
-   const r=await fetch('./tampermonkey/mon-fil-mes-choix.user.js',{cache:'no-store'});
-   if(!r.ok)throw Error('Erreur de chargement');
-   const src=await r.text();if(!src.startsWith('// ==UserScript=='))throw Error('Script invalide');
-   try{
-    if(!navigator.clipboard?.writeText)throw Error('Presse-papiers indisponible');
-    await navigator.clipboard.writeText(src);status.textContent='✓ Script copié ! Collez-le dans Tampermonkey.';
-   }catch(_){
-    let area=document.getElementById('mfm-copy-fallback-v42');
-    if(!area){area=document.createElement('textarea');area.id='mfm-copy-fallback-v42';area.readOnly=true;
-     area.style.cssText='width:100%;min-height:160px;display:block;margin:12px 0';b.parentElement.append(area);}
-    area.value=src;area.focus();area.select();status.textContent='Sélectionnez le texte puis choisissez Copier.';
-   }
-  }catch(e){status.textContent='Copie indisponible. Ouvrez le guide pour récupérer le script.';}
-  finally{b.disabled=false;}
+ const b=document.getElementById('mfm-copy-v42');
+ const status=document.getElementById('mfm-copy-status-v42');
+ if(!b||!status)return;
+ let source='';
+ const load=fetch('./tampermonkey/mon-fil-mes-choix.user.js',{cache:'no-store'})
+  .then(r=>{if(!r.ok)throw Error('Téléchargement indisponible');return r.text()})
+  .then(text=>{if(!text.startsWith('// ==UserScript=='))throw Error('Script incorrect');source=text;return text;})
+  .catch(()=>{status.textContent='Chargement impossible : utilisez « Installer notre script ».';return '';});
+ function selection(text){
+  let area=document.getElementById('mfm-copy-fallback-v43');
+  if(!area){
+   area=document.createElement('textarea');area.id='mfm-copy-fallback-v43';
+   area.readOnly=true;area.setAttribute('aria-label','Code à copier manuellement');
+   area.style.cssText='display:block;width:100%;min-height:180px;font:12px monospace;margin:12px 0;color:#18283a;background:#fff;';
+   b.parentElement.insertAdjacentElement('afterend',area);
+  }
+  area.value=text;area.focus();area.select();area.setSelectionRange(0,text.length);
+  return area;
+ }
+ b.addEventListener('click',()=>{
+  if(!source){
+   status.textContent='Le script se charge. Réessayez dans un instant.';
+   load.then(v=>{if(v)status.textContent='Script prêt : appuyez de nouveau sur Copier.'});
+   return;
+  }
+  // Première tentative synchrone (activation de l'utilisateur conservée).
+  const area=selection(source);
+  let copied=false;
+  try{copied=document.execCommand('copy')===true;}catch(_){}
+  if(copied){status.textContent='✓ Script copié ! Vous pouvez le coller dans Tampermonkey.';return;}
+  // Clipboard API sans aucun await préalable dans ce gestionnaire de clic.
+  if(navigator.clipboard?.writeText){
+   navigator.clipboard.writeText(source).then(()=>{
+    status.textContent='✓ Script copié ! Vous pouvez le coller dans Tampermonkey.';
+   }).catch(()=>{
+    area.focus();area.select();
+    status.textContent='Copie automatique refusée : maintenez le doigt sur le texte sélectionné puis choisissez Copier.';
+   });
+  }else{
+   status.textContent='Copie automatique indisponible : maintenez le doigt sur le texte sélectionné puis choisissez Copier.';
+  }
  });
 })();
 </script>
