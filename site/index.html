@@ -287,7 +287,7 @@
       <p class="section-intro">Tampermonkey permet d'exécuter un petit script dans les pages du navigateur. Celui-ci filtre <strong>localement</strong> les cartes, résultats, publications et vidéos contenant des noms de votre liste ; il peut aussi recouvrir les sites dont le domaine est explicitement répertorié. Il n'efface pas les pages à la source.</p>
       <div class="v10-script-steps" aria-label="Accès direct à Tampermonkey et au script">
         <div><span class="v10-tool-num">INSTALLATION EN DEUX TEMPS</span><strong>Installez d'abord l'extension, puis notre script.</strong><p>Utilisez Chrome, Edge, Firefox ou un autre navigateur compatible avec Tampermonkey. Un guide détaillé avec captures d’écran est maintenant disponible si vous débutez.</p></div>
-        <div class="v10-script-buttons"><a class="btn btn-primary" href="./tampermonkey.html">Guide détaillé avec captures ↗</a><a class="btn btn-light" href="https://www.tampermonkey.net/" target="_blank" rel="noopener noreferrer">1 · Extension officielle ↗</a><a class="btn btn-ghost" href="./tampermonkey/mon-fil-mes-choix.user.js">2 · Installer notre script ↗</a></div>
+        <div class="v10-script-buttons"><a class="btn btn-primary" href="./tampermonkey.html">Guide détaillé avec captures ↗</a><a class="btn btn-light" href="https://www.tampermonkey.net/" target="_blank" rel="noopener noreferrer">1 · Extension officielle ↗</a><a class="btn btn-ghost" href="./tampermonkey/mon-fil-mes-choix.user.js">2 · Installer notre script ↗</a><button type="button" class="btn btn-primary" id="mfm-copy-v42">📋 Copier le script</button><span id="mfm-copy-status-v42" role="status" aria-live="polite"></span></div>
       </div>
       <div class="how-grid">
         <article class="paper how-card"><span class="how-step">01</span><h3>Installer Tampermonkey</h3><p>Installez l'extension officielle dans Chrome, Edge ou Firefox depuis <a href="https://www.tampermonkey.net/" rel="noopener noreferrer" target="_blank">tampermonkey.net</a>.</p></article>
@@ -381,6 +381,30 @@
     toast.textContent=a.length+' entrées exportées.';toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2500);
   });
   render();
+})();
+</script>
+<script id="mfm-copy-handler-v42">
+(()=>{
+ const b=document.getElementById('mfm-copy-v42'),status=document.getElementById('mfm-copy-status-v42');
+ if(!b)return;
+ b.addEventListener('click',async()=>{
+  b.disabled=true;status.textContent='Chargement…';
+  try{
+   const r=await fetch('./tampermonkey/mon-fil-mes-choix.user.js',{cache:'no-store'});
+   if(!r.ok)throw Error('Erreur de chargement');
+   const src=await r.text();if(!src.startsWith('// ==UserScript=='))throw Error('Script invalide');
+   try{
+    if(!navigator.clipboard?.writeText)throw Error('Presse-papiers indisponible');
+    await navigator.clipboard.writeText(src);status.textContent='✓ Script copié ! Collez-le dans Tampermonkey.';
+   }catch(_){
+    let area=document.getElementById('mfm-copy-fallback-v42');
+    if(!area){area=document.createElement('textarea');area.id='mfm-copy-fallback-v42';area.readOnly=true;
+     area.style.cssText='width:100%;min-height:160px;display:block;margin:12px 0';b.parentElement.append(area);}
+    area.value=src;area.focus();area.select();status.textContent='Sélectionnez le texte puis choisissez Copier.';
+   }
+  }catch(e){status.textContent='Copie indisponible. Ouvrez le guide pour récupérer le script.';}
+  finally{b.disabled=false;}
+ });
 })();
 </script>
 </body></html>
