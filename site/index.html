@@ -131,6 +131,46 @@
   <details class="v8-mobile-nav"><summary aria-label="Ouvrir le menu de navigation"><span></span><span></span><span></span></summary><nav aria-label="Navigation mobile"><a href="./">Accueil</a><a href="./#annuaire">Liste de filtrage</a><a href="./tampermonkey.html">Guide Tampermonkey</a><a href="./dns.html">APK et EXE</a></nav></details>
 </div></header>
 <main id="haut">
+<!-- MFM-DEMO-V36-START -->
+<section id="demo-invisibilite" class="section" aria-labelledby="demo-title">
+ <div class="shell">
+  <div style="padding:clamp(20px,4vw,40px);border-radius:22px;background:linear-gradient(135deg,#0b1729,#23364c);color:white;box-shadow:0 16px 44px #091b3140">
+   <span style="color:#bceac9;font-weight:800;letter-spacing:.08em">ESSAYEZ AVANT D'INSTALLER</span>
+   <h2 id="demo-title" style="color:white;margin:.5rem 0">Et si votre fil vous appartenait vraiment ?</h2>
+   <p>Cette démonstration montre comment un mot choisi peut faire disparaître des cartes de résultats. Aucun compte, aucune installation et aucun envoi de vos mots au serveur.</p>
+   <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:20px 0">
+    <label for="demo-terme" style="font-weight:700">Expression à masquer :</label>
+    <input id="demo-terme" value="publicité" maxlength="70" autocomplete="off" style="flex:1;min-width:170px;padding:12px;border:2px solid #d4e1eb;border-radius:9px;background:white;color:#111">
+    <button id="demo-toggle" type="button" aria-pressed="true" style="background:#ef4767;border:0;color:white;border-radius:10px;padding:12px 18px;font-weight:800;cursor:pointer">Filtre actif</button>
+   </div>
+   <p id="demo-etat" role="status" aria-live="polite" style="font-weight:700">Démonstration activée.</p>
+   <div id="demo-cartes" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:12px">
+    <article data-demo-text="publicité promotion sponsorisée offres" style="background:white;color:#17263a;border-radius:12px;padding:18px"><small>Exemple fictif · Annonce</small><h3>Publicité et promotions</h3><p>Une offre commerciale mise en avant.</p></article>
+    <article data-demo-text="musique concerts festivals" style="background:white;color:#17263a;border-radius:12px;padding:18px"><small>Exemple fictif · Culture</small><h3>Concerts indépendants</h3><p>Découvrir des artistes et des festivals.</p></article>
+    <article data-demo-text="publicité réseaux sociaux ciblage" style="background:white;color:#17263a;border-radius:12px;padding:18px"><small>Exemple fictif · Réseaux</small><h3>Publicité sur les réseaux</h3><p>Comprendre les recommandations commerciales.</p></article>
+    <article data-demo-text="science environnement recherche" style="background:white;color:#17263a;border-radius:12px;padding:18px"><small>Exemple fictif · Science</small><h3>Actualités scientifiques</h3><p>Lire des découvertes récentes.</p></article>
+   </div>
+   <p style="font-size:13px;color:#d2deeb;margin-top:18px">Simulation uniquement : aucun résultat réel n'est modifié. Le véritable script fonctionne sur les sites compatibles, avec des limites et des exceptions.</p>
+   <a href="./tampermonkey.html#nouveau-guide" style="display:inline-block;padding:12px 18px;background:#c9edb9;color:#0d2533;border-radius:10px;font-weight:800;text-decoration:none">Je veux installer le vrai filtre →</a>
+  </div>
+ </div>
+</section>
+<script>
+(()=>{
+ const field=document.getElementById('demo-terme'), toggle=document.getElementById('demo-toggle'), state=document.getElementById('demo-etat');
+ const cards=[...document.querySelectorAll('#demo-cartes article')];
+ let active=true;
+ const normalize=s=>String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+ function update(){
+  const term=normalize(field.value);let count=0;
+  for(const card of cards){const hide=active && term.length>=3 && normalize(card.dataset.demoText).includes(term);card.hidden=hide;card.style.display=hide?'none':'';if(hide)count++}
+  toggle.textContent=active?'Filtre actif':'Filtre désactivé';toggle.setAttribute('aria-pressed',String(active));
+  state.textContent=active?`${count} carte(s) masquée(s) sur ${cards.length} dans cette simulation.`:'Toutes les cartes sont réaffichées.';
+ }
+ field.addEventListener('input',update);toggle.addEventListener('click',()=>{active=!active;update()});update();
+})();
+</script>
+<!-- MFM-DEMO-V36-END -->
 <div class="shell" style="margin:16px auto;padding:16px;border-radius:14px;background:#10273c;color:white"><p><a href="./tampermonkey.html#nouveau-guide">Découvrez le nouveau guide Tampermonkey pas à pas (v35) : installation, captures réelles et toutes les fonctions.</a></p></div>
 <!-- MFM-NOUVEAUTES-V33 -->
 <section class="section" id="avancees" aria-label="Nouveautés du filtre Web">
