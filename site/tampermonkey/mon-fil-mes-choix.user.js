@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Mon fil, mes choix — filtre Web personnel
 // @namespace    https://github.com/janintibo-art/mon-fil-mes-choix
-// @version      4.3.0
+// @version      4.4.0
 // @updateURL    https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
 // @downloadURL  https://raw.githubusercontent.com/janintibo-art/mon-fil-mes-choix/main/site/tampermonkey/mon-fil-mes-choix.user.js
-// @description  V39 : archivage facultatif des fichiers vidéo HTML5 directs.
+// @description  V40 : archivage indépendant, fichier JSON descriptif et vidéo directe facultative.
 // @author       Communauté Mon fil, mes choix
 // @match        *://*/*
 // @run-at       document-idle
@@ -671,6 +671,41 @@
     a.rel='noopener noreferrer';document.body.appendChild(a);a.click();a.remove();
     alert('Téléchargement demandé au navigateur. Selon le site, le fichier peut être ouvert plutôt que téléchargé. Vérifiez les droits et les conditions d’utilisation.');
   }
+
+  // v40 : une fiche JSON par archive, à enregistrer dans le dossier choisi.
+  // Aucun inventaire d'archives n'est conservé dans le navigateur.
+  function archiveMetadata(){
+    const video=[...document.querySelectorAll('video')].find(v=>!v.paused)||
+      [...document.querySelectorAll('video')][0]||null;
+    const media=video?videoArchiveUrl(video):'';
+    const title=(document.querySelector('meta[property="og:title"]')?.content||
+      document.title||'Vidéo sans titre').slice(0,300);
+    const description=(document.querySelector('meta[property="og:description"]')?.content||
+      document.querySelector('meta[name="description"]')?.content||'').slice(0,1500);
+    const record={
+      format:'mon-fil-mes-choix-archive',version:1,
+      titre:title,source:location.href,
+      date_archivage:new Date().toISOString(),
+      url_fichier_direct:media||null,
+      description,notes:''
+    };
+    const safe=(title.normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/[^a-zA-Z0-9_-]+/g,'_').slice(0,55)||'video');
+    const blob=new Blob([JSON.stringify(record,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;
+    a.download='archive_'+safe+'_'+new Date().toISOString().slice(0,10)+'.json';
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),12000);
+    return Boolean(media);
+  }
+  function archiveWithRecord(){
+    if(!confirm('Créer une fiche JSON indépendante (titre, source et date), puis demander le téléchargement de la vidéo si un fichier direct est accessible ?\n\nLe navigateur choisira le dossier selon ses réglages.'))return;
+    const direct=archiveMetadata();
+    if(direct)archiveCurrentVideo();
+    else alert('Fiche archive enregistrée. Cette plateforme ne fournit pas de vidéo directe téléchargeable au script. Aucun contournement de protection.');
+  }
+
   function toggleVideoArchive(){
     videoArchiveEnabled=!videoArchiveEnabled;
     GM_setValue(VIDEO_ARCHIVE_KEY,videoArchiveEnabled);
@@ -682,7 +717,7 @@
       existing?.remove();return;
     }
     if(existing)return;
-    const b=button('⬇ Archiver vidéo',archiveCurrentVideo);
+    const b=button('⬇ Archiver vidéo + fiche',archiveWithRecord);
     b.id='mfm-video-archive-v39';
     Object.assign(b.style,{position:'fixed',right:'14px',bottom:'112px',zIndex:'2147483642',
       background:'#17283d',color:'#fff',padding:'10px 13px',borderRadius:'24px',
@@ -699,6 +734,7 @@
     GM_registerMenuCommand('⚙️ Personnalisation Google',()=>window.open('https://www.google.com/search-personalization','_blank','noopener'));
     GM_registerMenuCommand('🔎 Comparer les moteurs',openCompare);
     GM_registerMenuCommand((videoArchiveEnabled?'✅':'⬜')+' Bouton archiver vidéo',toggleVideoArchive);
+    GM_registerMenuCommand('📁 Enregistrer une fiche archive',archiveWithRecord);
     GM_registerMenuCommand('🛡️ Mouchards et cookies (v38)',privacyPanel);
     GM_registerMenuCommand('💾 Sauvegarder mes choix',exportChoices);
     GM_registerMenuCommand('📂 Récupérer mes choix',importChoices);
