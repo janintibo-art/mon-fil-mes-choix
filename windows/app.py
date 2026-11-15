@@ -172,29 +172,72 @@ def active():
 
 
 def apply_hosts(domains):
+    """Backup on each change, verify the hosts update, restore on error."""
+    from datetime import datetime, timezone
+    import uuid
+
     original = read_hosts()
     base = strip_managed(original)
     if domains:
-        lines = [OPEN, "# Cette zone est réversible via l'application."]
+        lines = [OPEN, "# Cette zone est reversible via l'application."]
         for domain in domains:
-            # hosts file has no wildcard domains. Cover the apex and common www.
-            lines.append(f"0.0.0.0 {domain}")
-            lines.append(f"0.0.0.0 www.{domain}")
-            lines.append(f":: {domain}")
-            lines.append(f":: www.{domain}")
+            lines.extend((f"0.0.0.0 {domain}", f"0.0.0.0 www.{domain}",
+                          f":: {domain}", f":: www.{domain}"))
         lines.append(CLOSE)
-        new = base.rstrip("\r\n") + "\n\n" + "\n".join(lines) + "\n"
+        updated = base.rstrip("\r\n") + "\n\n" + "\n".join(lines) + "\n"
     else:
-        new = base.rstrip("\r\n") + "\n"
-    if new != original:
-        # atomic-style replacement not used: Windows hosts ACLs need preserving.
-        # Backup original before first write, keeps the last unmodified copy.
-        DATA_DIR.mkdir(parents=True, exist_ok=True)
-        backup = DATA_DIR / "hosts_sauvegarde_avant_modification.txt"
-        if not backup.exists():
-            backup.write_text(original, encoding="utf-8")
-        HOSTS.write_text(new, encoding="utf-8", newline="\r\n")
-        subprocess.run(["ipconfig", "/flushdns"], capture_output=True, check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        updated = base.rstrip("\r\n") + "\n"
+    if updated == original:
+        return False
+
+    if not is_admin():
+        raise PermissionError("Windows doit autoriser la modification du fichier hosts. "
+                              "Relancez l'application en administrateur.")
+
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    backup_dir = DATA_DIR / "sauvegardes_hosts"
+    backup_dir.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    backup = backup_dir / ("hosts_" + stamp + "_" + uuid.uuid4().hex[:8] + ".txt")
+    backup.write_text(original, encoding="utf-8")
+    if backup.read_text(encoding="utf-8") != original:
+        raise OSError("Impossible de verifier la sauvegarde du fichier hosts.")
+
+    try:
+        HOSTS.write_text(updated, encoding="utf-8", newline="\r\n")
+        actual = read_hosts()
+        if actual != updated:
+            raise OSError("La verification apres ecriture du fichier hosts a echoue.")
+        if domains and not (OPEN in actual and CLOSE in actual):
+            raise OSError("La protection n'apparait pas dans le fichier hosts.")
+        if not domains and (OPEN in actual or CLOSE in actual):
+            raise OSError("La desactivation n'a pas retire nos marqueurs.")
+    except Exception as exc:
+        restored = False
+        try:
+            HOSTS.write_text(original, encoding="utf-8", newline="\r\n")
+            restored = read_hosts() == original
+        except OSError:
+            pass
+        detail = ("Sauvegarde originale : " + str(backup) +
+                  (". Fichier hosts restaure." if restored else
+                   ". Restauration automatique non confirmee. Ne modifiez pas les protections Windows a l'aveugle."))
+        raise OSError("Modification non appliquee : " + str(exc) + "\n\n" + detail) from exc
+
+    subprocess.run(["ipconfig", "/flushdns"], capture_output=True, check=False,
+                   creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    return True
+
+
+def hosts_error_message(exc):
+    if isinstance(exc, PermissionError) or getattr(exc, "errno", None) in (5, 13):
+        return ("Windows refuse de modifier le fichier hosts.\n\n"
+                "Fermez l'application, puis lancez l'EXE en administrateur. "
+                "Si le refus persiste, verifiez la protection du fichier hosts "
+                "dans votre antivirus ou votre politique Windows. "
+                "Ne desactivez pas l'antivirus pour forcer la modification.\n\n"
+                "Detail : " + str(exc))
+    return str(exc)
 
 
 def is_admin():
@@ -828,7 +871,7 @@ class GUI:
             self.refresh()
             messagebox.showinfo("Activé", f"Filtrage de {len(domains)} domaine(s) (et www) activé.")
         except Exception as e:
-            messagebox.showerror("Activation impossible", str(e))
+            messagebox.showerror("Activation impossible", hosts_error_message(e))
 
     def disable(self):
         if not is_admin():
@@ -841,7 +884,7 @@ class GUI:
             self.refresh()
             messagebox.showinfo("Désactivé", "Les lignes de filtrage ont été retirées du fichier hosts.")
         except Exception as e:
-            messagebox.showerror("Restauration impossible", str(e))
+            messagebox.showerror("Restauration impossible", hosts_error_message(e))
 
     def run(self):
         self.root.mainloop()
